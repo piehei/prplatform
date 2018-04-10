@@ -6,6 +6,10 @@
 <div class="container">
   <h2>Courses</h2>
 
+  <p>
+    <a class="btn btn-success btn-sm" href="{% url 'courses:create' %}">Create a new course!</a>
+  </p>
+
   {% if course_list %}
     <div class="list-group">
       {% for course in course_list %}

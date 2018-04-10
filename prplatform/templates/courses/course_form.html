@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create a new course{% endblock %}
+
+{% block content %}
+  <h1>Create a new course</h1>
+  <form class="form-horizontal" method="post" action="{% url 'courses:create' %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Update</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}
