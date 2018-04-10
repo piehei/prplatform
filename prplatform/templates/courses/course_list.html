@@ -13,11 +13,9 @@
   {% if course_list %}
     <div class="list-group">
       {% for course in course_list %}
-        {{ course.name }}
-       <!-- <a href="{% url 'users:detail' user.username %}" class="list-group-item">
-          <h4 class="list-group-item-heading">{{ user.username }}</h4>
+       <a href="{% url 'courses:detail' course.pk %}" class="list-group-item">
+          <h4 class="list-group-item-heading">{{ course.name }}</h4>
         </a>
-       -->
       {% endfor %}
     </div>
   {% else %}
