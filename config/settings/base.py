@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
 ]
 LOCAL_APPS = [
     'prplatform.users.apps.UsersConfig',
+    'prplatform.courses.apps.CoursesConfig',
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
