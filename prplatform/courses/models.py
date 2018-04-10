@@ -1,10 +1,11 @@
 from django.urls import reverse
 from django.db import models
 
+from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
 
 
-class Course(models.Model):
+class Course(TimeStampedModel):
     name = models.CharField(max_length=100)
     teachers = models.ManyToManyField(User)
 
