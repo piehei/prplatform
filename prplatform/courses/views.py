@@ -13,7 +13,7 @@ class CourseDetailView(DetailView):
 
 class CourseCreateView(CreateView):
     model = Course
-    fields = ['name']
+    fields = ['name', 'code', 'url_slug']
 
     # def get_success_url(self):
         # return reverse("courses:detail", kwargs={"name": self.request.course.name})
