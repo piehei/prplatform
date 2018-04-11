@@ -1,5 +1,5 @@
 from django.urls import reverse
-from django.views.generic import ListView, CreateView, DetailView
+from django.views.generic import ListView, CreateView, DetailView, UpdateView
 
 from .models import Course
 from prplatform.users.models import User
@@ -11,9 +11,18 @@ class CourseDetailView(DetailView):
     # lug_url_kwarg = "name"
 
 
+class CourseUpdateView(UpdateView):
+    model = Course
+    fields = ['name', 'code', 'url_slug', 'school']
+
+    # def get_success_url(self):
+        # return reverse('courses:detail', kwargs={'pk': self.request.course.pk})
+
+
 class CourseCreateView(CreateView):
     model = Course
     fields = ['name', 'code', 'url_slug', 'school']
+    template_name = "courses/course_create.html"
 
     # def get_success_url(self):
     #     return reverse("courses:detail", kwargs={"name": self.request.course.name})

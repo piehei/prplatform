@@ -4,13 +4,13 @@
 {% block title %}Course details{% endblock %}
 
 {% block content %}
-  <h1>Update course details</h1>
-  <form class="form-horizontal" method="post" action="{% url 'courses:update' object.pk %}">
+  <h1>Create a new course</h1>
+  <form class="form-horizontal" method="post" action="{% url 'courses:create' %}">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn">Update</button>
+        <button type="submit" class="btn">Create</button>
       </div>
     </div>
   </form>
