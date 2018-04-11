@@ -9,9 +9,9 @@
   <div class="row">
     <div class="col-sm-12">
 
-      <h2>{{ object.username }}</h2>
+      <h2>Username: {{ object.username }}</h2>
       {% if object.name %}
-        <p>{{ object.name }}</p>
+        <p>Name: {{ object.name }}</p>
       {% endif %}
     </div>
   </div>
@@ -19,6 +19,25 @@
 {% if object == request.user %}
 <!-- Action buttons -->
 <div class="row">
+  <div class="col-sm-12">
+
+    {% if object.course_set.all %}
+      <h5>My courses:</h5>
+        <div class="list-group">
+          {% for c in object.course_set.all %}
+            <div class="list-group-item">
+              <a href="{% url 'courses:detail' c.pk %}">{{ c.name }}</a>
+            </div>
+          {% endfor %}
+        </div>
+      <br><br><br>
+    {% else %}
+    You don't have any courses.
+    <br>
+    <a href="{% url 'courses:create' %}">Create a new one?</a>
+      <br><br><br>
+    {% endif %}
+  </div>
 
   <div class="col-sm-12">
     <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">My Info</a>

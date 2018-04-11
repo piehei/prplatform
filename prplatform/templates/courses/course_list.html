@@ -10,7 +10,9 @@
     <a class="btn btn-success btn-sm" href="{% url 'courses:create' %}">Create a new course!</a>
   </p>
 
+
   {% if course_list %}
+    <h3>All available courses:</h3>
     <div class="list-group">
       {% for course in course_list %}
        <a href="{% url 'courses:detail' course.pk %}" class="list-group-item">
