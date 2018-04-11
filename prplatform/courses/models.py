@@ -18,3 +18,12 @@ class Course(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class CourseImplementation(TimeStampedModel):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="implementations")
+    year = models.IntegerField()
+    code = models.CharField(max_length=20, blank=True)
+    url_slug = models.CharField(max_length=50, unique=True)
+    start_date = models.DateField()
+    end_date = models.DateField()

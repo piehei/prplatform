@@ -13,10 +13,10 @@ class CourseDetailView(DetailView):
 
 class CourseCreateView(CreateView):
     model = Course
-    fields = ['name', 'code', 'url_slug']
+    fields = ['name', 'code', 'url_slug', 'school']
 
     # def get_success_url(self):
-        # return reverse("courses:detail", kwargs={"name": self.request.course.name})
+    #     return reverse("courses:detail", kwargs={"name": self.request.course.name})
 
     def form_valid(self, form):
         form.instance.save()
