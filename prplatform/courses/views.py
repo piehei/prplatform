@@ -13,7 +13,7 @@ class CourseDetailView(DetailView):
 
 class CourseUpdateView(UpdateView):
     model = Course
-    fields = ['name', 'code', 'url_slug', 'school']
+    fields = ['start_date', 'end_date']
 
     # def get_success_url(self):
         # return reverse('courses:detail', kwargs={'pk': self.request.course.pk})
@@ -21,16 +21,16 @@ class CourseUpdateView(UpdateView):
 
 class CourseCreateView(CreateView):
     model = Course
-    fields = ['name', 'code', 'url_slug', 'school']
+    fields = ['code', 'url_slug', 'start_date', 'end_date']
     template_name = "courses/course_create.html"
 
     # def get_success_url(self):
     #     return reverse("courses:detail", kwargs={"name": self.request.course.name})
 
     def form_valid(self, form):
-        form.instance.save()
-        user = User.objects.get(email=self.request.user.email)
-        form.instance.teachers.add(user)
+        # form.instance.save()
+        # user = User.objects.get(email=self.request.user.email)
+        # form.instance.teachers.add(user)
         return super(CourseCreateView, self).form_valid(form)
 
 

@@ -8,40 +8,26 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h2>{{ object.name }}</h2>
-      Course name: {{ object.name }}<br>
-      Course code: {{ object.code }}<br>
-      Course URL: {{ object.url_slug }}<br>
-      Course school: {{ object.school }}<br>
+      <h2>{{ object.base_course.name }}</h2>
+      Code: {{ object.code }}<br>
+      URL: {{ object.url_slug }}<br>
+      Start: {{ object.start_date }}<br>
+      End: {{ object.end_date }}<br>
+
 
       <a class="btn btn-sm btn-primary mt-3" href="{% url 'courses:update' object.pk %}">Edit course details</a>
-      <a class="btn btn-sm btn-success mt-3" href="{% url 'courses:create-implementation' object.pk %}">Create new implementation</a>
 
     </div>
     <div class="col-sm-12 mt-4">
       <h4>Teachers of the course:</h4>
       <div class="list-group">
-        {% for teacher in object.teachers.all %}
+        {% for teacher in object.base_course.teachers.all %}
           <div class="list-group-item">
             {{ teacher.name }}
           </div>
         {% endfor %}
       </div>
     </div>
-    <div class="col-sm-12 mt-4">
-      <h4>Implementations of the course:</h4>
-      {% if not object.implementations.all %}
-        No implementations.
-      {% endif %}
-      <div class="list-group">
-        {% for implementation in object.implementations.all %}
-          <div class="list-group-item">
-            {{ implementation.name }}
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-
     </div>
   </div>
 

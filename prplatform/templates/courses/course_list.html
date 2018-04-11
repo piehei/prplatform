@@ -7,7 +7,7 @@
   <h2>Courses</h2>
 
   <p>
-    <a class="btn btn-success btn-sm" href="{% url 'courses:create' %}">Create a new course!</a>
+    Ask the admin to create a new course for you if needed
   </p>
 
 
@@ -16,7 +16,7 @@
     <div class="list-group">
       {% for course in course_list %}
        <a href="{% url 'courses:detail' course.pk %}" class="list-group-item">
-          <h4 class="list-group-item-heading">{{ course.name }}</h4>
+         <h4 class="list-group-item-heading">{{ course.base_course.name }}: {{ course.code }} ({{ course.year }})</h4>
         </a>
       {% endfor %}
     </div>

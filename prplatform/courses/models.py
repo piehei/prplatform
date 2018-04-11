@@ -5,7 +5,12 @@ from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
 
 
-class Course(TimeStampedModel):
+class BaseCourse(TimeStampedModel):
+    """ This defines a course which the admin will create. The course will have
+        a name, code, unique url, school, teachers etc.
+        The system will show implementations of this course which will be called
+        Courses.
+    """
     name = models.CharField("Name of the course", max_length=100)
     code = models.CharField("Course code", max_length=50, unique=True)
     url_slug = models.CharField("Identifier that will be used in URL addressses", max_length=50, unique=True)
@@ -13,17 +18,22 @@ class Course(TimeStampedModel):
 
     teachers = models.ManyToManyField(User, related_name="teachers")
 
-    def get_absolute_url(self):
-        return reverse('courses:detail', kwargs={'pk': self.pk})
-
     def __str__(self):
-        return self.name
+        return f"{self.name} {self.code} {self.school}"
 
 
-class CourseImplementation(TimeStampedModel):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="implementations")
+class Course(TimeStampedModel):
+    """ This is the actual user-facing course which describes an implementation.
+    """
+    base_course = models.ForeignKey(BaseCourse, on_delete=models.CASCADE, related_name="courses")
     year = models.IntegerField()
     code = models.CharField(max_length=20, blank=True)
     url_slug = models.CharField(max_length=50, unique=True)
     start_date = models.DateField()
     end_date = models.DateField()
+
+    def get_absolute_url(self):
+        return reverse('courses:detail', kwargs={'pk': self.pk})
+
+    def __str__(self):
+        return f"{self.base_course.code} {self.year} {self.code}"
