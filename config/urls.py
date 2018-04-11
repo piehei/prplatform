@@ -2,11 +2,17 @@ from django.conf import settings
 from django.conf.urls import include, url
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
 urlpatterns = [
-    url(r"^$", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    # url(r"^", TemplateView.as_view(template_name="pages/home.html"), name="home"),
+    url(r"^$", lambda r: HttpResponseRedirect("/courses"), name="home"),
+    url(
+        r"^courses/",
+        include("prplatform.courses.urls", namespace="courses"),
+    ),
     url(
         r"^about/$",
         TemplateView.as_view(template_name="pages/about.html"),
@@ -21,10 +27,6 @@ urlpatterns = [
     ),
     url(r"^accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
-    url(
-        r"^courses/",
-        include("prplatform.courses.urls", namespace="courses"),
-    ),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )
