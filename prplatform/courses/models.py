@@ -16,7 +16,7 @@ class BaseCourse(TimeStampedModel):
     url_slug = models.CharField("Identifier that will be used in URL addressses", max_length=50, unique=True)
     school = models.CharField("Name abbreviation of the school, eg. TTY, UTA...", max_length=20)
 
-    teachers = models.ManyToManyField(User, related_name="teachers")
+    teachers = models.ManyToManyField(User, related_name="base_courses")
 
     def __str__(self):
         return f"{self.name} {self.code} {self.school}"
@@ -33,7 +33,8 @@ class Course(TimeStampedModel):
     end_date = models.DateField()
 
     def get_absolute_url(self):
-        return reverse('courses:detail', kwargs={'pk': self.pk})
+        return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
+            'base_url_slug': self.base_course.url_slug})
 
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"

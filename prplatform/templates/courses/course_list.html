@@ -15,7 +15,7 @@
     <h3>All available courses:</h3>
     <div class="list-group">
       {% for course in course_list %}
-       <a href="{% url 'courses:detail' course.pk %}" class="list-group-item">
+       <a href="{% url 'courses:detail' course.base_course.url_slug course.url_slug %}" class="list-group-item">
          <h4 class="list-group-item-heading">{{ course.base_course.name }}: {{ course.code }} ({{ course.year }})</h4>
         </a>
       {% endfor %}

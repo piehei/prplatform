@@ -15,7 +15,7 @@
       End: {{ object.end_date }}<br>
 
 
-      <a class="btn btn-sm btn-primary mt-3" href="{% url 'courses:update' object.pk %}">Edit course details</a>
+      <a class="btn btn-sm btn-primary mt-3" href="{% url 'courses:update' object.base_course.url_slug object.url_slug %}">Edit course details</a>
 
     </div>
     <div class="col-sm-12 mt-4">
