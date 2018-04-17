@@ -21,6 +21,16 @@ class BaseCourse(TimeStampedModel):
     def __str__(self):
         return f"{self.name} {self.code} {self.school}"
 
+    def is_teacher(self, user):
+        return (user and
+                user.is_authenticated and
+                (
+                    user.is_superuser
+                    or
+                    (isinstance(user, User) and
+                        self.teachers.filter(pk=user.pk).exists()))
+                )
+
 
 class Course(TimeStampedModel):
     """ This is the actual user-facing course which describes an implementation.
