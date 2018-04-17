@@ -41,6 +41,7 @@ class Course(TimeStampedModel):
     url_slug = models.CharField(max_length=50, unique=True)
     start_date = models.DateField()
     end_date = models.DateField()
+    students = models.ManyToManyField(User, through='Enrollment')
 
     def get_absolute_url(self):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
@@ -48,3 +49,21 @@ class Course(TimeStampedModel):
 
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"
+
+    def is_enrolled(self, user):
+        return (user and
+                user.is_authenticated and
+                (
+                    (isinstance(user, User) and
+                        self.students.filter(pk=user.pk).exists()))
+                )
+
+    def enroll(self, user):
+        new_enrollment = Enrollment(student=user, course=self)
+        new_enrollment.save()
+
+
+class Enrollment(TimeStampedModel):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+

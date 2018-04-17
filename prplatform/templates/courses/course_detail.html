@@ -21,6 +21,15 @@
         </a>
       {% endif %}
 
+      {% if not teacher and not enrolled %}
+      <form class="form-horizontal" method="post" action="{% url 'courses:enroll' object.base_course.url_slug object.url_slug %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-sm btn-primary mt-3">
+              Enroll to this course
+        </button>
+      </form>
+      {% endif %}
+
     </div>
     <div class="col-sm-12 mt-4">
       <h4>Teachers of the course:</h4>
