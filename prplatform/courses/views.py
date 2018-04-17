@@ -8,7 +8,6 @@ from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 from .models import BaseCourse, Course
-from .mixins import CourseMixin
 
 from prplatform.users.models import User
 
@@ -55,7 +54,7 @@ class CourseListView(ListView):
     model = Course
 
 
-class CourseEnroll(CourseMixin, ProcessFormView):
+class CourseEnroll(CourseMixin, LoginRequiredMixin, ProcessFormView):
     model = Course
 
     def get_success_url(self):
