@@ -45,7 +45,7 @@ class Course(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
-            'base_url_slug': self.base_course.url_slug})
+                       'base_url_slug': self.base_course.url_slug})
 
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"
@@ -58,6 +58,12 @@ class Course(TimeStampedModel):
                         self.students.filter(pk=user.pk).exists()))
                 )
 
+    def can_enroll(self, user):
+        return (isinstance(user, User) and
+                not self.base_course.is_teacher(user) and
+                not self.is_enrolled(user)
+                )
+
     def enroll(self, user):
         new_enrollment = Enrollment(student=user, course=self)
         new_enrollment.save()
@@ -67,3 +73,5 @@ class Enrollment(TimeStampedModel):
     student = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return str(self.student) + " -> " + str(self.course)

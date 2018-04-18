@@ -6,6 +6,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic.edit import ProcessFormView
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
 
 from .models import BaseCourse, Course
 
@@ -63,7 +64,16 @@ class CourseEnroll(CourseMixin, LoginRequiredMixin, ProcessFormView):
 
     def post(self, request, *args, **kwargs):
         course = self.get_object()
-        if not course.is_enrolled(self.request.user):
+
+        if course.can_enroll(self.request.user):
             course.enroll(self.request.user)
-            return HttpResponseRedirect(reverse("courses:detail", kwargs={'url_slug': self.kwargs['url_slug'],
+            messages.info(request, "You're now enrolled into the course.")
+        else:
+            messages.error(request, "You cannot enroll to this course.")
+
+        return HttpResponseRedirect(reverse("courses:detail", kwargs={'url_slug': self.kwargs['url_slug'],
+                                    'base_url_slug': self.kwargs['base_url_slug']}))
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponseRedirect(reverse("courses:detail", kwargs={'url_slug': self.kwargs['url_slug'],
                                     'base_url_slug': self.kwargs['base_url_slug']}))
