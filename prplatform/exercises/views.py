@@ -3,7 +3,7 @@ from django.urls import reverse
 
 from .models import BaseExercise
 
-class ExerciseView(DetailView):
+class ExerciseDetailView(DetailView):
     model = BaseExercise
 
 

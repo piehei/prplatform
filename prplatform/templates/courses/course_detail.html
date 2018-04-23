@@ -57,7 +57,9 @@
       <div class="list-group">
       {% for ex in object.exercises.all %}
         <div class="list-group-item">
-          {{ ex.name }}
+          <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
+            {{ ex.name }}
+          </a>
         </div>
       {% endfor %}
       </div>
