@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}Exercises{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Exercises</h2>
+
+  {% if exercise_list %}
+    <h3>All available exercises:</h3>
+    <div class="list-group">
+      {% for exercise in exercise_list %}
+       <a href="{% url 'exercises:detail' exercise.pk %}" class="list-group-item">
+         {{ exercise.name }}
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    No exercises found :(
+  {% endif %}
+
+</div>
+{% endblock content %}
