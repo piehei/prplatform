@@ -7,7 +7,7 @@ from prplatform.courses.models import Course
 
 class BaseExercise(TimeStampedModel):
     name = models.CharField("Name of the exercise", max_length=100)
-    course = models.ForeignKey(Course, 'exercises')
+    course = models.ForeignKey(Course, related_name='exercises', on_delete=models.CASCADE)
 
 class FileUploadExercise(BaseExercise):
     file = models.FileField(upload_to='uploads/', blank=True)
