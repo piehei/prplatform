@@ -21,7 +21,19 @@ from prplatform.users.models import User
 #         return wrapper
 #     return decorator
 
+
+class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
+    """ This makes sure that the user is logged in and is a teacher
+        of the course. 403 forbidden is raised if not. """
+
+    raise_exception = True
+
+    def test_func(self):
+        return self.get_object().base_course.is_teacher(self.request.user)
+
+
 class CourseMixin:
+    """ This returns the course object itself """
 
     def get_object(self):
         base_course = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug'])
@@ -41,14 +53,14 @@ class CourseDetailView(CourseMixin, DetailView):
         return context
 
 
-class CourseUpdateView(CourseMixin, LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class CourseTeacherView(IsTeacherMixin, CourseDetailView):
+    template_name = "courses/teacher.html"
+
+
+class CourseUpdateView(CourseMixin, IsTeacherMixin, UpdateView):
     model = Course
     fields = ['start_date', 'end_date']
     # 403 if not teacher
-    raise_exception = True
-
-    def test_func(self):
-        return self.get_object().base_course.is_teacher(self.request.user)
 
 
 class CourseListView(ListView):
