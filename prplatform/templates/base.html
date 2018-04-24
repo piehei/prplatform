@@ -32,18 +32,15 @@
 
   <body>
 
-    <div class="m-b-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
+      <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark p-0">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">prplatform</a>
+
+        <a class="navbar-brand col-md-2 mr-0" href="{% url 'home' %}">PRP</a>
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
+          <ul class="navbar-nav mr-auto ml-4">
             <li class="nav-item">
               <a class="nav-link" href="{% url 'courses:list' %}">Courses</a>
             </li>
@@ -70,36 +67,40 @@
         </div>
       </nav>
 
-    </div>
-
-    <div class="container">
-
-      {% if messages %}
-          {% for message in messages %}
-              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-          {% endfor %}
-      {% endif %}
-
-      {% block content %}
-      <div class="row">
-        <div class="col-sm-12">
-          <h3>Features as of now:</h3>
-          <div class="list-group">
-            <div class="list-group-item">
-              You can create a profile
-            </div>
-            <div class="list-group-item">
-              You can create a course
-            </div>
-            <!--<div class="list-group-item">-->
-            <!--</div>-->
-            <!--<div class="list-group-item">-->
-            <!--</div>-->
-          </div>
+    <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="file"></span>
+                Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">
+                <span data-feather="shopping-cart"></span>
+                Products
+              </a>
+            </li>
         </div>
-      </div>
-      {% endblock content %}
+      </nav>
 
+      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+        <div class="container mt-4">
+
+          {% if messages %}
+              {% for message in messages %}
+                  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+              {% endfor %}
+          {% endif %}
+
+          {% block content %}
+          {% endblock content %}
+
+        </div>
+      </main>
     </div> <!-- /container -->
 
     {% block modal %}{% endblock modal %}
