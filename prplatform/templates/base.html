@@ -31,7 +31,6 @@
   </head>
 
   <body>
-
       <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark p-0">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
@@ -71,19 +70,23 @@
     <div class="row">
       <nav class="col-md-2 d-none d-md-block bg-light sidebar">
         <div class="sidebar-sticky">
-          <ul class="nav flex-column">
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="file"></span>
-                Orders
+            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+              <span>{{ course.base_course.name }}<br>
+                    {{ course.base_course.code }}<br>
+                    {{ course.code }}</span>
+              <a class="d-flex align-items-center text-muted" href="#">
+                <span data-feather="plus-circle"></span>
               </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <span data-feather="shopping-cart"></span>
-                Products
-              </a>
-            </li>
+            </h6>
+            <ul class="nav flex-column">
+              {% if course %}
+                <li class="nav-item">
+                  <a class="nav-link" href="{% url 'courses:detail' course.base_course.url_slug course.url_slug %}">
+                    Exercises
+                  </a>
+                </li>
+              {% endif %}
+            </ul>
         </div>
       </nav>
 
