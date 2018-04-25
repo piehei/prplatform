@@ -6,10 +6,10 @@
 
 {% block content %}
   <h1>Create a new exercise</h1>
-
+  <h4>In this exercise the student returns something to the service.</h4>
   <form class="form-horizontal" method="post" action="{% url 'courses:create-exercise' course.base_course.url_slug course.url_slug %}">
     {% csrf_token %}
-    {{ form|crispy }}
+    {{ generalForm|crispy }}
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn">Create</button>
