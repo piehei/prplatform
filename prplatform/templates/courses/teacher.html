@@ -11,7 +11,7 @@
       <h2>{{ object.base_course.name }}</h2>
       Code: {{ object.code }}<br>
       URL: {{ object.url_slug }}<br>
-      Start: {{ object.start_date }}<br>moikka
+      Start: {{ object.start_date }}<br>
       End: {{ object.end_date }}<br>
     </div>
 
@@ -38,7 +38,7 @@
         <div class="list-group">
           {% for student in object.students.all %}
             <div class="list-group-item">
-              {{ student.username }}
+              {{ student.username }}, {{ student.email }}
             </div>
           {% endfor %}
         </div>
