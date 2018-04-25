@@ -20,11 +20,12 @@ class BaseExercise(TimeStampedModel):
     description = models.CharField(max_length=5000, blank=True)
 
 
-class FileUploadExercise(BaseExercise):
+class GeneralExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.
         This uploaded file shall be the answer to this exercise.
         This is not peer-reviewing but the thing that will be peer-reviewed.
     """
 
-    file = models.FileField(upload_to='uploads/', blank=True)
+    file_upload = models.BooleanField(default=False)
     upload_instructions = models.CharField(max_length=500, blank=True)
+

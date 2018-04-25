@@ -1,19 +1,51 @@
-from django.views.generic import DetailView, CreateView, ListView
+from django.views.generic import DetailView, CreateView, ListView, TemplateView
 from django.urls import reverse
+from django.http import HttpResponseRedirect
 
-from .models import BaseExercise
+from .models import GeneralExercise, BaseExercise
+from .forms import GeneralExerciseForm
+from prplatform.courses.models import BaseCourse, Course
+
 
 class ExerciseDetailView(DetailView):
-    model = BaseExercise
+    pass
 
 
-class ExerciseCreateView(CreateView):
-    model = BaseExercise
-    fields = ['name']
+class ExerciseCreateView(TemplateView):
+    """ TODO:
+        This now lets the template to show the teacher multiple
+        different exercise form types. Should they all have their
+        different CreateViews or should they be included in the same
+        view with some toggles?
+    """
+    template_name = "exercises/create.html"
 
-    def get_absolute_url(self):
-        return reverse('courses:exercises:create', kwargs={'url_slug': self.url_slug,
-                       'base_url_slug': self.base_course.url_slug})
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        base_course = BaseCourse.objects.get(url_slug=self.kwargs['base_url_slug'])
+        context['course'] = base_course.courses.get(url_slug=self.kwargs['url_slug'])
+        return context
+
+    def get(self, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        context['generalForm'] = GeneralExerciseForm()
+        return self.render_to_response(context)
+
+    def post(self, *args, **kwargs):
+        form = GeneralExerciseForm(self.request.POST)
+        context = self.get_context_data()
+        if form.is_valid():
+            data = form.cleaned_data
+            exer = GeneralExercise(
+                    name=data['name'],
+                    course=context['course']
+                    )
+            exer.save()
+            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
+
+
+class GeneralExerciseCreateView(ExerciseCreateView):
+    model = GeneralExercise
 
 
 class ExerciseListView(ListView):
