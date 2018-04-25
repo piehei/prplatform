@@ -70,6 +70,18 @@
     <div class="row">
       <nav class="col-md-2 d-none d-md-block bg-light sidebar">
         <div class="sidebar-sticky">
+
+          {% if not course and request.user.base_courses %}
+            <h5 class="m-4">Your courses:</h5>
+            <h6 class="ml-4">
+              {% for base_course in request.user.base_courses.all %}
+                {% for course in base_course.courses.all %}
+                  <a href="{% url 'courses:detail' base_course.url_slug course.url_slug %}">{{ base_course.name }}</a>
+                {% endfor %}
+              {% endfor %}
+            </h6>
+          {% endif %}
+
             <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
               <span>{{ course.base_course.name }}<br>
                     {{ course.base_course.code }}<br>
