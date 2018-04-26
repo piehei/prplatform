@@ -1,0 +1,32 @@
+- model: courses.basecourse
+  pk: 1
+  fields:
+    name: Programming 1
+    code: TIE-02100
+    url_slug: prog1
+    school: TTY
+    created: 2018-01-01 00:00
+    modified: 2018-01-01 00:00
+
+- model: courses.basecourse
+  pk: 2
+  fields:
+    name: Programming 2
+    code: TIE-02200
+    url_slug: prog2
+    school: TTY
+    created: 2018-01-01 00:00
+    modified: 2018-01-01 00:00
+
+- model: courses.course
+  pk: 1
+  fields:
+    base_course: 1
+    year: 2018
+    code: TIE-02100-1
+    url_slug: F2018
+    start_date: 2018-01-01
+    end_date: 2018-12-31
+    created: 2018-01-01 00:00
+    modified: 2018-01-01 00:00
+
