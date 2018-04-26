@@ -5,6 +5,11 @@ from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
 
 
+class BaseCourseManager(models.Manager):
+    def get_by_natural_key(self, code, school):
+        return self.get(code=code, school=school)
+
+
 class BaseCourse(TimeStampedModel):
     """ This defines a course which the admin will create. The course will have
         a name, code, unique url, school, teachers etc.
@@ -17,6 +22,9 @@ class BaseCourse(TimeStampedModel):
     school = models.CharField("Name abbreviation of the school, eg. TTY, UTA...", max_length=20)
 
     teachers = models.ManyToManyField(User, related_name="base_courses")
+
+    class Meta:
+        unique_together = (('code', 'school'))
 
     def __str__(self):
         return f"{self.name} {self.code} {self.school}"
