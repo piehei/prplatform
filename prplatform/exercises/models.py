@@ -29,3 +29,11 @@ class GeneralExercise(BaseExercise):
     file_upload = models.BooleanField(default=False)
     upload_instructions = models.CharField(max_length=500, blank=True)
 
+    def get_absolute_url(self):
+        base_course = self.course.base_course
+        return reverse('courses:exercises:detail', kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
