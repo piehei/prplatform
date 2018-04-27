@@ -19,6 +19,9 @@ class BaseExercise(TimeStampedModel):
     course = models.ForeignKey(Course, related_name='exercises', on_delete=models.CASCADE)
     description = models.CharField(max_length=5000, blank=True)
 
+    class Meta:
+        abstract = True
+
 
 class GeneralExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.

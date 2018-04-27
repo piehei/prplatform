@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BaseExercise, GeneralExercise
+from .models import GeneralExercise
 
 @admin.register(GeneralExercise)
 class GeneralExerciseModelAdmin(admin.ModelAdmin):
