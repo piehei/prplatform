@@ -1,3 +1,33 @@
+
+- model: users.user
+  pk: 1
+  fields:
+    email: prp@prp.fi
+    username: prp
+    # password is: prp1234
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$dkY2QUM1d3dqMWI4$HFxq2dnp8307ha5kpuVE9w"
+    is_superuser: True
+    is_staff: True
+    is_active: True
+
+- model: users.user
+  pk: 2
+  fields:
+    email: teacher1@prp.fi
+    username: teacher1
+    # password is: teacher11234
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$RURsUnVZZGdnNWN4$3UifTA+uuQxRlC4gXvf/8g"
+    is_active: True
+
+- model: users.user
+  pk: 3
+  fields:
+    email: student1@prp.fi
+    username: student1
+    # password is: student11234
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$UWZHcnR5Y2tvMHda$iZwd71srG7bm5A1QFP/QTg"
+    is_active: True
+
 - model: courses.basecourse
   pk: 1
   fields:
@@ -5,6 +35,7 @@
     code: TIE-02100
     url_slug: prog1
     school: TTY
+    teachers: [ 1 ]
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
