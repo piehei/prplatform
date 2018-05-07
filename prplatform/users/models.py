@@ -4,7 +4,14 @@ from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 
+class UserManager(models.Manager):
+    def get_by_natural_key(self, email):
+        return self.get(email=email)
+
+
 class User(AbstractUser):
+
+    objects = UserManager()
 
     # First Name and Last Name do not cover name patterns
     # around the globe.

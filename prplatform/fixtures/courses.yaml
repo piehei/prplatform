@@ -35,7 +35,7 @@
     code: TIE-02100
     url_slug: prog1
     school: TTY
-    teachers: [ 1 ]
+    teachers: [ ["teacher1@prp.fi"] ]
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
