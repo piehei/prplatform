@@ -71,7 +71,11 @@
       <nav class="col-md-2 d-none d-md-block bg-light sidebar">
         <div class="sidebar-sticky">
 
-          {% if not course and request.user.base_courses %}
+          {% if request.user.is_authenticated %}
+            <h4 class="m-4">{{ request.user.username }}</h4>
+          {% endif %}
+
+          {% if not course and request.user.base_courses.all %}
             <h5 class="m-4">Your courses:</h5>
             <h6 class="ml-4">
               {% for base_course in request.user.base_courses.all %}
