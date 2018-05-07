@@ -7,7 +7,14 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h2>Exercise: {{ object.name }}</h2>
+      <h2>Exercise: {{ object.name }}
+        {% if teacher %}
+          <a href="{% url 'courses:update-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}">
+            (edit)
+          </a>
+        {% endif %}
+      </h2>
+
 
       <div class="col-md-12">
         {{ object.description }}
