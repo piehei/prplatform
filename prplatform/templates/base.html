@@ -73,6 +73,7 @@
 
           {% if request.user.is_authenticated %}
             <h4 class="m-4">{{ request.user.username }}</h4>
+            <hr></hr>
           {% endif %}
 
           {% if not course and request.user.base_courses.all %}
