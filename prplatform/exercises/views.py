@@ -4,19 +4,10 @@ from django.http import HttpResponseRedirect
 
 from .models import GeneralExercise, BaseExercise
 from .forms import GeneralExerciseForm
-from prplatform.courses.models import BaseCourse, Course
+from prplatform.courses.views import CourseContextMixin
 
 
-class CourseContextMixin:
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        base_course = BaseCourse.objects.get(url_slug=self.kwargs['base_url_slug'])
-        context['course'] = base_course.courses.get(url_slug=self.kwargs['url_slug'])
-        return context
-
-
-class GeneralExerciseDetailView(DetailView):
+class GeneralExerciseDetailView(CourseContextMixin, DetailView):
     model = GeneralExercise
 
 

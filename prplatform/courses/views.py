@@ -10,9 +10,6 @@ from django.contrib import messages
 
 from .models import BaseCourse, Course
 
-from prplatform.users.models import User
-
-
 # def is_teacher_decorator():
 #     def decorator(func):
 #         def wrapper(request, *args, **kwargs):
@@ -20,6 +17,16 @@ from prplatform.users.models import User
 #             return func(request, *args, **kwargs)
 #         return wrapper
 #     return decorator
+
+
+class CourseContextMixin:
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        base_course = BaseCourse.objects.get(url_slug=self.kwargs['base_url_slug'])
+        context['course'] = base_course.courses.get(url_slug=self.kwargs['url_slug'])
+        context['teacher'] = context['course'].base_course.is_teacher(self.request.user)
+        return context
 
 
 class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
