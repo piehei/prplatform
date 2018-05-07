@@ -46,7 +46,7 @@ class GeneralExerciseCreateView(ExerciseCreateView):
 
 class GeneralExerciseUpdateView(CourseContextMixin, UpdateView):
     model = GeneralExercise
-    fields = ['name']
+    fields = ['name', 'file_upload', 'upload_instructions', 'description']
 
 
 class ExerciseListView(ListView):
