@@ -12,7 +12,9 @@
     {{ form|crispy }}
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn">Update</button>
+        <a class="btn btn-danger mr-4"
+           onClick="javascript:history.go(-1)">Cancel</a>
+        <button type="submit" class="btn btn-success">Update</button>
       </div>
     </div>
   </form>

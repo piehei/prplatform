@@ -1,6 +1,8 @@
 from django.views.generic import DetailView, CreateView, ListView, TemplateView, UpdateView
 from django.urls import reverse
 from django.http import HttpResponseRedirect
+from django.forms import Textarea
+from django.forms.models import modelform_factory
 
 from .models import GeneralExercise, BaseExercise
 from .forms import GeneralExerciseForm
@@ -46,8 +48,17 @@ class GeneralExerciseCreateView(ExerciseCreateView):
 
 class GeneralExerciseUpdateView(CourseContextMixin, UpdateView):
     model = GeneralExercise
-    fields = ['name', 'file_upload', 'upload_instructions', 'description']
+    fields = ['name', 'description', 'file_upload', 'upload_instructions']
+    widgets = {
+            'description': Textarea(attrs={'cols': 80, 'rows': 5}),
+            'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
+            }
+
+    # this enables the use of widgets in the form
+    def get_form_class(self):
+        return modelform_factory(self.model, fields=self.fields, widgets=self.widgets)
 
 
 class ExerciseListView(ListView):
     model = BaseExercise
+
