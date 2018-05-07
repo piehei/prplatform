@@ -6,7 +6,7 @@ from django.forms.models import modelform_factory
 
 from .models import GeneralExercise, BaseExercise
 from .forms import GeneralExerciseForm
-from prplatform.courses.views import CourseContextMixin
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 
 
 class GeneralExerciseDetailView(CourseContextMixin, DetailView):
@@ -46,7 +46,7 @@ class GeneralExerciseCreateView(ExerciseCreateView):
     model = GeneralExercise
 
 
-class GeneralExerciseUpdateView(CourseContextMixin, UpdateView):
+class GeneralExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = GeneralExercise
     fields = ['name', 'description', 'file_upload', 'upload_instructions']
     widgets = {

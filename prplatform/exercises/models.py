@@ -19,6 +19,10 @@ class BaseExercise(TimeStampedModel):
     course = models.ForeignKey(Course, related_name='exercises', on_delete=models.CASCADE)
     description = models.CharField(max_length=5000, blank=True)
 
+    @property
+    def base_course(self):
+        return self.course.base_course
+
     class Meta:
         abstract = True
 
