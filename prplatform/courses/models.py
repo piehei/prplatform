@@ -78,7 +78,7 @@ class Course(TimeStampedModel):
 
 
 class Enrollment(TimeStampedModel):
-    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, related_name="enrollments", on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
     def __str__(self):
