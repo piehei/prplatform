@@ -16,7 +16,7 @@ class BaseExercise(TimeStampedModel):
     """
 
     name = models.CharField("Name of the exercise", max_length=100)
-    course = models.ForeignKey(Course, related_name='exercises', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='%(class)s_exercises', on_delete=models.CASCADE)
     description = models.CharField(max_length=5000, blank=True)
 
     @property
@@ -30,7 +30,9 @@ class BaseExercise(TimeStampedModel):
 class SubmissionExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.
         This uploaded file shall be the answer to this exercise.
-        This is not peer-reviewing but the thing that will be peer-reviewed.
+        This is NOT peer-reviewing but the thing that will be peer-reviewed.
+
+        ReviewExercise describes the peer-reviewing task itself.
     """
 
     file_upload = models.BooleanField(default=False)
@@ -43,4 +45,16 @@ class SubmissionExercise(BaseExercise):
             'url_slug': self.course.url_slug,
             'pk': self.pk
             })
+
+
+class ReviewExercise(BaseExercise):
+    """ This is an exercise that describes the peer-reviewing to be done.
+        This tells what sort of peer-review should happen etc.
+        This is NOT an exercise where the student returns some original
+        answer and other students peer-review it.
+
+        SubmissionExercise describes the returning of an original answer.
+    """
+
+    reviewable_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
 
