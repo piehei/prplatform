@@ -1,10 +1,10 @@
 from django.forms import ModelForm
 
-from .models import GeneralExercise
+from .models import SubmissionExercise
 
 
-class GeneralExerciseForm(ModelForm):
+class SubmissionExerciseForm(ModelForm):
     class Meta:
-        model = GeneralExercise
+        model = SubmissionExercise
         fields = ['name', 'description', 'file_upload', 'upload_instructions']
 

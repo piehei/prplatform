@@ -61,7 +61,7 @@
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
-- model: exercises.generalexercise
+- model: exercises.submissionexercise
   pk: 1
   fields:
     course: 1
@@ -71,7 +71,7 @@
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
-- model: exercises.generalexercise
+- model: exercises.submissionexercise
   pk: 2
   fields:
     course: 1

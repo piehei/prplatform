@@ -27,7 +27,7 @@ class BaseExercise(TimeStampedModel):
         abstract = True
 
 
-class GeneralExercise(BaseExercise):
+class SubmissionExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.
         This uploaded file shall be the answer to this exercise.
         This is not peer-reviewing but the thing that will be peer-reviewed.

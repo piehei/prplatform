@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import GeneralExercise
+from .models import SubmissionExercise
 
-@admin.register(GeneralExercise)
-class GeneralExerciseModelAdmin(admin.ModelAdmin):
+@admin.register(SubmissionExercise)
+class SubmissionExerciseModelAdmin(admin.ModelAdmin):
     pass

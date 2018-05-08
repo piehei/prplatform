@@ -4,13 +4,13 @@ from django.http import HttpResponseRedirect
 from django.forms import Textarea
 from django.forms.models import modelform_factory
 
-from .models import GeneralExercise, BaseExercise
-from .forms import GeneralExerciseForm
+from .models import SubmissionExercise, BaseExercise
+from .forms import SubmissionExerciseForm
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 
 
-class GeneralExerciseDetailView(CourseContextMixin, DetailView):
-    model = GeneralExercise
+class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
+    model = SubmissionExercise
 
 
 class ExerciseCreateView(CourseContextMixin, TemplateView):
@@ -25,16 +25,16 @@ class ExerciseCreateView(CourseContextMixin, TemplateView):
     def get(self, *args, **kwargs):
         """ TODO: currently returns only generalForm """
         context = self.get_context_data(**kwargs)
-        context['generalForm'] = GeneralExerciseForm()
+        context['generalForm'] = SubmissionExerciseForm()
         return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
-        form = GeneralExerciseForm(self.request.POST)
+        form = SubmissionExerciseForm(self.request.POST)
         context = self.get_context_data()
         if form.is_valid():
             data = form.cleaned_data
-            exer = GeneralExercise(
+            exer = SubmissionExercise(
                     name=data['name'],
                     course=context['course']
                     )
@@ -42,12 +42,12 @@ class ExerciseCreateView(CourseContextMixin, TemplateView):
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
 
-class GeneralExerciseCreateView(ExerciseCreateView):
-    model = GeneralExercise
+class SubmissionExerciseCreateView(ExerciseCreateView):
+    model = SubmissionExercise
 
 
-class GeneralExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
-    model = GeneralExercise
+class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
+    model = SubmissionExercise
     fields = ['name', 'description', 'file_upload', 'upload_instructions']
     widgets = {
             'description': Textarea(attrs={'cols': 80, 'rows': 5}),

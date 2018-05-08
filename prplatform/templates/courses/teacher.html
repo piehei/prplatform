@@ -45,9 +45,9 @@
     </div>
 
     <div class="col-sm-12 mt-3">
-    <h5>Exercises:</h5>
+    <h5>Submission exercises:</h5>
       <div class="list-group">
-      {% for ex in object.exercises.all %}
+      {% for ex in object.submissionexercise_exercises.all %}
         <div class="list-group-item">
           {{ ex.name }}
           <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
