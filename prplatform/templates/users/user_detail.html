@@ -19,10 +19,10 @@
 {% if object == request.user %}
 <!-- Action buttons -->
 <div class="row">
-  <div class="col-sm-12">
+  <div class="col-sm-12 mt-4">
 
     {% if object.base_courses.all %}
-      <h5>My courses:</h5>
+      <h5>Courses where I teach:</h5>
         <div class="list-group">
           {% for base_course in object.base_courses.all %}
             {% for c in base_course.courses.all %}
@@ -33,9 +33,22 @@
           {% endfor %}
         </div>
       <br><br><br>
-    {% else %}
-    You don't have any courses. Ask the admin to add you a course.
     {% endif %}
+
+    {% if object.enrollments.all %}
+      <h5>Courses I have enrolled in:</h5>
+        <div class="list-group">
+          {% for e in object.enrollments.all %}
+            <div class="list-group-item">
+              <a href="{% url 'courses:detail' e.course.base_course.url_slug e.course.url_slug %}">
+                {{ e.course.base_course.name }}: {{ e.course.code }}
+              </a>
+            </div>
+          {% endfor %}
+        </div>
+      <br><br><br>
+    {% endif %}
+
   </div>
 
   <div class="col-sm-12">
