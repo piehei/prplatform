@@ -24,18 +24,8 @@
       {% endif %}
     </div>
 
-    <div class="col-sm-12 mt-3">
-    <h4 class="mt-4">Submission exercises:</h4>
-      <div class="list-group">
-      {% for ex in object.submissionexercise_exercises.all %}
-        <div class="list-group-item">
-          <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
-            {{ ex.name }}
-          </a>
-        </div>
-      {% endfor %}
-      </div>
-    </div>
+    {% include "./exercise_list.html" %}
+
   </div>
 
 </div>

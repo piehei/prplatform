@@ -13,15 +13,25 @@
       URL: {{ object.url_slug }}<br>
       Start: {{ object.start_date }}<br>
       End: {{ object.end_date }}<br>
+      <a class="btn btn-sm btn-primary mt-3"
+         href="{% url 'courses:update' object.base_course.url_slug object.url_slug %}">
+           Edit course details
+      </a>
     </div>
 
 
-    <div class="col-sm-12 mt-3">
-        <a class="btn btn-sm btn-primary mt-3"
-           href="{% url 'courses:update' object.base_course.url_slug object.url_slug %}">
-             Edit course details
-        </a>
 
+
+    {% include "./exercise_list.html" %}
+
+
+
+
+
+
+
+    <div class="col-sm-12 mt-4">
+      <hr></hr>
         <h5 class="mt-3">Teachers of the course:</h5>
         <div class="list-group">
           {% for teacher in object.base_course.teachers.all %}
@@ -44,23 +54,6 @@
         </div>
     </div>
 
-    <div class="col-sm-12 mt-3">
-    <h5>Submission exercises:</h5>
-      <div class="list-group">
-      {% for ex in object.submissionexercise_exercises.all %}
-        <div class="list-group-item">
-          {{ ex.name }}
-          <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
-            View
-          </a>
-            |
-          <a href="{% url 'courses:update-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
-            Modify
-          </a>
-        </div>
-      {% endfor %}
-      </div>
-    </div>
   </div>
 
 </div>
