@@ -40,7 +40,7 @@ class SubmissionExercise(BaseExercise):
 
     def get_absolute_url(self):
         base_course = self.course.base_course
-        return reverse('courses:exercises:detail', kwargs={
+        return reverse('courses:exercises:submission-detail', kwargs={
             'base_url_slug': base_course.url_slug,
             'url_slug': self.course.url_slug,
             'pk': self.pk
@@ -60,6 +60,14 @@ class ReviewExercise(BaseExercise):
     """
 
     reviewable_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
+
+    def get_absolute_url(self):
+        base_course = self.course.base_course
+        return reverse('courses:exercises:review-detail', kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
 
     def __str__(self):
         return f"Submission exercise: {self.name}"

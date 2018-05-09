@@ -77,6 +77,10 @@ class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
     form_class = SubmissionExerciseForm
 
 
+class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
+    model = ReviewExercise
+    form_class = ReviewExerciseForm
+
 ###
 #
 # DETAIL VIEWS
@@ -84,4 +88,8 @@ class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
 
 class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
     model = SubmissionExercise
+
+
+class ReviewExerciseDetailView(CourseContextMixin, DetailView):
+    model = ReviewExercise
 

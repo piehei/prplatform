@@ -7,7 +7,7 @@
 {% block content %}
   <h1>Create a new exercise</h1>
 
-  <form class="form-horizontal" method="post" action="{% url 'courses:update-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">
+  <form class="form-horizontal" method="post" action="{% url 'courses:update-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="control-group">

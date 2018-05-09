@@ -14,12 +14,12 @@
       <div class="list-group">
       {% for ex in object.submissionexercise_exercises.all %}
         <div class="list-group-item">
-          <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
+          <a href="{% url 'courses:exercises:submission-detail' object.base_course.url_slug object.url_slug ex.pk %}">
             {{ ex.name }}
           </a>
 
           {% if teacher %}
-          (<a href="{% url 'courses:update-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
+          (<a href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
             edit
           </a>)
           {% endif %}
@@ -43,12 +43,12 @@
       <div class="list-group">
       {% for ex in object.reviewexercise_exercises.all %}
         <div class="list-group-item">
-          <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
+          <a href="{% url 'courses:exercises:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
             {{ ex.name }}
           </a>
 
           {% if teacher %}
-          (<a href="{% url 'courses:update-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
+          (<a href="{% url 'courses:update-review-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
             edit
           </a>)
           {% endif %}
