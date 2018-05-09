@@ -13,14 +13,14 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
     model = SubmissionExercise
 
 
-class ExerciseCreateView(CourseContextMixin, TemplateView):
+class ExerciseCreateView(IsTeacherMixin, CourseContextMixin, TemplateView):
     """ TODO:
         This now lets the template to show the teacher multiple
         different exercise form types. Should they all have their
         different CreateViews or should they be included in the same
         view with some toggles?
     """
-    template_name = "exercises/create.html"
+    # template_name = "exercises/create.html"
 
     def get(self, *args, **kwargs):
         """ TODO: currently returns only generalForm """
@@ -44,19 +44,12 @@ class ExerciseCreateView(CourseContextMixin, TemplateView):
 
 class SubmissionExerciseCreateView(ExerciseCreateView):
     model = SubmissionExercise
+    template_name = "exercises/submissionexercise_create.html"
 
 
 class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = SubmissionExercise
-    fields = ['name', 'description', 'file_upload', 'upload_instructions']
-    widgets = {
-            'description': Textarea(attrs={'cols': 80, 'rows': 5}),
-            'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
-            }
-
-    # this enables the use of widgets in the form
-    def get_form_class(self):
-        return modelform_factory(self.model, fields=self.fields, widgets=self.widgets)
+    form_class = SubmissionExerciseForm
 
 
 class ExerciseListView(ListView):

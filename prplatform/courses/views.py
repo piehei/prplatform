@@ -36,7 +36,8 @@ class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
     raise_exception = True
 
     def test_func(self):
-        return self.get_object().base_course.is_teacher(self.request.user)
+        bc = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug'])
+        return bc.is_teacher(self.request.user)
 
 
 class CourseMixin:

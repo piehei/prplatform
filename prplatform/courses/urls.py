@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf.urls import include, url
 
 from . import views
-from prplatform.exercises.views import ExerciseCreateView, SubmissionExerciseUpdateView
+from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseUpdateView
 
 app_name = "courses"
 urlpatterns = [
@@ -12,6 +12,6 @@ urlpatterns = [
     path('<slug:base_url_slug>/<slug:url_slug>/exercises/', include('prplatform.exercises.urls', namespace="exercises")),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher', view=views.CourseTeacherView.as_view(), name="teacher"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/update', view=views.CourseUpdateView.as_view(), name="update"),
-    path('<slug:base_url_slug>/<slug:url_slug>/teacher/create', view=ExerciseCreateView.as_view(), name="create-exercise"),
+    path('<slug:base_url_slug>/<slug:url_slug>/teacher/create/submission', view=SubmissionExerciseCreateView.as_view(), name="create-submission-exercise"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/<int:pk>/update', view=SubmissionExerciseUpdateView.as_view(), name="update-exercise"),
 ]
