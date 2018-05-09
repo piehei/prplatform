@@ -1,5 +1,6 @@
 from django.views.generic import DetailView, CreateView, ListView, TemplateView, UpdateView
-from django.urls import reverse, resolve
+from django.views.generic.edit import DeleteView
+from django.urls import reverse, resolve, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.forms import Textarea
 from django.forms.models import modelform_factory
@@ -86,10 +87,38 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 # DETAIL VIEWS
 #
 
+
 class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
     model = SubmissionExercise
 
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     model = ReviewExercise
+
+###
+#
+# DELETE VIEWS
+#
+
+
+class SubmissionExerciseDeleteView(CourseContextMixin, DeleteView):
+    # TODO: check for submissions -> handle before deletion of the exercise
+    model = SubmissionExercise
+
+    def get_success_url(self):
+        return reverse_lazy('courses:detail', kwargs={
+            'base_url_slug': self.kwargs['base_url_slug'],
+            'url_slug': self.kwargs['url_slug']
+            })
+
+
+class ReviewExerciseDeleteView(CourseContextMixin, DeleteView):
+    # TODO: check for submissions -> handle before deletion of the exercise
+    model = ReviewExercise
+
+    def get_success_url(self):
+        return reverse_lazy('courses:detail', kwargs={
+            'base_url_slug': self.kwargs['base_url_slug'],
+            'url_slug': self.kwargs['url_slug']
+            })
 
