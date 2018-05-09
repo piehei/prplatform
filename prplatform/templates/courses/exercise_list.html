@@ -33,8 +33,15 @@
       <h5>Peer-review exercises<br>
         <small class="text-muted">where students peer-review {something}</small>
       </h5>
+        {% if teacher %}
+          <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
+            <button class="btn btn-sm btn-primary mb-3">
+              add new
+            </button>
+          </a>
+        {% endif %}
       <div class="list-group">
-      {% for ex in object.submissionexercise_exercises.all %}
+      {% for ex in object.reviewexercise_exercises.all %}
         <div class="list-group-item">
           <a href="{% url 'courses:exercises:detail' object.base_course.url_slug object.url_slug ex.pk %}">
             {{ ex.name }}

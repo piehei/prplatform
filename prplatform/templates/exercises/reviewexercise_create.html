@@ -1,0 +1,19 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Create new peer-review exercise{% endblock %}
+
+{% block content %}
+  <h1>Create a new peer-review exercise</h1>
+  <h5>In this exercise the student peer-reviews something.</h5>
+  <form class="form-horizontal" method="post" action="{% url 'courses:create-review-exercise' course.base_course.url_slug course.url_slug %}">
+    {% csrf_token %}
+    {{ generalForm|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Create</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

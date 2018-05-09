@@ -46,6 +46,9 @@ class SubmissionExercise(BaseExercise):
             'pk': self.pk
             })
 
+    def __str__(self):
+        return f"Submission exercise: {self.name}"
+
 
 class ReviewExercise(BaseExercise):
     """ This is an exercise that describes the peer-reviewing to be done.
@@ -57,4 +60,7 @@ class ReviewExercise(BaseExercise):
     """
 
     reviewable_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Submission exercise: {self.name}"
 

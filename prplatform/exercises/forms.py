@@ -1,6 +1,6 @@
 from django.forms import ModelForm, Textarea
 
-from .models import SubmissionExercise
+from .models import SubmissionExercise, ReviewExercise
 
 
 class SubmissionExerciseForm(ModelForm):
@@ -12,4 +12,11 @@ class SubmissionExerciseForm(ModelForm):
                 'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
                 }
 
+class ReviewExerciseForm(ModelForm):
+    class Meta:
+        model = ReviewExercise
+        fields = ['name', 'description', 'reviewable_exercise']
+        widgets = {
+                'description': Textarea(attrs={'cols': 80, 'rows': 5}),
+                }
 
