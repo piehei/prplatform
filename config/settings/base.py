@@ -72,8 +72,9 @@ LOCAL_APPS = [
     'prplatform.users.apps.UsersConfig',
     'prplatform.courses.apps.CoursesConfig',
     'prplatform.exercises.apps.ExercisesConfig',
-    # Your stuff: custom apps go here
+    'prplatform.submissions.apps.SubmissionsConfig',
 ]
+
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
