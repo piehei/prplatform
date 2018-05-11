@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
@@ -20,12 +21,18 @@
         {{ object.description | linebreaks }}
       </div>
 
+        <form action="/your-name/" method="post">
+            {% csrf_token %}
+            {{ form | crispy }}
+            <input type="submit" value="Submit" />
+        </form>
+
+        <!-- TODO: this hand-crafted form might need to be replaced
+                   with some future submission model form
       {% if object.file_upload %}
       <div class="col-md-12 mt-4">
 
 
-        <!-- TODO: this hand-crafted form might need to be replaced
-                   with some future submission model form -->
         <form>
           <div class="form-group mb-4">
             <label for="exampleFormControlFile1">
@@ -37,8 +44,12 @@
           <button type="button" class="btn btn-primary btn-sm">Submit</button>
         </form>
 
+
+
+
       </div>
       {% endif %}
+        -->
 
     </div>
   </div>

@@ -7,8 +7,9 @@ from django.forms.models import modelform_factory
 
 from .models import SubmissionExercise, ReviewExercise
 from .forms import SubmissionExerciseForm, ReviewExerciseForm
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
+from prplatform.submissions.forms import OriginalSubmissionForm
 
 ###
 #
@@ -89,7 +90,43 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
 
 class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
+
     model = SubmissionExercise
+
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+
+        show_text = self.object.text
+        show_file_upload = self.object.file_upload
+        context['form'] = OriginalSubmissionForm(show_text=show_text, show_file_upload=show_file_upload)
+
+        return self.render_to_response(context)
+
+
+
+
+
+
+    def post(self, *args, **kwargs):
+        """ TODO: error checking """
+
+        # submission or review exercise
+        if self.request.resolver_match.url_name == "create-submission-exercise":
+            form = SubmissionExerciseForm(self.request.POST)
+        else:
+            form = ReviewExerciseForm(self.request.POST)
+
+        course = self.get_context_data()['course']
+
+        if form.is_valid():
+            # this initializes a new SubmissionExercise or ReviewExercise object
+            # depending on the bound form
+            # --> after injecting the ForeignKey course it is safe to save
+            exer = form.save(commit=False)
+            exer.course = course
+            exer.save()
+            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
