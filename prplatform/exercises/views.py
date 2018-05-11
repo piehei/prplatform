@@ -104,20 +104,13 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         return self.render_to_response(context)
 
 
-
-
-
-
     def post(self, *args, **kwargs):
         """ TODO: error checking """
+        self.object = self.get_object()
 
-        # submission or review exercise
-        if self.request.resolver_match.url_name == "create-submission-exercise":
-            form = SubmissionExerciseForm(self.request.POST)
-        else:
-            form = ReviewExerciseForm(self.request.POST)
-
+        form = OriginalSubmissionForm(self.request.POST)
         course = self.get_context_data()['course']
+        user = self.request.user
 
         if form.is_valid():
             # this initializes a new SubmissionExercise or ReviewExercise object
@@ -125,8 +118,12 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
+            exer.submitter = user
             exer.save()
-            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
+            return HttpResponseRedirect(reverse('courses:detail', kwargs={
+                    'base_url_slug': self.kwargs['base_url_slug'],
+                    'url_slug': self.kwargs['url_slug']
+                    }))
 
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
