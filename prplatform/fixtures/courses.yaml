@@ -61,11 +61,19 @@
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
+- model: courses.enrollment
+  pk: 1
+  fields:
+    course: 1
+    student: ["student1@prp.fi"]
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+
 - model: exercises.submissionexercise
   pk: 1
   fields:
     course: 1
-    name: Task 1
+    name: T1, no file upload
     description: Say bla bla bla and add this and that
     file_upload: false
     created: 2018-01-01 00:00+02:00
@@ -75,7 +83,7 @@
   pk: 2
   fields:
     course: 1
-    name: Task 2
+    name: T2, with file upload
     description: Sum this and that
     file_upload: true
     upload_instructions: Upload the final pdf
