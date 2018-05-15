@@ -21,7 +21,9 @@
         {{ object.description | linebreaks }}
       </div>
 
-      <form action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}" method="post">
+      <form enctype="multipart/form-data"
+            action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}"
+            method="post">
             {% csrf_token %}
             {{ form | crispy }}
             <input type="submit" value="Submit" />

@@ -103,18 +103,20 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
 
         return self.render_to_response(context)
 
-
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         self.object = self.get_object()
+        context = self.get_context_data()
 
-        form = OriginalSubmissionForm(self.request.POST)
-        course = self.get_context_data()['course']
+        show_text = self.object.text
+        show_file_upload = self.object.file_upload
+        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, show_text=show_text,
+                                      show_file_upload=show_file_upload)
+        course = context['course']
         user = self.request.user
 
         if form.is_valid():
-            # this initializes a new SubmissionExercise or ReviewExercise object
-            # depending on the bound form
+            # this initializes a new OriginalSubmission object object
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
@@ -125,6 +127,8 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
                     'url_slug': self.kwargs['url_slug']
                     }))
 
+        context['form'] = form
+        return self.render_to_response(context)
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     model = ReviewExercise

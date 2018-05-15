@@ -17,7 +17,11 @@ class BaseSubmission(TimeStampedModel):
 
 
 class OriginalSubmission(BaseSubmission):
+    """
+        This describes a submission that is done to return something
+        original to the service. This is not peer-reviewing.
+        This is something that some other person will be peer-reviewing.
+    """
 
     text = models.TextField(max_length=5000, blank=True)
     file = models.FileField(upload_to="uploads/", blank=True)
-
