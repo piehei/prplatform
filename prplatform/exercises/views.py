@@ -120,6 +120,7 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
+            exer.exercise = self.object
             exer.submitter = user
             exer.save()
             return HttpResponseRedirect(reverse('courses:detail', kwargs={

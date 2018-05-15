@@ -6,8 +6,8 @@ from prplatform.users.models import User
 
 
 class BaseCourseManager(models.Manager):
-    def get_by_natural_key(self, code, school):
-        return self.get(code=code, school=school)
+    def get_by_natural_key(self, code):
+        return self.get(code=code)
 
 
 class BaseCourse(TimeStampedModel):
@@ -16,6 +16,9 @@ class BaseCourse(TimeStampedModel):
         The system will show implementations of this course which will be called
         Courses.
     """
+
+    objects = BaseCourseManager()
+
     name = models.CharField("Name of the course", max_length=100)
     code = models.CharField("Course code", max_length=50, unique=True)
     url_slug = models.CharField("Identifier that will be used in URL addressses", max_length=50, unique=True)
@@ -40,9 +43,17 @@ class BaseCourse(TimeStampedModel):
                 )
 
 
+class CourseManager(models.Manager):
+    def get_by_natural_key(self, base_course_code, code):
+        return self.get(base_course=BaseCourse.objects.get(code=base_course_code), code=code)
+
+
 class Course(TimeStampedModel):
     """ This is the actual user-facing course which describes an implementation.
     """
+
+    objects = CourseManager()
+
     base_course = models.ForeignKey(BaseCourse, on_delete=models.CASCADE, related_name="courses")
     year = models.IntegerField()
     code = models.CharField(max_length=20, blank=True)
@@ -50,6 +61,9 @@ class Course(TimeStampedModel):
     start_date = models.DateField()
     end_date = models.DateField()
     students = models.ManyToManyField(User, through='Enrollment')
+
+    class Meta:
+        unique_together = (('base_course', 'code'))
 
     def get_absolute_url(self):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,

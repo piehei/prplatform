@@ -52,7 +52,7 @@
 - model: courses.course
   pk: 1
   fields:
-    base_course: 1
+    base_course: [ "TIE-02100" ]
     year: 2018
     code: TIE-02100-1
     url_slug: F2018
@@ -64,7 +64,7 @@
 - model: courses.enrollment
   pk: 1
   fields:
-    course: 1
+    course: ["TIE-02100", "TIE-02100-1"]
     student: ["student1@prp.fi"]
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
@@ -72,20 +72,22 @@
 - model: exercises.submissionexercise
   pk: 1
   fields:
-    course: 1
+    course: ["TIE-02100", "TIE-02100-1"]
     name: T1, no file upload
     description: Say bla bla bla and add this and that
     file_upload: false
+    text: true
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
 - model: exercises.submissionexercise
   pk: 2
   fields:
-    course: 1
+    course: ["TIE-02100", "TIE-02100-1"]
     name: T2, with file upload
     description: Sum this and that
     file_upload: true
+    text: false
     upload_instructions: Upload the final pdf
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
