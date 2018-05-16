@@ -22,6 +22,9 @@
           (<a href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
             edit
           </a>)
+          (<a href="{% url 'courses:exercises:submissions:submission-list' object.base_course.url_slug object.url_slug ex.pk %}">
+            submissions
+          </a>)
           {% endif %}
         </div>
       {% endfor %}
