@@ -4,14 +4,14 @@ from django.db import models
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
 from prplatform.courses.models import Course
-from prplatform.exercises.models import SubmissionExercise
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise, Question
 
 
 class BaseSubmission(TimeStampedModel):
 
-    course = models.ForeignKey(Course, related_name="submissions", on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name="%(class)s_submissions", on_delete=models.CASCADE)
     # TODO: Group submission?
-    submitter = models.ForeignKey(User, related_name="submissions", on_delete=models.CASCADE)
+    submitter = models.ForeignKey(User, related_name="%(class)s_submitters", on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -30,3 +30,18 @@ class OriginalSubmission(BaseSubmission):
 
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+
+
+class ReviewSubmission(BaseSubmission):
+
+    exercise = models.ForeignKey(ReviewExercise, related_name="submissions", on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+
+
+class Answer(models.Model):
+
+    submission = models.ForeignKey(ReviewSubmission, related_name="answers", on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
+    value = models.CharField(max_length=1000)
