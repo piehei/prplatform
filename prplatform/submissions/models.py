@@ -27,3 +27,6 @@ class OriginalSubmission(BaseSubmission):
     exercise = models.ForeignKey(SubmissionExercise, related_name="submissions", on_delete=models.CASCADE)
     text = models.TextField(max_length=5000, blank=True)
     file = models.FileField(upload_to="uploads/", blank=True)
+
+    def __str__(self):
+        return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
