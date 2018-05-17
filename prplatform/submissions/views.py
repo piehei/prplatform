@@ -27,5 +27,4 @@ class SubmissionDetailView(IsTeacherMixin, DetailView):
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
-        print(context)
         return self.render_to_response(context)

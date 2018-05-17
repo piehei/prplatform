@@ -6,7 +6,7 @@ from django.forms import Textarea
 from django.forms.models import modelform_factory
 
 from .models import SubmissionExercise, ReviewExercise
-from .forms import SubmissionExerciseForm, ReviewExerciseForm
+from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm
@@ -39,13 +39,22 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
 
 class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     template_name = "exercises/reviewexercise_create.html"
-    form_class = ReviewExerciseForm
+    form_class = QuestionFormSet
+
+    def get(self, *args, **kwargs):
+        self.object = None
+        context = self.get_context_data(**kwargs)
+        context['form'] = ReviewExerciseForm()
+        context['formset'] = QuestionFormSet()
+
+        return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
-        form = ReviewExerciseForm(self.request.POST)
         self.object = None
         course = self.get_context_data()['course']
+
+        form = ReviewExerciseForm(self.request.POST)
 
         if form.is_valid():
             # this initializes a new ReviewExercise object
@@ -53,6 +62,12 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
             exer = form.save(commit=False)
             exer.course = course
             exer.save()
+
+            formset = QuestionFormSet(self.request.POST, instance=exer)
+            if formset.is_valid():
+                formset.save()
+                print("valid")
+
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
 ###
