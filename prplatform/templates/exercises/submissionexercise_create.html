@@ -10,7 +10,7 @@
   <h6>This is <b>not</b> peer-reviewing. This returned thing itself will be peer-reviewed.</h6>
   <form class="form-horizontal" method="post" action="{% url 'courses:create-submission-exercise' course.base_course.url_slug course.url_slug %}">
     {% csrf_token %}
-    {{ generalForm|crispy }}
+    {{ form | crispy }}
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn">Create</button>

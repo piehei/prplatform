@@ -16,42 +16,20 @@ from prplatform.submissions.forms import OriginalSubmissionForm
 # CREATE VIEWS
 #
 
-class ExerciseCreateView(IsTeacherMixin, CourseContextMixin, TemplateView):
-    """ TODO:
-        This now lets the template to show the teacher multiple
-        different exercise form types. Should they all have their
-        different CreateViews or should they be included in the same
-        view with some toggles?
-    """
-    # template_name = "exercises/create.html"
 
-    def get(self, *args, **kwargs):
-        """ TODO: currently returns only generalForm """
-
-        context = self.get_context_data(**kwargs)
-
-        # submission or review exercise
-        if self.request.resolver_match.url_name == "create-submission-exercise":
-            context['generalForm'] = SubmissionExerciseForm()
-        else:
-            context['generalForm'] = ReviewExerciseForm()
-
-        return self.render_to_response(context)
+class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
+    model = SubmissionExercise
+    template_name = "exercises/submissionexercise_create.html"
+    form_class = SubmissionExerciseForm
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
-
-        # submission or review exercise
-        if self.request.resolver_match.url_name == "create-submission-exercise":
-            form = SubmissionExerciseForm(self.request.POST)
-        else:
-            form = ReviewExerciseForm(self.request.POST)
-
+        form = SubmissionExerciseForm(self.request.POST)
+        self.object = None # TODO: WTF ?????????????????????????????????????????????
         course = self.get_context_data()['course']
 
         if form.is_valid():
-            # this initializes a new SubmissionExercise or ReviewExercise object
-            # depending on the bound form
+            # this initializes a new SubmissionExercise object
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
@@ -59,20 +37,29 @@ class ExerciseCreateView(IsTeacherMixin, CourseContextMixin, TemplateView):
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
 
-class SubmissionExerciseCreateView(ExerciseCreateView):
-    model = SubmissionExercise
-    template_name = "exercises/submissionexercise_create.html"
-
-
-class ReviewExerciseCreateView(ExerciseCreateView):
-    model = ReviewExercise
+class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     template_name = "exercises/reviewexercise_create.html"
+    form_class = ReviewExerciseForm
 
+    def post(self, *args, **kwargs):
+        """ TODO: error checking """
+        form = ReviewExerciseForm(self.request.POST)
+        self.object = None
+        course = self.get_context_data()['course']
+
+        if form.is_valid():
+            # this initializes a new ReviewExercise object
+            # --> after injecting the ForeignKey course it is safe to save
+            exer = form.save(commit=False)
+            exer.course = course
+            exer.save()
+            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
 ###
 #
 # UPDATE VIEWS
 #
+
 
 class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = SubmissionExercise
