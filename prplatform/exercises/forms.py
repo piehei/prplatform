@@ -1,6 +1,6 @@
-from django.forms import ModelForm, Textarea
+from django.forms import ModelForm, Textarea, inlineformset_factory
 
-from .models import SubmissionExercise, ReviewExercise
+from .models import SubmissionExercise, ReviewExercise, Question
 
 
 class SubmissionExerciseForm(ModelForm):
@@ -12,6 +12,7 @@ class SubmissionExerciseForm(ModelForm):
                 'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
                 }
 
+
 class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
@@ -20,3 +21,11 @@ class ReviewExerciseForm(ModelForm):
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 }
 
+
+class QuestionForm(ModelForm):
+    class Meta:
+        model = Question
+        fields = ['text']
+
+
+QuestionFormSet = inlineformset_factory(ReviewExercise, Question, fields=('text',), can_delete=True)
