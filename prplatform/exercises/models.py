@@ -73,3 +73,7 @@ class ReviewExercise(BaseExercise):
     def __str__(self):
         return f"Submission exercise: {self.name}"
 
+
+class Question(models.Model):
+    exercise = models.ForeignKey(ReviewExercise, related_name="questions", on_delete=models.CASCADE)
+    text = models.CharField(max_length=200)
