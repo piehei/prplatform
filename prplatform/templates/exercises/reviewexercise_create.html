@@ -12,10 +12,23 @@
     {% csrf_token %}
     {{ form | crispy }}
     {{ formset | crispy }}
+
     <div class="control-group">
+      <div class="controls">
+        <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
+      </div>
+    </div>
+
+    <div class="control-group mt-4">
       <div class="controls">
         <button type="submit" class="btn">Create</button>
       </div>
     </div>
   </form>
+
+  {% load static %}
+  {% block extra_js %}
+    <script src="{% static 'js/reviewexercise.js' %}"></script>
+  {% endblock extra_js %}
+
 {% endblock %}

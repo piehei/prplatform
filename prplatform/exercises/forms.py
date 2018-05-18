@@ -28,4 +28,6 @@ class QuestionForm(ModelForm):
         fields = ['text']
 
 
-QuestionFormSet = inlineformset_factory(ReviewExercise, Question, fields=('text',), can_delete=True)
+QuestionFormSet = inlineformset_factory(ReviewExercise, Question,
+                                        fields=('text',), can_delete=True,
+                                        max_num=10, extra=10)
