@@ -1,9 +1,7 @@
-from django.views.generic import DetailView, CreateView, ListView, TemplateView, UpdateView
+from django.views.generic import DetailView, CreateView, ListView, UpdateView
 from django.views.generic.edit import DeleteView
-from django.urls import reverse, resolve, reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
-from django.forms import Textarea
-from django.forms.models import modelform_factory
 
 from .models import SubmissionExercise, ReviewExercise
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionFormSet
@@ -11,11 +9,11 @@ from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionFormSet
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm
 
+
 ###
 #
 # CREATE VIEWS
 #
-
 
 class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = SubmissionExercise
@@ -25,7 +23,7 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         form = SubmissionExerciseForm(self.request.POST)
-        self.object = None # TODO: WTF ?????????????????????????????????????????????
+        self.object = None  # TODO: WTF ?????????????????????????????????????????????
         course = self.get_context_data()['course']
 
         if form.is_valid():
@@ -85,11 +83,32 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        context['form'] = ReviewExerciseForm(instance=self.object)
+        context['formset'] = QuestionFormSet(instance=self.object)
+        return self.render_to_response(context)
+
+    def post(self, *args, **kwargs):
+        """ TODO: error checking """
+        self.object = self.get_object()
+
+        question_form = self.get_form()  # returns the bound form instance with updated fields
+        if question_form.is_valid():
+            question = question_form.save()
+            formset = QuestionFormSet(self.request.POST, instance=question)
+
+            if formset.is_valid():
+                formset.save()
+
+            return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
+
+
 ###
 #
 # DETAIL VIEWS
 #
-
 
 class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
 
@@ -132,6 +151,7 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
 
         context['form'] = form
         return self.render_to_response(context)
+
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     model = ReviewExercise
