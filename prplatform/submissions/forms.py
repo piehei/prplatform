@@ -1,5 +1,5 @@
-from django.forms import ModelForm
-from .models import OriginalSubmission
+from django.forms import ModelForm, modelform_factory, Textarea
+from .models import OriginalSubmission, Answer
 
 
 class OriginalSubmissionForm(ModelForm):
@@ -27,4 +27,21 @@ class OriginalSubmissionForm(ModelForm):
             # self.fields['text'].widget = HiddenInput()
             del self.fields['file']
             self.fields['text'].required = True
+
+
+class AnswerForm(ModelForm):
+
+    class Meta:
+        model = Answer
+        fields = ['value']
+        widgets = {
+            'value': Textarea(attrs={'cols': 80, 'rows': 5}),
+        }
+
+
+    def __init__(self, *args, **kwargs):
+        question_text = kwargs.pop('question_text')
+        super(AnswerForm, self).__init__(*args, **kwargs)
+        self.fields['value'].label = question_text
+
 
