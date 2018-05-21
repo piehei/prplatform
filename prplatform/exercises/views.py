@@ -3,8 +3,8 @@ from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 
-from .models import SubmissionExercise, ReviewExercise
-from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionFormSet
+from .models import SubmissionExercise, ReviewExercise, Question
+from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm
@@ -37,13 +37,14 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
 
 class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     template_name = "exercises/reviewexercise_create.html"
-    form_class = QuestionFormSet
+    form_class = ReviewExerciseForm
 
     def get(self, *args, **kwargs):
         self.object = None
         context = self.get_context_data(**kwargs)
         context['form'] = ReviewExerciseForm()
-        context['formset'] = QuestionFormSet()
+        qs = QuestionModelFormSet(queryset=Question.objects.none())
+        context['formset'] = qs
 
         return self.render_to_response(context)
 
@@ -61,10 +62,13 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
             exer.course = course
             exer.save()
 
-            formset = QuestionFormSet(self.request.POST, instance=exer)
+            formset = QuestionModelFormSet(self.request.POST)
             if formset.is_valid():
+                for q in formset.ordered_forms:
+                    q.instance.order = q.cleaned_data['ORDER']
+                    q.instance.exercise = exer
+
                 formset.save()
-                print("valid")
 
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
@@ -87,20 +91,37 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         context['form'] = ReviewExerciseForm(instance=self.object)
-        context['formset'] = QuestionFormSet(instance=self.object)
+        qs = QuestionModelFormSet(queryset=Question.objects.filter(exercise=self.object).order_by('order'))
+        context['formset'] = qs
         return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         self.object = self.get_object()
 
-        question_form = self.get_form()  # returns the bound form instance with updated fields
-        if question_form.is_valid():
-            question = question_form.save()
-            formset = QuestionFormSet(self.request.POST, instance=question)
+        r_exercise_form = self.get_form()  # returns the bound form instance with updated fields
 
-            if formset.is_valid():
-                formset.save()
+        if r_exercise_form.is_valid():
+            r_exercise = r_exercise_form.save()
+            question_formset = QuestionModelFormSet(self.request.POST)
+
+            #TODO:
+            # järjestyksen näyttäminen onnistuu nyt
+            # mutta tallennuksessa ei ole validointia
+            # overridaa valid, jotta virhe voidaan näyttää
+            # lue ero modelformset ja inline_formset jne.
+
+            if question_formset.is_valid():
+                # update the order values of the question objects
+                # and make sure they reference the correct exercise object
+                for q_form in question_formset.ordered_forms:
+                    q_form.instance.exercise = r_exercise
+                    q_form.instance.order = q_form.cleaned_data['ORDER']
+
+                # this saves the Question model objects created and/or modified by
+                # the POSTed formset
+                # this takes care of deletion and not saving empty Question forms
+                question_formset.save()
 
             return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 

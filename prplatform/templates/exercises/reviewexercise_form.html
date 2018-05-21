@@ -11,11 +11,13 @@
     {% csrf_token %}
     {{ form | crispy }}
     {{ formset | crispy }}
+
     <div class="control-group">
       <div class="controls">
         <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
       </div>
     </div>
+
     <div class="control-group mt-4">
       <div class="controls">
         <a class="btn btn-danger mr-4"
@@ -24,6 +26,7 @@
         <a class="btn btn-danger float-right" href="{% url 'courses:delete-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">Delete</a>
       </div>
     </div>
+
   </form>
 
 

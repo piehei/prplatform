@@ -7,11 +7,11 @@
 
 window.onload = function() {
 
-  var TOTAL_FORMS = parseInt($('#id_questions-TOTAL_FORMS').val());
-  //console.log(TOTAL_FORMS);
+  var TOTAL_FORMS = parseInt($('#id_form-TOTAL_FORMS').val());
+  console.log("TOTAL_FORMS: ", TOTAL_FORMS);
 
-  var INITIAL_FORMS = parseInt($('#id_questions-INITIAL_FORMS').val());
-  //console.log(INITIAL_FORMS);
+  var INITIAL_FORMS = parseInt($('#id_form-INITIAL_FORMS').val());
+  console.log("INITIAL_FORMS: ", INITIAL_FORMS);
 
   // these are all the questions in the formset
   // there will be a total of 10 extra empty questions that might be taken into use

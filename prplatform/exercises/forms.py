@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea, inlineformset_factory
+from django.forms import ModelForm, Textarea, inlineformset_factory, modelformset_factory
 
 from .models import SubmissionExercise, ReviewExercise, Question
 
@@ -28,6 +28,15 @@ class QuestionForm(ModelForm):
         fields = ['text']
 
 
+QuestionModelFormSet = modelformset_factory(Question,
+                                            fields=('text',),
+                                            can_delete=True,
+                                            can_order=True,
+                                            max_num=10,
+                                            extra=10)
+
 QuestionFormSet = inlineformset_factory(ReviewExercise, Question,
-                                        fields=('text',), can_delete=True,
+                                        fields=('text',),
+                                        can_delete=True,
+                                        can_order=True,
                                         max_num=10, extra=10)

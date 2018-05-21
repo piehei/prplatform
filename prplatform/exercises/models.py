@@ -77,3 +77,7 @@ class ReviewExercise(BaseExercise):
 class Question(models.Model):
     exercise = models.ForeignKey(ReviewExercise, related_name="questions", on_delete=models.CASCADE)
     text = models.CharField(max_length=200)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order']
