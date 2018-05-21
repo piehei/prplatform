@@ -120,3 +120,13 @@ body {
 
 .border-top { border-top: 1px solid #e5e5e5; }
 .border-bottom { border-bottom: 1px solid #e5e5e5; }
+
+
+/*
+ * teacher course index
+ */
+
+.btn-sm-pad {
+  padding-top: 0.05rem;
+  padding-bottom: 0.05rem;
+}

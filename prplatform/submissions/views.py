@@ -1,6 +1,6 @@
 from django.views.generic import DetailView, ListView
 
-from .models import OriginalSubmission
+from .models import OriginalSubmission, ReviewSubmission
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 
@@ -10,19 +10,40 @@ from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 #
 
 
-class SubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
+class OriginalSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
     model = OriginalSubmission
 
     def get(self, *args, **kwargs):
         self.object_list = OriginalSubmission.objects.filter(exercise=kwargs['pk'])
-        context = super(SubmissionListView, self).get_context_data(**kwargs)
-        # context = self.get_context_data(**kwargs)
-        print(context)
+        context = super(OriginalSubmissionListView, self).get_context_data(**kwargs)
         return self.render_to_response(context)
 
 
-class SubmissionDetailView(IsTeacherMixin, DetailView):
+class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
+    model = ReviewSubmission
+
+    def get(self, *args, **kwargs):
+        self.object_list = ReviewSubmission.objects.filter(exercise=kwargs['pk'])
+        context = super(ReviewSubmissionListView, self).get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+
+###
+#
+# DETAIL VIEWS
+#
+
+class OriginalSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = OriginalSubmission
+
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+        return self.render_to_response(context)
+
+
+class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
+    model = ReviewSubmission
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()

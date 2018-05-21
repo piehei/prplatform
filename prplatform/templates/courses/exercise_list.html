@@ -14,7 +14,7 @@
       <div class="list-group">
       {% for ex in object.submissionexercise_exercises.all %}
         <div class="list-group-item">
-          <a href="{% url 'courses:exercises:submission-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+          <a href="{% url 'courses:submissions:original-detail' object.base_course.url_slug object.url_slug ex.pk %}">
             {{ ex.name }}
           </a>
 
@@ -22,7 +22,7 @@
           (<a href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
             edit
           </a>)
-          (<a href="{% url 'courses:exercises:submissions:submission-list' object.base_course.url_slug object.url_slug ex.pk %}">
+          (<a href="{% url 'courses:submissions:original-list' object.base_course.url_slug object.url_slug ex.pk %}">
             submissions
           </a>)
           {% endif %}
@@ -46,15 +46,25 @@
       <div class="list-group">
       {% for ex in object.reviewexercise_exercises.all %}
         <div class="list-group-item">
-          <a href="{% url 'courses:exercises:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
-            {{ ex.name }}
-          </a>
-
-          {% if teacher %}
-          (<a href="{% url 'courses:update-review-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
-            edit
-          </a>)
-          {% endif %}
+          <div class="row">
+            <div class="col-sm-8">
+              <a href="{% url 'courses:submissions:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+                {{ ex.name }}
+              </a>
+            </div>
+            {% if teacher %}
+            <div class="col-sm-3">
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{% url 'courses:update-review-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
+                edit
+              </a>
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{% url 'courses:submissions:review-list' object.base_course.url_slug object.url_slug ex.pk %}">
+                submissions
+              </a>
+            </div>
+            {% endif %}
+          </div>
         </div>
       {% endfor %}
       </div>

@@ -10,6 +10,7 @@ urlpatterns = [
     path('<slug:base_url_slug>/<slug:url_slug>/', view=views.CourseDetailView.as_view(), name="detail"),
     path('<slug:base_url_slug>/<slug:url_slug>/enroll', view=views.CourseEnroll.as_view(), name="enroll"),
     path('<slug:base_url_slug>/<slug:url_slug>/exercises/', include('prplatform.exercises.urls', namespace="exercises")),
+    path('<slug:base_url_slug>/<slug:url_slug>/submissions/', include('prplatform.submissions.urls', namespace="submissions")),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher', view=views.CourseTeacherView.as_view(), name="teacher"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/update', view=views.CourseUpdateView.as_view(), name="update"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/create/submission', view=SubmissionExerciseCreateView.as_view(), name="create-submission-exercise"),
