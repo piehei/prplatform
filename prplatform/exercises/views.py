@@ -2,12 +2,17 @@ from django.views.generic import DetailView, CreateView, ListView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
+from django.forms import formset_factory
+
+import re
 
 from .models import SubmissionExercise, ReviewExercise, Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
+from prplatform.submissions.models import ReviewSubmission, Answer
+
 
 
 ###
@@ -176,6 +181,7 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     model = ReviewExercise
+    PREFIX = "question-index-"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
@@ -186,15 +192,37 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         exercise = self.get_object()
         questions = exercise.questions.all()
 
-        for q in questions:
-            forms.append(AnswerForm(question_text=q.text))
+        for index, q in enumerate(questions):
+            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
 
         context['forms'] = forms
 
         return self.render_to_response(context)
 
+    def post(self, *args, **kwargs):
+        # TODO: error checking, validation(?)
+        self.object = self.get_object()
+        course = self.get_context_data(**kwargs)['course']
+        exercise = self.object
 
+        submission = ReviewSubmission(course=course,
+                                      submitter=self.request.user,
+                                      exercise=exercise)
+        submission.save()
 
+        questions = exercise.questions.all()
+
+        for key in self.request.POST:
+            print(key)
+            if self.PREFIX not in key:
+                continue
+            indx = int(re.match(r".*(\d).*", key).groups()[0])
+            q_now = questions[indx]
+            a = Answer(submission=submission,
+                       question=q_now,
+                       value=self.request.POST[key])
+            a.save()
+        return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 
 ###
 #

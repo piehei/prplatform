@@ -29,7 +29,7 @@
 
 
       <form class="form-horizontal" method="post"
-            action="{% url 'courses:update-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">
+            action="{% url 'courses:exercises:review-detail' course.base_course.url_slug course.url_slug object.pk %}">
 
         {% csrf_token %}
 
