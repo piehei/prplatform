@@ -1,5 +1,6 @@
 
 {% extends "base.html" %}
+{% load crispy_forms_tags %}
 {% load static %}
 
 {% block content %}
@@ -15,30 +16,35 @@
         {% endif %}
       </h2>
 
-
       <div class="col-md-12">
+        Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
+      </div>
+
+      <div class="col-md-12 mt-4">
+        <h5>Description</h5>
         {{ object.description | linebreaks }}
       </div>
 
-      {% if object.file_upload %}
-        <div class="col-md-12 mt-4">
 
 
-          <!-- TODO: this hand-crafted form might need to be replaced
-                     with some future submission model form -->
-          <form>
-            <div class="form-group mb-4">
-              <label for="exampleFormControlFile1">
-                {{ object.upload_instructions }}
-              </label>
-              <input type="file" class="form-control-file" id="exampleFormControlFile1">
-            </div>
 
-            <button type="button" class="btn btn-primary btn-sm">Submit</button>
-          </form>
+      <form class="form-horizontal" method="post"
+            action="{% url 'courses:update-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">
 
+        {% csrf_token %}
+
+        {% for form in forms %}
+        <h6>Question #{{ forloop.counter }}</h6>
+          {{ form|crispy }}
+        {% endfor %}
+
+        <div class="control-group">
+          <div class="controls">
+            <button type="submit" class="btn btn-success">Save answer</button>
+          </div>
         </div>
-      {% endif %}
+      </form>
+
 
     </div>
   </div>

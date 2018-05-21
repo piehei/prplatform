@@ -7,7 +7,7 @@ from .models import SubmissionExercise, ReviewExercise, Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
-from prplatform.submissions.forms import OriginalSubmissionForm
+from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
 
 
 ###
@@ -176,6 +176,25 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
 
 class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     model = ReviewExercise
+
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+
+        forms = []
+
+        exercise = self.get_object()
+        questions = exercise.questions.all()
+
+        for q in questions:
+            forms.append(AnswerForm(question_text=q.text))
+
+        context['forms'] = forms
+
+        return self.render_to_response(context)
+
+
+
 
 ###
 #
