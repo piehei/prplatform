@@ -7,10 +7,13 @@
 
 window.onload = function() {
 
-  var TOTAL_FORMS = parseInt($('#id_form-TOTAL_FORMS').val());
+
+  var PREFIX = "#id_form";
+
+  var TOTAL_FORMS = parseInt($(PREFIX + '-TOTAL_FORMS').val());
   console.log("TOTAL_FORMS: ", TOTAL_FORMS);
 
-  var INITIAL_FORMS = parseInt($('#id_form-INITIAL_FORMS').val());
+  var INITIAL_FORMS = parseInt($(PREFIX + '-INITIAL_FORMS').val());
   console.log("INITIAL_FORMS: ", INITIAL_FORMS);
 
   // these are all the questions in the formset
@@ -34,6 +37,7 @@ window.onload = function() {
     for (var i = 0; i < multiFields.length; i += 1) {
       if (multiFields[i].style.display === "none") {
         multiFields[i].style.display = "";
+        document.querySelector(PREFIX + '-' + i + '-ORDER').value = i + 1;
         break;
       }
     }
