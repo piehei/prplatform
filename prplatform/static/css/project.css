@@ -135,3 +135,12 @@ body {
   padding-top: 0.05rem;
   padding-bottom: 0.05rem;
 }
+
+/*
+ * showing user uploaded stuff to others
+ */
+
+.codebox {
+  background: #f3f3f3;
+  padding: 0.5rem;
+}

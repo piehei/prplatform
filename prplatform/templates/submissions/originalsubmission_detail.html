@@ -1,0 +1,43 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+
+  <div class="row">
+    <div class="col-sm-12">
+      <h4>Original submission to exercise {{ object.exercise.name }}</h4>
+      <p>Submitter: {{ object.submitter }}</p>
+      <p>Submission time: {{ object.created }}</p>
+
+      <p>Submission text:</p>
+      <div class="col-sm-6 ml-4 mb-4">
+
+        {% if object.text %}
+          {{ object.text | linebreaks }}
+        {% else %}
+          No text submitted.
+        {% endif %}
+
+      </div>
+
+      <p>Submitted file:</p>
+      <div class="col-sm-6 ml-4">
+
+        {% if object.file %}
+          <b>{{ object.file }}</b>
+          <br>
+
+          <pre class="codebox">{{ filecontents }}</pre>
+        {% else %}
+          No file submitted.
+        {% endif %}
+
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock content %}
+

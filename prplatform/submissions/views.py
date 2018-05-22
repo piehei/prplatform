@@ -35,10 +35,16 @@ class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
 
 class OriginalSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = OriginalSubmission
+    pk_url_kwarg = "sub_pk"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
+
+        if self.object.file:
+            lines = self.object.file.read().decode("utf-8")
+            context['filecontents'] = lines
+
         return self.render_to_response(context)
 
 

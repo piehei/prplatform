@@ -9,7 +9,7 @@
   {% if originalsubmission_list %}
     <div class="list-group">
       {% for origsub in originalsubmission_list %}
-      <a href="{% url 'courses:exercises:submissions:submission-detail' course.base_course.url_slug course.url_slug pk origsub.pk %}" class="list-group-item">
+      <a href="{% url 'courses:submissions:original-detail' course.base_course.url_slug course.url_slug pk origsub.pk %}" class="list-group-item">
          {{ origsub }}
         </a>
       {% endfor %}
