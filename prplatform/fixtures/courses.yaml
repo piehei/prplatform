@@ -15,8 +15,8 @@
   fields:
     email: teacher1@prp.fi
     username: teacher1
-    # password is: teacher11234
-    password: "argon2$argon2i$v=19$m=512,t=2,p=2$RURsUnVZZGdnNWN4$3UifTA+uuQxRlC4gXvf/8g"
+    # password is: teacher
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$S2UwYzZvVG1iNFZ4$MYTZWFzhwhqAxsnaZ8Gabw"
     is_active: True
 
 - model: users.user
@@ -24,8 +24,26 @@
   fields:
     email: student1@prp.fi
     username: student1
-    # password is: student11234
-    password: "argon2$argon2i$v=19$m=512,t=2,p=2$UWZHcnR5Y2tvMHda$iZwd71srG7bm5A1QFP/QTg"
+    # password is: student
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$ZDZXaXVHeE10bmg2$X5G9KGpbQS+Fws8vpALz1A"
+    is_active: True
+
+- model: users.user
+  pk: 4
+  fields:
+    email: student2@prp.fi
+    username: student2
+    # password is: student
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$ZDZXaXVHeE10bmg2$X5G9KGpbQS+Fws8vpALz1A"
+    is_active: True
+
+- model: users.user
+  pk: 5
+  fields:
+    email: student3@prp.fi
+    username: student3
+    # password is: student
+    password: "argon2$argon2i$v=19$m=512,t=2,p=2$ZDZXaXVHeE10bmg2$X5G9KGpbQS+Fws8vpALz1A"
     is_active: True
 
 - model: courses.basecourse
@@ -69,6 +87,22 @@
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
+- model: courses.enrollment
+  pk: 2
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    student: ["student2@prp.fi"]
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+
+- model: courses.enrollment
+  pk: 3
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    student: ["student3@prp.fi"]
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+
 - model: exercises.submissionexercise
   pk: 1
   fields:
@@ -88,7 +122,7 @@
     description: Sum this and that
     file_upload: true
     text: false
-    upload_instructions: Upload the final pdf
+    upload_instructions: Upload the final Python code into the system
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
