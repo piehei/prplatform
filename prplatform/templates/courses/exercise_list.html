@@ -11,21 +11,27 @@
             </button>
           </a>
         {% endif %}
-      <div class="list-group">
+      <div class="list-group ex-list">
       {% for ex in object.submissionexercise_exercises.all %}
-        <div class="list-group-item">
-          <a href="{% url 'courses:submissions:original-detail' object.base_course.url_slug object.url_slug ex.pk %}">
-            {{ ex.name }}
-          </a>
+        <div class="list-group-item d-flex justify-content-between">
+            <div class="p-2">
+              <a href="{% url 'courses:submissions:original-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+                {{ ex.name }}
+              </a>
+            </div>
 
-          {% if teacher %}
-          (<a href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
-            edit
-          </a>)
-          (<a href="{% url 'courses:submissions:original-list' object.base_course.url_slug object.url_slug ex.pk %}">
-            submissions
-          </a>)
-          {% endif %}
+            {% if teacher %}
+            <div class="p-2">
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
+                edit
+              </a>
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{% url 'courses:submissions:original-list' object.base_course.url_slug object.url_slug ex.pk %}">
+                submissions
+              </a>
+            </div>
+            {% endif %}
         </div>
       {% endfor %}
       </div>
@@ -43,17 +49,16 @@
             </button>
           </a>
         {% endif %}
-      <div class="list-group">
+      <div class="list-group ex-list">
       {% for ex in object.reviewexercise_exercises.all %}
-        <div class="list-group-item">
-          <div class="row">
-            <div class="col-sm-8">
+        <div class="list-group-item d-flex justify-content-between">
+            <div class="p-2">
               <a href="{% url 'courses:submissions:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
                 {{ ex.name }}
               </a>
             </div>
             {% if teacher %}
-            <div class="col-sm-3">
+            <div class="p-2">
               <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
                  href="{% url 'courses:update-review-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
                 edit
@@ -65,7 +70,6 @@
             </div>
             {% endif %}
           </div>
-        </div>
       {% endfor %}
       </div>
     </div>

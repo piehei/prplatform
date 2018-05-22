@@ -83,6 +83,7 @@ body {
 
 [role="main"] {
   padding-top: 48px; /* Space for fixed navbar */
+  padding-bottom: 48px;
 }
 
 /*
@@ -125,6 +126,10 @@ body {
 /*
  * teacher course index
  */
+
+.ex-list .p-2 {
+  padding: 0 .5rem !important;
+}
 
 .btn-sm-pad {
   padding-top: 0.05rem;
