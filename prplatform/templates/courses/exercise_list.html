@@ -15,7 +15,7 @@
       {% for ex in object.submissionexercise_exercises.all %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
-              <a href="{% url 'courses:submissions:original-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+              <a href="{% url 'courses:exercises:submission-detail' object.base_course.url_slug object.url_slug ex.pk %}">
                 {{ ex.name }}
               </a>
             </div>
@@ -53,7 +53,7 @@
       {% for ex in object.reviewexercise_exercises.all %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
-              <a href="{% url 'courses:submissions:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+              <a href="{% url 'courses:exercises:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
                 {{ ex.name }}
               </a>
             </div>
