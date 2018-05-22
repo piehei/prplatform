@@ -17,6 +17,11 @@ class BaseSubmission(TimeStampedModel):
         abstract = True
 
 
+def upload_fp(instance, filename):
+    """ This will be the filename of the uploaded file """
+    return f"uploads/course_{instance.course.pk}/ex_{instance.exercise.pk}/sub_{instance.pk}/{filename}"
+
+
 class OriginalSubmission(BaseSubmission):
     """
         This describes a submission that is done to return something
@@ -26,10 +31,24 @@ class OriginalSubmission(BaseSubmission):
 
     exercise = models.ForeignKey(SubmissionExercise, related_name="submissions", on_delete=models.CASCADE)
     text = models.TextField(max_length=5000, blank=True)
-    file = models.FileField(upload_to="uploads/", blank=True)
+    file = models.FileField(upload_to=upload_fp, blank=True)
 
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+
+    def save(self, *args, **kwargs):
+        """ Overrides the model's save method so that when a file is uploaded
+            its name may contain the object's PK. The PK would not be available
+            at the save time since the row wouldn't have been written to the DB
+            just yet.
+        """
+        if self.pk is None:
+            uploaded_file = self.file
+            self.file = None
+            super(OriginalSubmission, self).save(*args, **kwargs)
+            self.file = uploaded_file
+
+        super(OriginalSubmission, self).save(*args, **kwargs)
 
 
 class ReviewSubmission(BaseSubmission):
