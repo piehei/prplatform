@@ -11,7 +11,7 @@ from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
-from prplatform.submissions.models import ReviewSubmission, Answer
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
 
 
 
@@ -186,16 +186,38 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
-
-        forms = []
-
         exercise = self.get_object()
         questions = exercise.questions.all()
 
+        # this gathers all the teacher-chosen questions that
+        # the peer-reviewing student will answer
+        forms = []
         for index, q in enumerate(questions):
             forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
-
         context['forms'] = forms
+
+        # this decides what to show to the student;
+        # --> what is the thing that is going to get peer-reviewed
+
+        reviewable = None
+        if exercise.type == ReviewExercise.RANDOM:
+
+            """
+            TODO: this should somehow lock the submission
+                  so that the peer-reviwing student won't be able
+                  to refresh the page in order to retrieve different
+                  things to be reviewed
+            """
+
+            reviewable = OriginalSubmission.objects \
+                                           .exclude(submitter=self.request.user) \
+                                           .filter(exercise=exercise.reviewable_exercise) \
+                                           .first()
+            if reviewable.file:
+                context['filecontents'] = reviewable.file.read().decode('utf-8')
+
+
+        context['reviewable'] = reviewable
 
         return self.render_to_response(context)
 

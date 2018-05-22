@@ -20,6 +20,8 @@
         Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
       </div>
 
+      {% include "./reviewable.html" %}
+
       <div class="col-md-12 mt-4">
         <h5>Description</h5>
         {{ object.description | linebreaks }}

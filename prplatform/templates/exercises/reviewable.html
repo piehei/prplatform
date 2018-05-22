@@ -1,0 +1,33 @@
+
+
+{% block content %}
+
+<div style="background:lightyellow;"
+     class="col-md-10 m-4 p-4">
+
+  {% if not reviewable %}
+    Not a thing was found to be reviewed :-|
+  {% else %}
+
+    <b>{{ reviewable }}</b>
+
+    <br>
+
+    {% if reviewable.text %}
+
+      {{ reviewable.text }}
+
+    {% else %}
+
+      {{ reviewable.file }}
+
+      <pre class="codebox">{{ filecontents }}</pre>
+
+    {% endif %}
+
+  {% endif %}
+
+</div>
+
+
+{% endblock %}
