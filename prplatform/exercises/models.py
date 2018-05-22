@@ -62,6 +62,17 @@ class ReviewExercise(BaseExercise):
 
     reviewable_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
 
+    RANDOM = 'RANDOM'
+    REVIEW_EXERCISE_TYPE_CHOICES = (
+            (RANDOM, 'Random by other user'),
+        )
+
+    type = models.CharField(
+            max_length=10,
+            choices=REVIEW_EXERCISE_TYPE_CHOICES,
+            default=RANDOM
+            )
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={
@@ -71,7 +82,7 @@ class ReviewExercise(BaseExercise):
             })
 
     def __str__(self):
-        return f"Submission exercise: {self.name}"
+        return f"Review exercise: {self.name}"
 
 
 class Question(models.Model):
