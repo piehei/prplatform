@@ -5,13 +5,14 @@ from django.http import HttpResponseRedirect
 from django.forms import formset_factory
 
 import re
+import random
 
 from .models import SubmissionExercise, ReviewExercise, Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 
 
 
@@ -200,24 +201,34 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         # --> what is the thing that is going to get peer-reviewed
 
         reviewable = None
+
+        rlock = ReviewLock.objects.filter(review_exercise=exercise).first()
+        if rlock:
+            reviewable = rlock.original_submission
+
         if exercise.type == ReviewExercise.RANDOM:
 
             """
-            TODO: this should somehow lock the submission
-                  so that the peer-reviwing student won't be able
-                  to refresh the page in order to retrieve different
-                  things to be reviewed
+                TODO: pick original submission based on some other heuristics
+                      than just random value. something that has not received any
+                      reviews?
             """
 
-            reviewable = OriginalSubmission.objects \
-                                           .exclude(submitter=self.request.user) \
-                                           .filter(exercise=exercise.reviewable_exercise) \
-                                           .first()
+            if not reviewable:
+                reviewable_list = OriginalSubmission.objects \
+                                                    .exclude(submitter=self.request.user) \
+                                                    .filter(exercise=exercise.reviewable_exercise)
+
+                reviewable = reviewable_list[random.randint(0, len(reviewable_list) - 1)]
+
             if reviewable.file:
                 context['filecontents'] = reviewable.file.read().decode('utf-8')
 
-
         context['reviewable'] = reviewable
+
+        if not rlock:
+            rlock = ReviewLock(user=self.request.user, review_exercise=exercise, original_submission=reviewable)
+            rlock.save()
 
         return self.render_to_response(context)
 
