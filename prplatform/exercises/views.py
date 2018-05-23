@@ -3,6 +3,7 @@ from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
 from django.forms import formset_factory
+from django.db.models import Count
 
 import re
 import random
@@ -202,7 +203,7 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
 
         reviewable = None
 
-        rlock = ReviewLock.objects.filter(review_exercise=exercise).first()
+        rlock = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise).first()
         if rlock:
             reviewable = rlock.original_submission
 
@@ -215,11 +216,18 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
             """
 
             if not reviewable:
+
+                # this is a list of all original submissions available for peer-reviewing
+                # sorted in ascending order (from zero to n)
                 reviewable_list = OriginalSubmission.objects \
                                                     .exclude(submitter=self.request.user) \
-                                                    .filter(exercise=exercise.reviewable_exercise)
+                                                    .filter(exercise=exercise.reviewable_exercise) \
+                                                    .annotate(Count('reviews')) \
+                                                    .order_by('reviews__count')
 
-                reviewable = reviewable_list[random.randint(0, len(reviewable_list) - 1)]
+                # this most likely has no reviews yet
+                # -> should they also be ordered by submission time?
+                reviewable = reviewable_list[0] # CATCH ERRORS! WHAT IF NOTHIGN TO REVIEW?
 
             if reviewable.file:
                 context['filecontents'] = reviewable.file.read().decode('utf-8')
@@ -238,9 +246,13 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         course = self.get_context_data(**kwargs)['course']
         exercise = self.object
 
+        # TODO: should it be possible to update the previous review submission?
+        rlock = ReviewLock.objects.get(user=self.request.user, review_exercise=exercise)
         submission = ReviewSubmission(course=course,
                                       submitter=self.request.user,
-                                      exercise=exercise)
+                                      exercise=exercise,
+                                      reviewed_submission=rlock.original_submission
+                                      )
         submission.save()
 
         questions = exercise.questions.all()
