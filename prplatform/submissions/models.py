@@ -65,3 +65,10 @@ class Answer(models.Model):
     submission = models.ForeignKey(ReviewSubmission, related_name="answers", on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
     value = models.CharField(max_length=1000)
+
+
+class ReviewLock(TimeStampedModel):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    original_submission = models.ForeignKey(OriginalSubmission, on_delete=models.CASCADE)
+    review_exercise = models.ForeignKey(ReviewExercise, on_delete=models.CASCADE)
