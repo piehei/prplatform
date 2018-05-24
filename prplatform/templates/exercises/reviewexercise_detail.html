@@ -16,37 +16,47 @@
         {% endif %}
       </h2>
 
-      <div class="col-md-12">
-        Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
-      </div>
 
-      {% include "./reviewable.html" %}
+      {% if reviews_done %}
 
-      <div class="col-md-12 mt-4">
-        <h5>Description</h5>
-        {{ object.description | linebreaks }}
-      </div>
-
-
-
-
-      <form class="form-horizontal" method="post"
-            action="{% url 'courses:exercises:review-detail' course.base_course.url_slug course.url_slug object.pk %}">
-
-        {% csrf_token %}
-
-        {% for form in forms %}
-        <h6>Question #{{ forloop.counter }}</h6>
-          {{ form|crispy }}
-        {% endfor %}
-
-        <div class="control-group">
-          <div class="controls">
-            <button type="submit" class="btn btn-success">Save answer</button>
-          </div>
+        <div class="col-md-12">
+          You have already submitter your peer-reviews to this exercise.
         </div>
-      </form>
 
+      {% else %}
+
+        <div class="col-md-12">
+          Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
+        </div>
+
+        {% include "./reviewable.html" %}
+
+        <div class="col-md-12 mt-4">
+          <h5>Description</h5>
+          {{ object.description | linebreaks }}
+        </div>
+
+
+
+
+        <form class="form-horizontal" method="post"
+              action="{% url 'courses:exercises:review-detail' course.base_course.url_slug course.url_slug object.pk %}">
+
+          {% csrf_token %}
+
+          {% for form in forms %}
+          <h6>Question #{{ forloop.counter }}</h6>
+            {{ form|crispy }}
+          {% endfor %}
+
+          <div class="control-group">
+            <div class="controls">
+              <button type="submit" class="btn btn-success">Save answer</button>
+            </div>
+          </div>
+        </form>
+
+      {% endif %}
 
     </div>
   </div>

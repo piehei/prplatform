@@ -190,11 +190,21 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         context = self.get_context_data(**kwargs)
         exercise = self.get_object()
         questions = exercise.questions.all()
+        rlock = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise).first()
 
+        if rlock and rlock.review_submission:
+            context['reviews_done'] = True
+            return self.render_to_response(context)
+
+        previous_submission = ReviewSubmission.objects \
+                                              .filter(exercise=self.object, submitter=self.request.user) \
+                                              .first()
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
         forms = []
         for index, q in enumerate(questions):
+            # if previous_submission:
+                # print(previous_submission.answers[index])
             forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
         context['forms'] = forms
 
@@ -203,7 +213,6 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
 
         reviewable = None
 
-        rlock = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise).first()
         if rlock:
             reviewable = rlock.original_submission
 
@@ -227,14 +236,15 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
 
                 # this most likely has no reviews yet
                 # -> should they also be ordered by submission time?
-                reviewable = reviewable_list[0] # CATCH ERRORS! WHAT IF NOTHIGN TO REVIEW?
+                if len(reviewable_list) > 0:
+                    reviewable = reviewable_list[0] # CATCH ERRORS! WHAT IF NOTHIGN TO REVIEW?
 
-            if reviewable.file:
+            if reviewable and reviewable.file:
                 context['filecontents'] = reviewable.file.read().decode('utf-8')
 
         context['reviewable'] = reviewable
 
-        if not rlock:
+        if reviewable and not rlock:
             rlock = ReviewLock(user=self.request.user, review_exercise=exercise, original_submission=reviewable)
             rlock.save()
 
@@ -248,12 +258,15 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
 
         # TODO: should it be possible to update the previous review submission?
         rlock = ReviewLock.objects.get(user=self.request.user, review_exercise=exercise)
+        reviewed_submission = rlock.original_submission
         submission = ReviewSubmission(course=course,
                                       submitter=self.request.user,
                                       exercise=exercise,
-                                      reviewed_submission=rlock.original_submission
+                                      reviewed_submission=reviewed_submission
                                       )
         submission.save()
+        rlock.review_submission = submission
+        rlock.save()
 
         questions = exercise.questions.all()
 
