@@ -72,3 +72,8 @@ class ReviewLock(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     original_submission = models.ForeignKey(OriginalSubmission, on_delete=models.CASCADE)
     review_exercise = models.ForeignKey(ReviewExercise, on_delete=models.CASCADE)
+    review_submission = models.ForeignKey(ReviewSubmission, null=True, default=None, on_delete=models.CASCADE)
+
+
+
+
