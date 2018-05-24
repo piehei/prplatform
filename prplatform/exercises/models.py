@@ -73,6 +73,8 @@ class ReviewExercise(BaseExercise):
             default=RANDOM
             )
 
+    review_count = models.IntegerField("How many peer-reviews one student can do", default=1)
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={

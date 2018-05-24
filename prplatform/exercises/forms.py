@@ -16,7 +16,7 @@ class SubmissionExerciseForm(ModelForm):
 class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
-        fields = ['name', 'description', 'reviewable_exercise', 'type']
+        fields = ['name', 'description', 'reviewable_exercise', 'type', 'review_count']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 }
