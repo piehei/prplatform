@@ -190,15 +190,28 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         context = self.get_context_data(**kwargs)
         exercise = self.get_object()
         questions = exercise.questions.all()
-        rlock = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise).first()
 
-        if rlock and rlock.review_submission:
-            context['reviews_done'] = True
-            return self.render_to_response(context)
+        rlock = None
+        rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
 
-        previous_submission = ReviewSubmission.objects \
-                                              .filter(exercise=self.object, submitter=self.request.user) \
-                                              .first()
+        # check if the user has review locks
+        if rlock_list:
+            last_rlock = rlock_list.last()
+
+            # if last rlock has a ReviewSubmission and the user has done max num of reviews
+            if last_rlock.review_submission and exercise.review_count == len(rlock_list):
+                context['reviews_done'] = True
+                return self.render_to_response(context)
+            elif not last_rlock.review_submission:
+                # work on the last review lock
+                rlock = last_rlock
+            else:
+                # user has no current rlocks -> continue and get a new one
+                pass
+
+        # previous_submission = ReviewSubmission.objects \
+                                              # .filter(exercise=self.object, submitter=self.request.user) \
+                                              # .first()
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
         forms = []
@@ -257,7 +270,9 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         exercise = self.object
 
         # TODO: should it be possible to update the previous review submission?
-        rlock = ReviewLock.objects.get(user=self.request.user, review_exercise=exercise)
+        rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
+        rlock = rlock_list.last()
+
         reviewed_submission = rlock.original_submission
         submission = ReviewSubmission(course=course,
                                       submitter=self.request.user,
