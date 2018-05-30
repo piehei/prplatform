@@ -17,7 +17,13 @@
       </h2>
 
 
-      {% if reviews_done %}
+      {% if not own_original_submission %}
+
+        <div class="col-md-12">
+          You cannot make peer-reviews before making your own original submission.
+        </div>
+
+      {% elif reviews_done %}
 
         <div class="col-md-12">
           You have already submitter your peer-reviews to this exercise.

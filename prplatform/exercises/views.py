@@ -191,6 +191,13 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         exercise = self.get_object()
         questions = exercise.questions.all()
 
+        own_original_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
+        context['own_original_submission'] = own_original_submission
+        if not own_original_submission:
+            return self.render_to_response(context)
+
+
+
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
 
