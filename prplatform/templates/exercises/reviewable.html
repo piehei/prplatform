@@ -23,7 +23,11 @@
 
       {{ reviewable.file }}
 
-      <pre class="codebox">{{ filecontents }}</pre>
+      {% load pygmentify %}
+      {% pygment %}
+      <pre lang="python"
+           class="codebox">{{ filecontents }}</pre>
+      {% endpygment %}
 
     {% endif %}
 
