@@ -17,7 +17,7 @@
       </h2>
 
 
-      {% if not own_original_submission %}
+      {% if not my_submission %}
 
         <div class="col-md-12">
           You cannot make peer-reviews before making your own original submission.
@@ -31,11 +31,29 @@
 
       {% else %}
 
-        <div class="col-md-12">
+        <div class="col-md-12 mb-4">
           Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
         </div>
 
-        {% include "./reviewable.html" %}
+        <p>
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseReviewable" aria-expanded="false" aria-controls="collapseExample">
+            To be reviewed
+          </button>
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseMysubmission" aria-expanded="false" aria-controls="collapseExample">
+            My submission
+          </button>
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseMysubmission" aria-expanded="false" aria-controls="collapseExample">
+            Teacher's solution
+          </button>
+        </p>
+
+        <div class="collapse" id="collapseMysubmission">
+          {% include "./my_submission.html" %}
+        </div>
+
+        <div class="collapse show" id="collapseReviewable">
+          {% include "./reviewable.html" %}
+        </div>
 
         <div class="col-md-12 mt-4">
           <h5>Description</h5>

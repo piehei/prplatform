@@ -1,0 +1,27 @@
+
+
+{% block content %}
+
+<div style="background:pink;"
+     class="card card-body mb-4">
+
+    <b>{{ my_submission }}</b>
+
+    <br>
+
+    {% if my_submission.text %}
+
+      {{ my_submission.text }}
+
+    {% else %}
+
+      {{ my_submission.file }}
+
+      <pre class="codebox">{{ my_filecontents }}</pre>
+
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
