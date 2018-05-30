@@ -191,11 +191,15 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         exercise = self.get_object()
         questions = exercise.questions.all()
 
-        own_original_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
-        context['own_original_submission'] = own_original_submission
-        if not own_original_submission:
+        my_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
+        if not my_submission:
             return self.render_to_response(context)
 
+        my_submission = my_submission[0]
+        context['my_submission'] = my_submission
+
+        if my_submission.file:
+            context['my_filecontents'] = my_submission.file.read().decode('utf-8')
 
 
         rlock = None
