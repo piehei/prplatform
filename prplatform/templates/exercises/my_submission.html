@@ -2,26 +2,25 @@
 
 {% block content %}
 
-<div style="background:pink;"
-     class="card card-body mb-4">
+  <div style="background:pink;"
+       class="card card-body mb-4">
 
-    <b>{{ my_submission }}</b>
+      <h5>My submission:</h5>
 
-    <br>
+      {% if my_submission.text %}
 
-    {% if my_submission.text %}
+        {{ my_submission.text }}
 
-      {{ my_submission.text }}
+      {% else %}
 
-    {% else %}
+        {% load pygmentify %}
+        {% pygment %}
+          <!-- TODO: general implementation for any contents -->
+          <pre lang="python">{{ my_filecontents }}</pre>
+        {% endpygment %}
 
-      {{ my_submission.file }}
+      {% endif %}
 
-      <pre class="codebox">{{ my_filecontents }}</pre>
-
-    {% endif %}
-
-</div>
-
+  </div>
 
 {% endblock %}

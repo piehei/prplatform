@@ -201,7 +201,6 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
         if my_submission.file:
             context['my_filecontents'] = my_submission.file.read().decode('utf-8')
 
-
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
 

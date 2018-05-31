@@ -2,38 +2,35 @@
 
 {% block content %}
 
-<div style="background:lightyellow;"
-     class="card card-body">
+  <div style="background:lightyellow;"
+       class="card card-body mb-4">
 
-  {% if not reviewable %}
-    Not a thing was found to be reviewed :-|
-    <br>
-    In other words, there's been no submissions to the original task just yet!
-  {% else %}
-
-    <b>{{ reviewable }}</b>
-
-    <br>
-
-    {% if reviewable.text %}
-
-      {{ reviewable.text }}
-
+    {% if not reviewable %}
+      Not a thing was found to be reviewed :-|
+      <br>
+      In other words, there's been no submissions to the original task just yet!
     {% else %}
 
-      {{ reviewable.file }}
+      <h5>To peer-review:</h5>
 
-      {% load pygmentify %}
-      {% pygment %}
-      <pre lang="python"
-           class="codebox">{{ filecontents }}</pre>
-      {% endpygment %}
+      {% if reviewable.text %}
+
+        {{ reviewable.text }}
+
+      {% else %}
+
+        {% load pygmentify %}
+        {% pygment %}
+          <!-- TODO: general implementation for any contents -->
+          <pre lang="python"
+               class="codebox">{{ filecontents }}</pre>
+        {% endpygment %}
+
+      {% endif %}
 
     {% endif %}
 
-  {% endif %}
-
-</div>
+  </div>
 
 
 {% endblock %}

@@ -36,23 +36,27 @@
         </div>
 
         <p>
-          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseReviewable" aria-expanded="false" aria-controls="collapseExample">
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">
             To be reviewed
           </button>
-          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseMysubmission" aria-expanded="false" aria-controls="collapseExample">
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-my-submission" aria-expanded="false" aria-controls="collapseExample">
             My submission
           </button>
-          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapseMysubmission" aria-expanded="false" aria-controls="collapseExample">
+          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-model-answer" aria-expanded="false" aria-controls="collapseExample">
             Teacher's solution
           </button>
         </p>
 
-        <div class="collapse" id="collapseMysubmission">
+        <div class="collapse" id="collapse-my-submission">
           {% include "./my_submission.html" %}
         </div>
 
-        <div class="collapse show" id="collapseReviewable">
+        <div class="collapse show" id="collapse-reviewable">
           {% include "./reviewable.html" %}
+        </div>
+
+        <div class="collapse" id="collapse-model-answer">
+          {% include "./model_answer.html" %}
         </div>
 
         <div class="col-md-12 mt-4">

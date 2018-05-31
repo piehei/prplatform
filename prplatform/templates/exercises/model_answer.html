@@ -1,0 +1,18 @@
+
+
+{% block content %}
+
+  <div style="background:lightgreen;"
+       class="card card-body mb-4">
+
+    <h5>Model answer:</h5>
+
+    {% load pygmentify %}
+    {% pygment %}
+      <pre lang="python">
+        {{ object.model_answer | linebreaks }}
+      </pre>
+    {% endpygment %}
+  </div>
+
+{% endblock %}
