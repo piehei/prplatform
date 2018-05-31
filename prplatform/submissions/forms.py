@@ -1,4 +1,4 @@
-from django.forms import ModelForm, modelform_factory, Textarea
+from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput
 from .models import OriginalSubmission, Answer
 
 
@@ -27,6 +27,16 @@ class OriginalSubmissionForm(ModelForm):
             # self.fields['text'].widget = HiddenInput()
             del self.fields['file']
             self.fields['text'].required = True
+
+    def clean(self):
+        # TODO: This should be done more elegantly. The form now accepts any file but this raises an error.
+        cd = super().clean()
+        if self.accepted_file_types:
+            filename = cd.get('file').name
+            import os
+            if os.path.splitext(filename)[1].replace(".", "") not in self.accepted_file_types.split(","):
+                raise ValidationError('Uploaded file is not of accepted type. ' + \
+                                      'Accepted file types are: ' + self.accepted_file_types)
 
 
 class AnswerForm(ModelForm):

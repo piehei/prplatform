@@ -157,19 +157,27 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         self.object = self.get_object()
         context = self.get_context_data()
 
+        user = self.request.user
+        course = context['course']
+        exercise = self.object
+
         show_text = self.object.text
         show_file_upload = self.object.file_upload
-        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, show_text=show_text,
+        form = OriginalSubmissionForm(self.request.POST, self.request.FILES,
+                                      show_text=show_text,
                                       show_file_upload=show_file_upload)
-        course = context['course']
-        user = self.request.user
+
+        if exercise.file_upload:
+            # this value is set so that it is available in form.clean()
+            # which is called inside is_valid()
+            form.accepted_file_types = exercise.accepted_file_types
 
         if form.is_valid():
             # this initializes a new OriginalSubmission object object
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
-            exer.exercise = self.object
+            exer.exercise = exercise
             exer.submitter = user
             exer.save()
             return HttpResponseRedirect(reverse('courses:detail', kwargs={
