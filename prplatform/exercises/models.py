@@ -38,6 +38,7 @@ class SubmissionExercise(BaseExercise):
     text = models.BooleanField(default=False)
     file_upload = models.BooleanField(default=True)
     upload_instructions = models.CharField(max_length=500, blank=True)
+    accepted_file_types = models.CharField(max_length=100, blank=True)
 
     def get_absolute_url(self):
         base_course = self.course.base_course
