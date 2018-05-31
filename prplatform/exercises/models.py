@@ -74,6 +74,9 @@ class ReviewExercise(BaseExercise):
             )
 
     review_count = models.IntegerField("How many peer-reviews one student can do", default=1)
+    model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
+                                    blank=True,
+                                    max_length=6000)
 
     def get_absolute_url(self):
         base_course = self.course.base_course
