@@ -21,13 +21,23 @@
         {{ object.description | linebreaks }}
       </div>
 
-      <form enctype="multipart/form-data"
-            action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}"
-            method="post">
-            {% csrf_token %}
-            {{ form | crispy }}
-            <input type="submit" class="btn btn-primary" value="Submit" />
-        </form>
+
+      {% if object.type == 'APLUS' %}
+
+        This exercise retrieves your submission in Plus. You're supposed to make your submission over there.
+
+      {% else %}
+
+        <form enctype="multipart/form-data"
+              action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}"
+              method="post">
+              {% csrf_token %}
+              {{ form | crispy }}
+              <input type="submit" class="btn btn-primary" value="Submit" />
+          </form>
+
+      {% endif %}
+
 
         <!-- TODO: this hand-crafted form might need to be replaced
                    with some future submission model form

@@ -1,6 +1,6 @@
 from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput
 from .models import OriginalSubmission, Answer
-
+from prplatform.exercises.models import SubmissionExercise
 
 class OriginalSubmissionForm(ModelForm):
 
@@ -16,17 +16,20 @@ class OriginalSubmissionForm(ModelForm):
             The other field, that is not removed, will be marked required.
         """
         from django.forms.widgets import HiddenInput
-        show_text = kwargs.pop('show_text', None)
-        show_file_upload = kwargs.pop('show_file_upload', None)
+        type = kwargs.pop('type', None)
         super(OriginalSubmissionForm, self).__init__(*args, **kwargs)
-        if not show_text:
+        if type == SubmissionExercise.FILE_UPLOAD:
             # self.fields['text'].widget = HiddenInput()
             del self.fields['text']
             self.fields['file'].required = True
-        if not show_file_upload:
+        if type == SubmissionExercise.TEXT:
             # self.fields['text'].widget = HiddenInput()
             del self.fields['file']
             self.fields['text'].required = True
+        if type == SubmissionExercise.APLUS:
+            # self.fields['text'].widget = HiddenInput()
+            del self.fields['file']
+            del self.fields['text']
 
     def clean(self):
         # TODO: This should be done more elegantly. The form now accepts any file but this raises an error.

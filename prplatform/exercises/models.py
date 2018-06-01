@@ -35,10 +35,26 @@ class SubmissionExercise(BaseExercise):
         ReviewExercise describes the peer-reviewing task itself.
     """
 
-    text = models.BooleanField(default=False)
-    file_upload = models.BooleanField(default=True)
+    TEXT = 'TEXT'
+    FILE_UPLOAD = 'FILE_UPLOAD'
+    APLUS = 'APLUS'
+    SUBMISSION_EXERCISE_TYPE_CHOICES = (
+            (TEXT, 'Student submits a text form'),
+            (FILE_UPLOAD, 'Student uploads a file'),
+            (APLUS, 'Submission is done in A+')
+        )
+
+    type = models.CharField(
+            max_length=20,
+            choices=SUBMISSION_EXERCISE_TYPE_CHOICES,
+            default=FILE_UPLOAD
+            )
+
     upload_instructions = models.CharField(max_length=500, blank=True)
     accepted_file_types = models.CharField(max_length=100, blank=True)
+
+    aplus_course_id = models.IntegerField(null=True, blank=True)
+    aplus_exercise_id = models.IntegerField(null=True, blank=True)
 
     def get_absolute_url(self):
         base_course = self.course.base_course

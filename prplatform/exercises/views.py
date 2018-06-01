@@ -146,9 +146,8 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
 
-        show_text = self.object.text
-        show_file_upload = self.object.file_upload
-        context['form'] = OriginalSubmissionForm(show_text=show_text, show_file_upload=show_file_upload)
+        type = self.object.type
+        context['form'] = OriginalSubmissionForm(type=type)
 
         return self.render_to_response(context)
 
@@ -161,13 +160,11 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         course = context['course']
         exercise = self.object
 
-        show_text = self.object.text
-        show_file_upload = self.object.file_upload
-        form = OriginalSubmissionForm(self.request.POST, self.request.FILES,
-                                      show_text=show_text,
-                                      show_file_upload=show_file_upload)
+        type = exercise.type
+        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=type)
 
-        if exercise.file_upload:
+        form.accepted_file_types = None
+        if exercise.type == SubmissionExercise.FILE_UPLOAD:
             # this value is set so that it is available in form.clean()
             # which is called inside is_valid()
             form.accepted_file_types = exercise.accepted_file_types

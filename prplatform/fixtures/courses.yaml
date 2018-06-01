@@ -107,10 +107,9 @@
   pk: 1
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T1, no file upload
+    name: T1 text submission
     description: Say bla bla bla and add this and that
-    file_upload: false
-    text: true
+    type: "TEXT"
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
 
@@ -118,10 +117,20 @@
   pk: 2
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T2, with file upload
+    name: T2 file upload
     description: Sum this and that
-    file_upload: true
-    text: false
+    type: "FILE_UPLOAD"
+    upload_instructions: Upload the final Python code into the system
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+
+- model: exercises.submissionexercise
+  pk: 3
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T3 Plus submission
+    description: Submission is done in Plussa
+    type: "APLUS"
     upload_instructions: Upload the final Python code into the system
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00

@@ -6,7 +6,8 @@ from .models import SubmissionExercise, ReviewExercise, Question
 class SubmissionExerciseForm(ModelForm):
     class Meta:
         model = SubmissionExercise
-        fields = ['name', 'description', 'text', 'file_upload', 'accepted_file_types', 'upload_instructions']
+        fields = ['name', 'description', 'type', 'aplus_course_id', 'aplus_exercise_id',
+                  'accepted_file_types', 'upload_instructions']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
@@ -18,20 +19,25 @@ class SubmissionExerciseForm(ModelForm):
 
     def clean(self):
         cd = super().clean()
-        text = cd.get('text')
-        file_upload = cd.get('file_upload')
-        accepted_types = cd.get('accepted_file_types')
+        type = cd.get('type')
 
-        if not text and not file_upload:
-            raise ValidationError('You have to choose either a text submission or file upload')
+        if type == SubmissionExercise.FILE_UPLOAD:
 
-        if file_upload and not accepted_types:
-            raise ValidationError('You have to provide accepted file types')
+            accepted_types = cd.get('accepted_file_types')
 
-        if file_upload:
+            if not accepted_types:
+                raise ValidationError('You have to provide accepted file types')
+
             if len(accepted_types.split()) != 1:
                 raise ValidationError('Spaces (or any other whitespace) not allowed in file types')
 
+        elif type == SubmissionExercise.APLUS:
+
+            if not cd.get('aplus_course_id'):
+                raise ValidationError('You have to provide course id in Plus')
+
+            if not cd.get('aplus_exercise_id'):
+                raise ValidationError('You have to provide exercise id in Plus')
 
 class ReviewExerciseForm(ModelForm):
     class Meta:
