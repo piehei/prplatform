@@ -2,7 +2,7 @@ from django.views.generic import DetailView, ListView
 
 from .models import OriginalSubmission, ReviewSubmission
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin
 
 ###
 #
@@ -33,7 +33,7 @@ class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
 # DETAIL VIEWS
 #
 
-class OriginalSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
+class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin, DetailView):
     model = OriginalSubmission
     pk_url_kwarg = "sub_pk"
 
