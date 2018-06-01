@@ -40,6 +40,28 @@ class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
         return bc.is_teacher(self.request.user)
 
 
+class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
+    """ This makes sure that the user is logged in and is a teacher
+        of the course. 403 forbidden is raised if not. """
+
+    raise_exception = True
+
+    def test_func(self):
+        return self.get_object().submitter == self.request.user
+
+
+class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
+    """ This makes sure that the user is logged in and is a teacher
+        of the course. 403 forbidden is raised if not. """
+
+    raise_exception = True
+
+    def test_func(self):
+        is_submitter = self.get_object().submitter == self.request.user
+        is_teacher = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug']).is_teacher(self.request.user)
+        return is_submitter or is_teacher
+
+
 class CourseMixin:
     """ This returns the course object itself """
 
