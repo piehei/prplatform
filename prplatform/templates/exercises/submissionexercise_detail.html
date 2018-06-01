@@ -22,19 +22,33 @@
       </div>
 
 
-      {% if object.type == 'APLUS' %}
+      {% if my_submissions %}
 
-        This exercise retrieves your submission in Plus. You're supposed to make your submission over there.
+      <p>You have already made a submissions to this exercise. You may find your submissions below:</p>
+
+        {% for origsub in my_submissions %}
+          <a href="{% url 'courses:submissions:original-detail' course.base_course.url_slug course.url_slug pk origsub.pk %}" class="list-group-item">
+             {{ origsub }}
+            </a>
+        {% endfor %}
 
       {% else %}
 
-        <form enctype="multipart/form-data"
-              action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}"
-              method="post">
-              {% csrf_token %}
-              {{ form | crispy }}
-              <input type="submit" class="btn btn-primary" value="Submit" />
-          </form>
+        {% if object.type == 'APLUS' %}
+
+          This exercise retrieves your submission in Plus. You're supposed to make your submission over there.
+
+        {% else %}
+
+          <form enctype="multipart/form-data"
+                action="{% url 'courses:exercises:submission-detail' object.course.base_course.url_slug object.course.url_slug object.pk %}"
+                method="post">
+                {% csrf_token %}
+                {{ form | crispy }}
+                <input type="submit" class="btn btn-primary" value="Submit" />
+            </form>
+
+        {% endif %}
 
       {% endif %}
 

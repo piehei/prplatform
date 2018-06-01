@@ -146,6 +146,13 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
 
+        my_submissions = self.object.submissions.filter(submitter=self.request.user)
+
+        if len(my_submissions) > 0:
+            context['my_submissions'] = my_submissions
+            return self.render_to_response(context)
+
+
         type = self.object.type
         context['form'] = OriginalSubmissionForm(type=type)
 
