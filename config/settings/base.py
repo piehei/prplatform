@@ -68,6 +68,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'rest_framework',
     'django_pygments',
+    'django_lti_login',
 ]
 LOCAL_APPS = [
     'prplatform.users.apps.UsersConfig',
@@ -92,6 +93,7 @@ MIGRATION_MODULES = {
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
+    'django_lti_login.backends.LTIAuthBackend',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'users.User'

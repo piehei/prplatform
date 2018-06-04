@@ -9,6 +9,7 @@ from django.views import defaults as default_views
 urlpatterns = [
     # url(r"^", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     url(r"^$", lambda r: HttpResponseRedirect("/courses"), name="home"),
+    url(r'^auth/', include('django_lti_login.urls')),
     url(
         r"^courses/",
         include("prplatform.courses.urls", namespace="courses"),
