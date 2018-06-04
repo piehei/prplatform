@@ -10,7 +10,13 @@ class UsersConfig(AppConfig):
             Users system checks
             Users signal registration
         """
+
         try:
             import users.signals  # noqa F401
         except ImportError:
             pass
+
+        try:
+            import users.receivers
+        except ImportError as e:
+            print(e)
