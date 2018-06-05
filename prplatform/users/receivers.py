@@ -13,9 +13,36 @@ from django.core.exceptions import PermissionDenied
 from django.dispatch import receiver
 from django_lti_login.signals import lti_login_authenticated
 
+from prplatform.users.models import User
 
 logger = logging.getLogger('users.receivers')
 
+
+@receiver(user_logged_in)
+def change_original_submission_submitters(sender, **kwargs):
+
+    request = kwargs.get('request', None)
+    user = kwargs.get('user', None)
+    oauth = getattr(request, 'oauth', None)
+    temp_user = User.objects.filter(email=user.email, is_active=False).first()
+
+    if request and user and oauth and temp_user:
+
+        logger.info(f"Changing the submitter of original submissions for")
+        for sub in temp_user.originalsubmission_submitters.all():
+            logger.info(sub)
+            sub.submitter = user
+            sub.save()
+
+        # TODO: if this implementation holds, check there's no concurrency bugs
+        logger.info(f"Original submissions by {temp_user} have been modified to be" + \
+                    "submitted by {user}")
+        logger.info(f"Deleting user {temp_user}")
+
+        ret = temp_user.delete()
+        logger.info(ret)
+    else:
+        logger.info(f"No temp_user existed for {user}")
 
 @receiver(lti_login_authenticated)
 def store_last_login(sender, **kwargs):
