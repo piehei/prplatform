@@ -292,3 +292,4 @@ prplatform/media/
 .env
 .envs/*
 example_files
+prplatform/django_lti_login
