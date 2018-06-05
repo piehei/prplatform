@@ -7,7 +7,7 @@ redis>=2.10.5  # https://github.com/antirez/redis
 
 # Django
 # ------------------------------------------------------------------------------
-django==2.0.4  # pyup: < 2.1  # https://www.djangoproject.com/
+django==2.0.6  # pyup: < 2.1  # https://www.djangoproject.com/
 django-environ==0.4.4  # https://github.com/joke2k/django-environ
 django-model-utils==3.1.1  # https://github.com/jazzband/django-model-utils
 django-allauth==0.35.0  # https://github.com/pennersr/django-allauth
@@ -22,4 +22,7 @@ coreapi==2.3.3  # https://github.com/core-api/python-client
 
 git+https://github.com/odeoncg/django-pygments.git
 
-git+https://github.com/Aalto-LeTech/django-lti-login.git@master#egg=django-lti-login
+# git+https://github.com/Aalto-LeTech/django-lti-login.git@master#egg=django-lti-login
+# remove these when local django_lti_login gets removed
+django-settingsdict >=1.0.1
+oauthlib >=2.0.0
