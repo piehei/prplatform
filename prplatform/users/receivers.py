@@ -7,12 +7,14 @@ In addition, don't forget to load this file (so the hooks are connected).
 See how `apps.py` includes this file when django apps are loaded.
 """
 import logging
+from django.urls import resolve
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import PermissionDenied
 from django.dispatch import receiver
 from django_lti_login.signals import lti_login_authenticated
 
+from prplatform.courses.models import Course
 from prplatform.users.models import User
 
 logger = logging.getLogger('users.receivers')
@@ -92,8 +94,17 @@ def store_course_info(sender, **kwargs):
         session['course_name'] = course_name
         session['course_lms'] = course_lms
 
-        # redirect to assignment_url from GET params
-        oauth.redirect_url = request.GET.get('assignment_url', '/courses/')
+        # the consumer side of LTI has appended assignment_url to GET params
+        # --> something like ?assignment_url=/courses/prog1/F2018/exercises/r/1
+        destination_url = request.GET.get('assignment_url', '/courses/')
+        url_kwargs = resolve(destination_url).kwargs
+
+        course = Course.objects.get(base_course__url_slug=url_kwargs['base_url_slug'],
+                                    url_slug=url_kwargs['url_slug'])
+
+        if not course.is_enrolled(user):
+            course.enroll(user)
+        oauth.redirect_url = destination_url
 
         # List LTI params in debug
         if settings.DEBUG:
