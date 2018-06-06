@@ -1,20 +1,18 @@
-from django.views.generic import DetailView, CreateView, ListView, UpdateView
+from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect
-from django.forms import formset_factory
 from django.db.models import Count
 
 import re
-import random
 
 from .models import SubmissionExercise, ReviewExercise, Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
-
+from prplatform.aplus_integration.core import get_submissions_by_id
 
 
 ###
@@ -138,7 +136,7 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 # DETAIL VIEWS
 #
 
-class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
+class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
     model = SubmissionExercise
 
@@ -193,12 +191,21 @@ class SubmissionExerciseDetailView(CourseContextMixin, DetailView):
         return self.render_to_response(context)
 
 
-class ReviewExerciseDetailView(CourseContextMixin, DetailView):
+class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
     PREFIX = "question-index-"
 
     def get(self, *args, **kwargs):
+
+
         self.object = self.get_object()
+
+
+        # TODO TODO TODO
+        if self.object.reviewable_exercise.type == SubmissionExercise.APLUS:
+            get_submissions_by_id(self.object.reviewable_exercise)
+
+
         context = self.get_context_data(**kwargs)
         exercise = self.get_object()
         questions = exercise.questions.all()
@@ -325,7 +332,7 @@ class ReviewExerciseDetailView(CourseContextMixin, DetailView):
 #
 
 
-class SubmissionExerciseDeleteView(CourseContextMixin, DeleteView):
+class SubmissionExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
     # TODO: check for submissions -> handle before deletion of the exercise
     model = SubmissionExercise
 
@@ -336,7 +343,7 @@ class SubmissionExerciseDeleteView(CourseContextMixin, DeleteView):
             })
 
 
-class ReviewExerciseDeleteView(CourseContextMixin, DeleteView):
+class ReviewExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
     # TODO: check for submissions -> handle before deletion of the exercise
     model = ReviewExercise
 
