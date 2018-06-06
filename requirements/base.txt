@@ -24,5 +24,7 @@ git+https://github.com/odeoncg/django-pygments.git
 
 # git+https://github.com/Aalto-LeTech/django-lti-login.git@master#egg=django-lti-login
 # remove these when local django_lti_login gets removed
-django-settingsdict >=1.0.1
-oauthlib >=2.0.0
+# django-settingsdict >=1.0.1
+# oauthlib >=2.0.0
+
+git+https://github.com/Aalto-LeTech/django-lti-login.git@2.0.1rc#egg=django-lti-login
