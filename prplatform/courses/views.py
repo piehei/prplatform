@@ -23,9 +23,9 @@ class CourseContextMixin:
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        base_course = BaseCourse.objects.get(url_slug=self.kwargs['base_url_slug'])
-        context['course'] = base_course.courses.get(url_slug=self.kwargs['url_slug'])
-        context['teacher'] = context['course'].base_course.is_teacher(self.request.user)
+        context['course'] = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
+                                              base_course__url_slug=self.kwargs['base_url_slug'])
+        context['teacher'] = context['course'].is_teacher(self.request.user)
         return context
 
 
@@ -41,8 +41,6 @@ class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
 
 
 class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
-    """ This makes sure that the user is logged in and is a teacher
-        of the course. 403 forbidden is raised if not. """
 
     raise_exception = True
 
@@ -50,9 +48,17 @@ class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
         return self.get_object().submitter == self.request.user
 
 
+class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
+
+    raise_exception = True
+
+    def test_func(self):
+        enrolled = self.get_object().course.is_enrolled(self.request.user)
+        teacher = self.get_object().course.is_teacher(self.request.user)
+        return enrolled or teacher
+
+
 class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
-    """ This makes sure that the user is logged in and is a teacher
-        of the course. 403 forbidden is raised if not. """
 
     raise_exception = True
 
@@ -66,9 +72,8 @@ class CourseMixin:
     """ This returns the course object itself """
 
     def get_object(self):
-        base_course = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug'])
-        course = get_object_or_404(Course, base_course=base_course, url_slug=self.kwargs['url_slug'])
-        return course
+        return get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
+                                 base_course__url_slug=self.kwargs['base_url_slug'])
 
 
 class CourseDetailView(CourseMixin, DetailView):
@@ -78,7 +83,7 @@ class CourseDetailView(CourseMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['teacher'] = context['course'].base_course.is_teacher(self.request.user)
+        context['teacher'] = context['course'].is_teacher(self.request.user)
         context['enrolled'] = context['course'].is_enrolled(self.request.user)
         return context
 

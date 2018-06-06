@@ -72,6 +72,9 @@ class Course(TimeStampedModel):
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"
 
+    def is_teacher(self, user):
+        return self.base_course.is_teacher(user)
+
     def is_enrolled(self, user):
         return (user and
                 user.is_authenticated and
