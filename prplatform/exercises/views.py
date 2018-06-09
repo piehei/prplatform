@@ -286,8 +286,9 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         context['reviewable'] = reviewable
 
         if reviewable and not rlock:
-            rlock = ReviewLock(user=self.request.user, review_exercise=exercise, original_submission=reviewable)
-            rlock.save()
+            rlock = ReviewLock.objects.create(user=self.request.user,
+                                              review_exercise=exercise,
+                                              original_submission=reviewable)
 
         return self.render_to_response(context)
 
@@ -302,12 +303,10 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         rlock = rlock_list.last()
 
         reviewed_submission = rlock.original_submission
-        submission = ReviewSubmission(course=course,
-                                      submitter=self.request.user,
-                                      exercise=exercise,
-                                      reviewed_submission=reviewed_submission
-                                      )
-        submission.save()
+        submission = ReviewSubmission.objects.create(course=course,
+                                                     submitter=self.request.user,
+                                                     exercise=exercise,
+                                                     reviewed_submission=reviewed_submission)
         rlock.review_submission = submission
         rlock.save()
 
@@ -319,10 +318,10 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
                 continue
             indx = int(re.match(r".*(\d).*", key).groups()[0])
             q_now = questions[indx]
-            a = Answer(submission=submission,
-                       question=q_now,
-                       value=self.request.POST[key])
-            a.save()
+            Answer.objects.create(submission=submission,
+                                  question=q_now,
+                                  value=self.request.POST[key])
+
         return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 
 ###
