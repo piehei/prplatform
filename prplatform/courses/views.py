@@ -94,7 +94,7 @@ class CourseTeacherView(IsTeacherMixin, CourseDetailView):
 
 class CourseUpdateView(CourseMixin, IsTeacherMixin, UpdateView):
     model = Course
-    fields = ['start_date', 'end_date']
+    fields = ['start_date', 'end_date', 'aplus_apikey']
     # 403 if not teacher
 
 

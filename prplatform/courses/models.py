@@ -61,6 +61,8 @@ class Course(TimeStampedModel):
     start_date = models.DateField()
     end_date = models.DateField()
     students = models.ManyToManyField(User, through='Enrollment')
+    # TODO: this should propably be put under the teacher ?
+    aplus_apikey = models.CharField(max_length=50, blank=True)
 
     class Meta:
         unique_together = (('base_course', 'code'))
