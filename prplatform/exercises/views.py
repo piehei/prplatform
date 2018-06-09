@@ -1,7 +1,7 @@
 from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.db.models import Count
 
 import re
@@ -197,14 +197,13 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
     def get(self, *args, **kwargs):
 
-
         self.object = self.get_object()
 
-
-        # TODO TODO TODO
         if self.object.reviewable_exercise.type == SubmissionExercise.APLUS:
-            get_submissions_by_id(self.object.reviewable_exercise)
-
+            # TODO: this is not good way to check for errors etc.
+            error = get_submissions_by_id(self.object.reviewable_exercise)
+            if error:
+                return HttpResponseServerError("APLUS APIKEY MISSING: teacher should add the apikey to the course's details")
 
         context = self.get_context_data(**kwargs)
         exercise = self.get_object()
