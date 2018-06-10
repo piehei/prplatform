@@ -1,5 +1,6 @@
-from django.urls import reverse
 from django.db import models
+from django.db.models import Count
+from django.core.exceptions import FieldError
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
@@ -67,7 +68,43 @@ class Answer(models.Model):
     value = models.CharField(max_length=1000)
 
 
+class ReviewLockManager(models.Manager):
+
+    def create_rlock(self, exercise, user):
+        print(f"create_lock called for {exercise} {user}")
+
+        if exercise.type == ReviewExercise.RANDOM:
+            print("type is RANDOM")
+
+            """
+                TODO: pick original submission based on some other heuristics
+                      than just random value. something that has not received any
+                      reviews?
+            """
+
+            # this is a list of all original submissions available for peer-reviewing
+            # sorted in ascending order (from zero to n)
+            reviewable_list = OriginalSubmission.objects \
+                                                .exclude(submitter=user) \
+                                                .filter(exercise=exercise.reviewable_exercise) \
+                                                .annotate(Count('reviews')) \
+                                                .order_by('reviews__count')
+
+            # this most likely has no reviews yet
+            # -> should they also be ordered by submission time?
+            if len(reviewable_list) == 0:
+                raise FieldError("nothing to review")
+
+            reviewable = reviewable_list[0]
+
+        return self.create(user=user,
+                           review_exercise=exercise,
+                           original_submission=reviewable)
+
+
 class ReviewLock(TimeStampedModel):
+
+    objects = ReviewLockManager()
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     original_submission = models.ForeignKey(OriginalSubmission, on_delete=models.CASCADE)

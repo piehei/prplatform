@@ -2,7 +2,7 @@ from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.http import HttpResponseRedirect, HttpResponseServerError
-from django.db.models import Count
+from django.core.exceptions import FieldError
 
 import re
 
@@ -237,9 +237,6 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
                 # user has no current rlocks -> continue and get a new one
                 pass
 
-        # previous_submission = ReviewSubmission.objects \
-                                              # .filter(exercise=self.object, submitter=self.request.user) \
-                                              # .first()
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
         forms = []
@@ -252,43 +249,22 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         # this decides what to show to the student;
         # --> what is the thing that is going to get peer-reviewed
 
-        reviewable = None
+        reviewable = None if not rlock else rlock.original_submission
 
-        if rlock:
-            reviewable = rlock.original_submission
-
-        if exercise.type == ReviewExercise.RANDOM:
-
-            """
-                TODO: pick original submission based on some other heuristics
-                      than just random value. something that has not received any
-                      reviews?
-            """
-
-            if not reviewable:
-
-                # this is a list of all original submissions available for peer-reviewing
-                # sorted in ascending order (from zero to n)
-                reviewable_list = OriginalSubmission.objects \
-                                                    .exclude(submitter=self.request.user) \
-                                                    .filter(exercise=exercise.reviewable_exercise) \
-                                                    .annotate(Count('reviews')) \
-                                                    .order_by('reviews__count')
-
-                # this most likely has no reviews yet
-                # -> should they also be ordered by submission time?
-                if len(reviewable_list) > 0:
-                    reviewable = reviewable_list[0] # CATCH ERRORS! WHAT IF NOTHIGN TO REVIEW?
-
-            if reviewable and reviewable.file:
-                context['filecontents'] = reviewable.file.read().decode('utf-8')
+        if not rlock:
+            # TODO: can field errors be raised from something not thought about here?
+            #       is it a good idea to determine possible reviewables in the creation
+            #       of the reviewlock?
+            try:
+                rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
+                reviewable = rlock.original_submission
+            except FieldError:
+                pass
 
         context['reviewable'] = reviewable
 
-        if reviewable and not rlock:
-            rlock = ReviewLock.objects.create(user=self.request.user,
-                                              review_exercise=exercise,
-                                              original_submission=reviewable)
+        if reviewable and reviewable.file:
+            context['filecontents'] = reviewable.file.read().decode('utf-8')
 
         return self.render_to_response(context)
 
