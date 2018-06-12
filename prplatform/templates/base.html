@@ -126,6 +126,18 @@
               {% endfor %}
           {% endif %}
 
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {% clear_breadcrumbs %}
+    {% breadcrumb "Home" "/" %}
+{% endblock %}
+
+{% block breads %}
+    {% render_breadcrumbs %}
+{% endblock %}
+
+
           {% block content %}
           {% endblock content %}
 

@@ -1,5 +1,13 @@
 {% extends "base.html" %}
 {% load static i18n %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code "courses:detail" course.base_course.url_slug course.url_slug %}
+    {% breadcrumb "TODO" "courses:exercises:submission-detail" course.base_course.url_slug course.url_slug pk %}
+    {% breadcrumb "List" "" %}
+{% endblock %}
 {% block title %}Submissions{% endblock %}
 
 {% block content %}

@@ -2,6 +2,13 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb object.course.code "courses:detail" object.course.base_course.url_slug object.course.url_slug %}
+    {% breadcrumb object.name "courses:exercises:review-detail" object.course.base_course.url_slug object.course.url_slug %}
+{% endblock %}
 
 {% block content %}
 <div class="container">

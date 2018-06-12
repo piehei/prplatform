@@ -3,6 +3,14 @@
 {% load crispy_forms_tags %}
 
 {% block title %}Update exercise details{% endblock %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb object.course.code "courses:detail" object.course.base_course.url_slug object.course.url_slug %}
+    {% breadcrumb object.name "courses:exercises:submission-detail" object.course.base_course.url_slug object.course.url_slug object.pk %}
+    {% breadcrumb "Edit" "" %}
+{% endblock %}
 
 {% block content %}
   <h1>Create a new exercise</h1>

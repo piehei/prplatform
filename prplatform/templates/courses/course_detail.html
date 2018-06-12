@@ -1,12 +1,20 @@
 {% extends "base.html" %}
 {% load static %}
+{% load django_bootstrap_breadcrumbs %}
 
 {% block title %}Course: {{ object.name }}{% endblock %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb object.code "courses:detail" object.base_course.url_slug object.url_slug %}
+{% endblock %}
 
 {% block content %}
 <div class="container">
 
   <div class="row">
+
+
     <div class="col-sm-12">
       <h2>{{ object.base_course.name }}</h2>
       Code: {{ object.code }}<br>
