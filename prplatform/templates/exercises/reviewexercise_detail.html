@@ -16,6 +16,12 @@
         {% endif %}
       </h2>
 
+      <div class="col-md-12 mb-4">
+        In this exercise you're peer-reviewing other students' submissions to the exercise
+        <a href="{% url 'courses:exercises:submission-detail' course.base_course.url_slug course.url_slug object.reviewable_exercise.pk %}">
+          {{ object.reviewable_exercise.name }}
+        </a>.
+      </div>
 
       {% if not my_submission %}
 
@@ -29,11 +35,18 @@
           You have already submitter your peer-reviews to this exercise.
         </div>
 
+      {% elif not reviewable %}
+
+        Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
+        <br>
+        {% if my_submission %}
+            <a href="{% url 'courses:submissions:original-detail' course.base_course.url_slug course.url_slug pk my_submission.pk %}">
+              You can see your own original submission here.
+            </a>
+        {% endif %}
+
       {% else %}
 
-        <div class="col-md-12 mb-4">
-          Exercise to be reviewed: <b>{{ object.reviewable_exercise.name }}</b>
-        </div>
 
         <p>
           <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">
@@ -64,9 +77,8 @@
           {{ object.description | linebreaks }}
         </div>
 
-
-
-
+        <!-- THIS IS THE PEER-REVIEW QUESTION FORM -->
+        <!-- TODO: move to external html -->
         <form class="form-horizontal" method="post"
               action="{% url 'courses:exercises:review-detail' course.base_course.url_slug course.url_slug object.pk %}">
 

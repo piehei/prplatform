@@ -5,12 +5,6 @@
   <div style="background:lightyellow;"
        class="card card-body mb-4">
 
-    {% if not reviewable %}
-      Not a thing was found to be reviewed :-|
-      <br>
-      In other words, there's been no submissions to the original task just yet!
-    {% else %}
-
       <h5>To peer-review:</h5>
 
       {% if reviewable.text %}
@@ -31,6 +25,5 @@
     {% endif %}
 
   </div>
-
 
 {% endblock %}
