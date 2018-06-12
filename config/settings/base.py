@@ -69,6 +69,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'django_pygments',
     'django_lti_login',
+    'django_bootstrap_breadcrumbs'
 ]
 LOCAL_APPS = [
     'prplatform.users.apps.UsersConfig',
