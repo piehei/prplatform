@@ -4,6 +4,7 @@
         <br>
         <small class="text-muted">where students submit their answers</small>
       </h5>
+
         {% if teacher %}
           <a href="{% url 'courses:create-submission-exercise' object.base_course.url_slug object.url_slug %}">
             <button class="btn btn-sm btn-primary mb-3">
@@ -11,11 +12,12 @@
             </button>
           </a>
         {% endif %}
+
       <div class="list-group ex-list">
       {% for ex in object.submissionexercise_exercises.all %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
-              <a href="{% url 'courses:exercises:submission-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+              <a href="{{ ex.get_absolute_url }}">
                 {{ ex.name }}
               </a>
             </div>
@@ -32,6 +34,7 @@
               </a>
             </div>
             {% endif %}
+
         </div>
       {% endfor %}
       </div>
@@ -42,6 +45,7 @@
       <h5>Peer-review exercises<br>
         <small class="text-muted">where students peer-review {something}</small>
       </h5>
+
         {% if teacher %}
           <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
             <button class="btn btn-sm btn-primary mb-3">
@@ -49,11 +53,12 @@
             </button>
           </a>
         {% endif %}
+
       <div class="list-group ex-list">
       {% for ex in object.reviewexercise_exercises.all %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
-              <a href="{% url 'courses:exercises:review-detail' object.base_course.url_slug object.url_slug ex.pk %}">
+              <a href="{{ ex.get_absolute_url }}">
                 {{ ex.name }}
               </a>
             </div>

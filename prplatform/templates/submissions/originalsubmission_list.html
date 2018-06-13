@@ -4,8 +4,8 @@
 
 {% block breadcrumbs %}
     {{ block.super }}
-    {% breadcrumb course.code "courses:detail" course.base_course.url_slug course.url_slug %}
-    {% breadcrumb "TODO" "courses:exercises:submission-detail" course.base_course.url_slug course.url_slug pk %}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
     {% breadcrumb "List" "" %}
 {% endblock %}
 {% block title %}Submissions{% endblock %}
@@ -13,11 +13,10 @@
 {% block content %}
   <h2>Submissions to task: </h2>
 
-
   {% if originalsubmission_list %}
     <div class="list-group">
       {% for origsub in originalsubmission_list %}
-      <a href="{% url 'courses:submissions:original-detail' course.base_course.url_slug course.url_slug pk origsub.pk %}" class="list-group-item">
+      <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
          {{ origsub }}
         </a>
       {% endfor %}

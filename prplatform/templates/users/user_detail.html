@@ -27,7 +27,7 @@
           {% for base_course in object.base_courses.all %}
             {% for c in base_course.courses.all %}
               <div class="list-group-item">
-                <a href="{% url 'courses:detail' c.base_course.url_slug c.url_slug %}">{{ base_course.name }}: {{ c.code }}</a>
+                <a href="{{ c.get_absolute_url }}">{{ base_course.name }}: {{ c.code }}</a>
               </div>
             {% endfor %}
           {% endfor %}
@@ -40,7 +40,7 @@
         <div class="list-group">
           {% for e in object.enrollments.all %}
             <div class="list-group-item">
-              <a href="{% url 'courses:detail' e.course.base_course.url_slug e.course.url_slug %}">
+              <a href="{{ e.course.get_absolute_url }}">
                 {{ e.course.base_course.name }}: {{ e.course.code }}
               </a>
             </div>

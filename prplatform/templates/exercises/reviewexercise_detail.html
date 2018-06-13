@@ -6,8 +6,8 @@
 
 {% block breadcrumbs %}
     {{ block.super }}
-    {% breadcrumb object.course.code "courses:detail" object.course.base_course.url_slug object.course.url_slug %}
-    {% breadcrumb object.name "courses:exercises:review-detail" object.course.base_course.url_slug object.course.url_slug %}
+    {% breadcrumb object.course.code object.course.get_absolute_url %}
+    {% breadcrumb object.name object.get_absolute_url %}
 {% endblock %}
 
 {% block content %}
@@ -25,7 +25,7 @@
 
       <div class="col-md-12 mb-4">
         In this exercise you're peer-reviewing other students' submissions to the exercise
-        <a href="{% url 'courses:exercises:submission-detail' course.base_course.url_slug course.url_slug object.reviewable_exercise.pk %}">
+        <a href="{{ object.reviewable_exercise.get_absolute_url }}">
           {{ object.reviewable_exercise.name }}
         </a>.
       </div>
@@ -47,9 +47,9 @@
         Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
         <br>
         {% if my_submission %}
-            <a href="{% url 'courses:submissions:original-detail' course.base_course.url_slug course.url_slug pk my_submission.pk %}">
+          <a href="{{ my_submission.get_absolute_url }}">
               You can see your own original submission here.
-            </a>
+          </a>
         {% endif %}
 
       {% else %}
@@ -87,7 +87,7 @@
         <!-- THIS IS THE PEER-REVIEW QUESTION FORM -->
         <!-- TODO: move to external html -->
         <form class="form-horizontal" method="post"
-              action="{% url 'courses:exercises:review-detail' course.base_course.url_slug course.url_slug object.pk %}">
+                                      action="{{ object.get_absolute_url }}">
 
           {% csrf_token %}
 

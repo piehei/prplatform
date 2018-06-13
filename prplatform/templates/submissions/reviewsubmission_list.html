@@ -5,19 +5,19 @@
 
 {% block breadcrumbs %}
     {{ block.super }}
-    {% breadcrumb course.code "courses:detail" course.base_course.url_slug course.url_slug %}
-    {% breadcrumb "TODO" "courses:exercises:review-detail" course.base_course.url_slug course.url_slug pk %}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
     {% breadcrumb "List" "" %}
 {% endblock %}
 
 {% block content %}
-  <h2>Submissions to task: </h2>
 
+  <h2>Submissions to task: </h2>
 
   {% if reviewsubmission_list %}
     <div class="list-group">
       {% for r_sub in reviewsubmission_list %}
-      <a href="{% url 'courses:submissions:review-detail' course.base_course.url_slug course.url_slug r_sub.pk %}" class="list-group-item">
+      <a href="{{ r_sub.get_absolute_url }}" class="list-group-item">
          {{ r_sub }}
         </a>
       {% endfor %}
@@ -25,4 +25,5 @@
   {% else %}
     No submissions yet
   {% endif %}
+
 {% endblock content %}

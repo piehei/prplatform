@@ -82,7 +82,7 @@
             <h6 class="ml-4">
               {% for base_course in request.user.base_courses.all %}
                 {% for course in base_course.courses.all %}
-                  <a href="{% url 'courses:detail' base_course.url_slug course.url_slug %}">{{ base_course.name }}</a>
+                  <a href="{{ course.get_absolute_url }}">{{ base_course.name }}</a>
                 {% endfor %}
               {% endfor %}
             </h6>
@@ -99,7 +99,7 @@
             <ul class="nav flex-column">
               {% if course %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'courses:detail' course.base_course.url_slug course.url_slug %}">
+                  <a class="nav-link" href="{{ course.get_absolute_url }}">
                     Exercises
                   </a>
                 </li>
