@@ -6,6 +6,7 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Peer-review exercise" ""%}
     {% breadcrumb exercise.name exercise.get_absolute_url %}
     {% breadcrumb "List" "" %}
 {% endblock %}

@@ -1,6 +1,14 @@
 
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Peer-review exercise" ""%}
+    {% breadcrumb object.name object.get_absolute_url %}
+    {% breadcrumb "Delete" "" %}
+{% endblock %}
 
 {% block title %}Delete review exercise{% endblock %}
 

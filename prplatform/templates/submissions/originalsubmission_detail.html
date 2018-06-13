@@ -1,6 +1,15 @@
 
 {% extends "base.html" %}
 {% load static %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb object.course.code object.course.get_absolute_url %}
+    {% breadcrumb "Exercise" ""%}
+    {% breadcrumb object.exercise.name object.exercise.get_absolute_url %}
+    {% breadcrumb "Submission" "" %}
+{% endblock %}
 
 {% block content %}
 <div class="container">

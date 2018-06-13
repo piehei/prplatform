@@ -8,6 +8,7 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb object.course.code object.course.get_absolute_url %}
+    {% breadcrumb "Exercise" ""%}
     {% breadcrumb object.name object.get_absolute_url %}
     {% breadcrumb "Edit" "" %}
 {% endblock %}
