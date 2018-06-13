@@ -2,7 +2,9 @@ from django.views.generic import DetailView, ListView
 
 from .models import OriginalSubmission, ReviewSubmission
 
+
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 ###
 #
@@ -16,6 +18,7 @@ class OriginalSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
     def get(self, *args, **kwargs):
         self.object_list = OriginalSubmission.objects.filter(exercise=kwargs['pk'])
         context = super(OriginalSubmissionListView, self).get_context_data(**kwargs)
+        context['exercise'] = SubmissionExercise.objects.get(pk=kwargs['pk'])
         return self.render_to_response(context)
 
 
@@ -25,6 +28,7 @@ class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
     def get(self, *args, **kwargs):
         self.object_list = ReviewSubmission.objects.filter(exercise=kwargs['pk'])
         context = super(ReviewSubmissionListView, self).get_context_data(**kwargs)
+        context['exercise'] = ReviewExercise.objects.get(pk=kwargs['pk'])
         return self.render_to_response(context)
 
 
