@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Count
 from django.core.exceptions import FieldError
+from django.urls import reverse
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
@@ -37,6 +38,14 @@ class OriginalSubmission(BaseSubmission):
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
 
+    def get_absolute_url(self):
+        return reverse('courses:submissions:original-detail', kwargs={
+            'base_url_slug': self.course.base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.exercise.pk,
+            'sub_pk': self.pk
+            })
+
     def save(self, *args, **kwargs):
         """ Overrides the model's save method so that when a file is uploaded
             its name may contain the object's PK. The PK would not be available
@@ -59,6 +68,14 @@ class ReviewSubmission(BaseSubmission):
 
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+
+    def get_absolute_url(self):
+        return reverse('courses:submissions:review-detail', kwargs={
+            'base_url_slug': self.course.base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.exercise.pk,
+            'sub_pk': self.pk
+            })
 
 
 class Answer(models.Model):
@@ -110,7 +127,4 @@ class ReviewLock(TimeStampedModel):
     original_submission = models.ForeignKey(OriginalSubmission, on_delete=models.CASCADE)
     review_exercise = models.ForeignKey(ReviewExercise, on_delete=models.CASCADE)
     review_submission = models.ForeignKey(ReviewSubmission, null=True, default=None, on_delete=models.CASCADE)
-
-
-
 
