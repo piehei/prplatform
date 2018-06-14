@@ -8,6 +8,7 @@
     {% breadcrumb object.course.code object.course.get_absolute_url %}
     {% breadcrumb "Exercise" ""%}
     {% breadcrumb object.exercise.name object.exercise.get_absolute_url %}
+    {% breadcrumb "List" "courses:submissions:original-list" object.course.base_course.url_slug object.course.url_slug object.exercise.pk %}
     {% breadcrumb "Submission" "" %}
 {% endblock %}
 

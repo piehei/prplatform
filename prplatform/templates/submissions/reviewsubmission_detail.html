@@ -1,11 +1,14 @@
 
 {% extends "base.html" %}
 {% load static %}
+{% load django_bootstrap_breadcrumbs %}
+
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb object.course.code object.course.get_absolute_url %}
     {% breadcrumb "Peer-review exercise" ""%}
     {% breadcrumb object.exercise.name object.exercise.get_absolute_url %}
+    {% breadcrumb "List" "courses:submissions:review-list" object.course.base_course.url_slug object.course.url_slug object.exercise.pk %}
     {% breadcrumb "Submission" "" %}
 {% endblock %}
 
