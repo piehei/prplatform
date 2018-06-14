@@ -31,6 +31,13 @@
         </a>.
       </div>
 
+      {% if teacher %}
+        <div class="alert alert-danger" role="alert">
+          <h4 class="alert-heading">Alert teacher!</h4>
+          This page is now in <strong>teacher</strong> mode. TODO
+        </div>
+      {% endif %}
+
       {% if not my_submission %}
 
         <div class="col-md-12">

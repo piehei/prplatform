@@ -2,6 +2,13 @@
 
 {% block content %}
 
+  {% if teacher %}
+    <div class="alert alert-primary">
+      <strong>Teacher:</strong> reviewable submission points to
+      <a href="{{ reviewable.get_absolute_url }}">{{ reviewable }}</a>
+    </div>
+  {% endif %}
+
   <div style="background:lightyellow;"
        class="card card-body mb-4">
 
