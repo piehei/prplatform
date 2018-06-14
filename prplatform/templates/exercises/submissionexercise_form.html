@@ -14,19 +14,27 @@
 {% endblock %}
 
 {% block content %}
-  <h1>Create a new exercise</h1>
 
-  <form class="form-horizontal" method="post"
-        action="{% url 'courses:update-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <div class="control-group">
-      <div class="controls">
-        <a class="btn btn-warning mr-4"
-           onClick="javascript:history.go(-1)">Cancel</a>
-        <button type="submit" class="btn btn-success">Update</button>
-        <a class="btn btn-danger float-right" href="{% url 'courses:delete-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">Delete</a>
-      </div>
+  {% include "../tabs.html" with tab="edit" type="original" %}
+
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Update original exercise</h1>
+
+      <form class="form-horizontal" method="post"
+            action="{% url 'courses:update-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="control-group">
+          <div class="controls">
+            <a class="btn btn-warning mr-4"
+               onClick="javascript:history.go(-1)">Cancel</a>
+            <button type="submit" class="btn btn-success">Update</button>
+            <a class="btn btn-danger float-right" href="{% url 'courses:delete-submission-exercise' course.base_course.url_slug course.url_slug object.pk %}">Delete</a>
+          </div>
+        </div>
+      </form>
     </div>
-  </form>
+  </div>
+
 {% endblock %}

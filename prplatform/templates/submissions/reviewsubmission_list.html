@@ -13,18 +13,26 @@
 
 {% block content %}
 
-  <h2>Submissions to task: </h2>
+  {% include "../tabs.html" with tab="submissions" object=exercise %}
 
-  {% if reviewsubmission_list %}
-    <div class="list-group">
-      {% for r_sub in reviewsubmission_list %}
-      <a href="{{ r_sub.get_absolute_url }}" class="list-group-item">
-         {{ r_sub }}
-        </a>
-      {% endfor %}
+  <div class="row">
+
+    <div class="col-md-12">
+      <h2>Submissions to task: </h2>
+
+      {% if reviewsubmission_list %}
+        <div class="list-group">
+          {% for r_sub in reviewsubmission_list %}
+          <a href="{{ r_sub.get_absolute_url }}" class="list-group-item">
+             {{ r_sub }}
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        No submissions yet
+      {% endif %}
+
     </div>
-  {% else %}
-    No submissions yet
-  {% endif %}
+  </div>
 
 {% endblock content %}

@@ -1,0 +1,33 @@
+  <div class="row">
+    <div class="col-md-12 mb-2">
+      <ul class="nav nav-tabs">
+        <a class="nav-link {% if tab == 'exercise' %}active{% endif %}"
+           href=" {{ object.get_absolute_url }}">
+          Exercise
+        </a>
+        </li>
+        {% if teacher %}
+          <li class="nav-item">
+            <a class="nav-link {% if tab == 'edit' %}active{% endif %}"
+               href="{% if type == 'original' %}
+                        {% url 'courses:update-submission-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% else %}
+                        {% url 'courses:update-review-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% endif %}">
+              Edit
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
+               href="{% if type == 'original' %}
+                        {% url 'courses:submissions:original-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% else %}
+                        {% url 'courses:submissions:review-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% endif %}">
+              List of submissions
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>

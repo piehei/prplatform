@@ -14,30 +14,37 @@
 {% block title %}Update exercise details{% endblock %}
 
 {% block content %}
-  <h1>Update review exercise details</h1>
 
-  <form class="form-horizontal" method="post" action="{% url 'courses:update-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">
-    {% csrf_token %}
-    {{ form | crispy }}
-    {{ formset | crispy }}
+  {% include "../tabs.html" with tab="edit" %}
 
-    <div class="control-group">
-      <div class="controls">
-        <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
-      </div>
+  <div class="row">
+    <div class="col-md-12">
+
+      <h1>Update review exercise details</h1>
+
+      <form class="form-horizontal" method="post" action="{% url 'courses:update-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">
+        {% csrf_token %}
+        {{ form | crispy }}
+        {{ formset | crispy }}
+
+        <div class="control-group">
+          <div class="controls">
+            <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
+          </div>
+        </div>
+
+        <div class="control-group mt-4">
+          <div class="controls">
+            <a class="btn btn-danger mr-4"
+               onClick="javascript:history.go(-1)">Cancel</a>
+            <button type="submit" class="btn btn-success">Update</button>
+            <a class="btn btn-danger float-right" href="{% url 'courses:delete-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">Delete</a>
+          </div>
+        </div>
+
+      </form>
+
     </div>
-
-    <div class="control-group mt-4">
-      <div class="controls">
-        <a class="btn btn-danger mr-4"
-           onClick="javascript:history.go(-1)">Cancel</a>
-        <button type="submit" class="btn btn-success">Update</button>
-        <a class="btn btn-danger float-right" href="{% url 'courses:delete-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">Delete</a>
-      </div>
-    </div>
-
-  </form>
-
 
   {% load static %}
   {% block extra_js %}

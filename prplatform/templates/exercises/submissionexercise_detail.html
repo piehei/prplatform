@@ -12,10 +12,11 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+
+  {% include "../tabs.html" with tab="exercise" type="original" %}
 
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-md-12">
       <h2>Exercise: {{ object.name }}
         {% if teacher %}
           <a href="{% url 'courses:update-submission-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}">
@@ -87,6 +88,5 @@
 
     </div>
   </div>
-</div>
 {% endblock content %}
 

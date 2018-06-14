@@ -11,17 +11,24 @@
 {% block title %}Submissions{% endblock %}
 
 {% block content %}
-  <h2>Submissions to task: </h2>
 
-  {% if originalsubmission_list %}
-    <div class="list-group">
-      {% for origsub in originalsubmission_list %}
-      <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
-         {{ origsub }}
-        </a>
-      {% endfor %}
+  {% include "../tabs.html" with tab="submissions" type="original" object=exercise %}
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Submissions to task: </h2>
+
+      {% if originalsubmission_list %}
+        <div class="list-group">
+          {% for origsub in originalsubmission_list %}
+          <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
+             {{ origsub }}
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        No submissions yet
+      {% endif %}
     </div>
-  {% else %}
-    No submissions yet
-  {% endif %}
+  </div>
 {% endblock content %}
