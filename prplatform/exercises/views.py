@@ -206,8 +206,32 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
                 return HttpResponseServerError("APLUS APIKEY MISSING: teacher should add the apikey to the course's details")
 
         context = self.get_context_data(**kwargs)
+        is_teacher = context['teacher']
         exercise = self.get_object()
         questions = exercise.questions.all()
+
+        # this gathers all the teacher-chosen questions that
+        # the peer-reviewing student will answer
+        forms = []
+        for index, q in enumerate(questions):
+            # if previous_submission:
+                # print(previous_submission.answers[index])
+            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
+        context['forms'] = forms
+
+        if is_teacher:
+
+            reviewable = exercise.reviewable_exercise.submissions.first()
+            context['reviewable'] = reviewable
+            if reviewable.file:
+                context['filecontents'] = reviewable.file.read().decode('utf-8')
+
+            my_submission = exercise.reviewable_exercise.submissions.last()
+            context['my_submission'] = my_submission
+            if my_submission.file:
+                context['my_filecontents'] = my_submission.file.read().decode('utf-8')
+
+            return self.render_to_response(context)
 
         my_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
         if not my_submission:
@@ -236,15 +260,6 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             else:
                 # user has no current rlocks -> continue and get a new one
                 pass
-
-        # this gathers all the teacher-chosen questions that
-        # the peer-reviewing student will answer
-        forms = []
-        for index, q in enumerate(questions):
-            # if previous_submission:
-                # print(previous_submission.answers[index])
-            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
-        context['forms'] = forms
 
         # this decides what to show to the student;
         # --> what is the thing that is going to get peer-reviewed
