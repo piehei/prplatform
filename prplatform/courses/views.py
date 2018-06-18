@@ -34,6 +34,7 @@ class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
         of the course. 403 forbidden is raised if not. """
 
     raise_exception = True
+    permission_denied_message = "Only teacher of the course can access this page."
 
     def test_func(self):
         bc = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug'])
@@ -43,6 +44,7 @@ class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
 class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
 
     raise_exception = True
+    permission_denied_message = "Only the submitter can access this page."
 
     def test_func(self):
         return self.get_object().submitter == self.request.user
@@ -51,8 +53,10 @@ class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
 class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
 
     raise_exception = True
+    permission_denied_message = "Only enrolled users can access this page."
 
     def test_func(self):
+        print("moi")
         enrolled = self.get_object().course.is_enrolled(self.request.user)
         teacher = self.get_object().course.is_teacher(self.request.user)
         return enrolled or teacher
@@ -61,6 +65,7 @@ class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
 class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
 
     raise_exception = True
+    permission_denied_message = "Only the submitter or a teacher can access this page."
 
     def test_func(self):
         is_submitter = self.get_object().submitter == self.request.user
