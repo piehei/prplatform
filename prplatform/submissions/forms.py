@@ -17,7 +17,7 @@ class OriginalSubmissionForm(ModelForm):
         """
         from django.forms.widgets import HiddenInput
         type = kwargs.pop('type', None)
-        super(OriginalSubmissionForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if type == SubmissionExercise.FILE_UPLOAD:
             # self.fields['text'].widget = HiddenInput()
             del self.fields['text']
@@ -54,7 +54,7 @@ class AnswerForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         question_text = kwargs.pop('question_text')
-        super(AnswerForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['value'].label = question_text
 
 

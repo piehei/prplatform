@@ -55,10 +55,10 @@ class OriginalSubmission(BaseSubmission):
         if self.pk is None:
             uploaded_file = self.file
             self.file = None
-            super(OriginalSubmission, self).save(*args, **kwargs)
+            super().save(*args, **kwargs)
             self.file = uploaded_file
 
-        super(OriginalSubmission, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class ReviewSubmission(BaseSubmission):
