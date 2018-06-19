@@ -22,11 +22,12 @@ from .models import BaseCourse, Course
 class CourseContextMixin:
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['course'] = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
+        ctx = super().get_context_data(**kwargs)
+        ctx['course'] = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
                                               base_course__url_slug=self.kwargs['base_url_slug'])
-        context['teacher'] = context['course'].is_teacher(self.request.user)
-        return context
+        ctx['teacher'] = ctx['course'].is_teacher(self.request.user)
+        ctx['enrolled'] = ctx['course'].is_enrolled(self.request.user)
+        return ctx
 
 
 class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
@@ -55,11 +56,9 @@ class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
     raise_exception = True
     permission_denied_message = "Only enrolled users can access this page."
 
-    def test_func(self):
-        print("moi")
-        enrolled = self.get_object().course.is_enrolled(self.request.user)
-        teacher = self.get_object().course.is_teacher(self.request.user)
-        return enrolled or teacher
+    def test_func(self, **kwargs):
+        ctx = self.get_context_data(**self.kwargs)
+        return ctx['teacher'] or ctx['enrolled']
 
 
 class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
