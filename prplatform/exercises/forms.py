@@ -103,6 +103,8 @@ QuestionModelFormSet = modelformset_factory(Question,
                                             fields=('text',),
                                             can_delete=True,
                                             can_order=True,
+                                            min_num=1,
+                                            validate_min=True,
                                             max_num=10,
                                             extra=10)
 
