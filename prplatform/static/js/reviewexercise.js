@@ -49,4 +49,17 @@ window.onload = function() {
 
   })
 
+  // when the form submit button is pressed
+  // go through all added questions and make sure their ORDER value is ""
+  // if text value is ""
+  // --> if this is not done backend thinks that a new question with order but WITHOUT text
+  //     was tried to be added
+  $('#create-review-exercise').on('click', function() {
+    for (var i = 0; i < multiFields.length; i += 1) {
+        var textInputField = document.querySelector(PREFIX + '-' + i + '-text');
+        if (textInputField.value === "") {
+          document.querySelector(PREFIX + '-' + i + '-ORDER').value = "";
+        }
+    }
+  })
 }
