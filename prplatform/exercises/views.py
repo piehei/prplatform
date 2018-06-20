@@ -62,23 +62,28 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         course = self.get_context_data()['course']
 
         form = ReviewExerciseForm(self.request.POST)
+        formset = QuestionModelFormSet(self.request.POST)
 
-        if form.is_valid():
+        if form.is_valid() and formset.is_valid():
             # this initializes a new ReviewExercise object
             # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
             exer.save()
 
-            formset = QuestionModelFormSet(self.request.POST)
-            if formset.is_valid():
-                for q in formset.ordered_forms:
-                    q.instance.order = q.cleaned_data['ORDER']
-                    q.instance.exercise = exer
+            for q in formset.ordered_forms:
+                q.instance.order = q.cleaned_data['ORDER']
+                q.instance.exercise = exer
 
-                formset.save()
+            formset.save()
 
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
+
+        else:
+            ctx = self.get_context_data(**kwargs)
+            ctx['form'] = form
+            ctx['formset'] = formset
+            return self.render_to_response(ctx)
 
 ###
 #
