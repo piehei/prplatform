@@ -39,6 +39,9 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
             exer.save()
             return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
 
+        else:
+            return self.form_invalid(form)
+
 
 class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     template_name = "exercises/reviewexercise_create.html"
