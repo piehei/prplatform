@@ -19,7 +19,15 @@
   <form class="form-horizontal" method="post" action="{% url 'courses:create-review-exercise' course.base_course.url_slug course.url_slug %}">
     {% csrf_token %}
     {{ form | crispy }}
-    {{ formset | crispy }}
+
+
+    <div class="review-exercise-formset">
+      <h3>Questions in this exercise</h3>
+      <p>You can add more questions from the blue button. Questions with empty text will not be added.</p>
+
+      {{ formset | crispy }}
+
+    </div>
 
     <div class="control-group">
       <div class="controls">
@@ -29,7 +37,7 @@
 
     <div class="control-group mt-4">
       <div class="controls">
-        <button type="submit" class="btn">Create</button>
+        <button id="create-review-exercise" type="submit" class="btn">Create review exercise</button>
       </div>
     </div>
   </form>
