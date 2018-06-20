@@ -14,7 +14,6 @@ from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = OriginalSubmission
-    object_list = []
 
     def get_context_data(self):
         exercise = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
@@ -23,10 +22,11 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
         if not ctx['teacher']:
             self.object_list = self.object_list.filter(submitter=self.request.user)
         ctx['exercise'] = exercise
-        ctx['object_list'] = self.object_list
+        ctx['originalsubmission_list'] = self.object_list
         return ctx
 
-class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
+
+class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = ReviewSubmission
 
     def get_context_data(self):
@@ -34,9 +34,9 @@ class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
         self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
         if not ctx['teacher']:
-            self.object_list = self.object_list.filter(submitter=self.request.uer)
+            self.object_list = self.object_list.filter(submitter=self.request.user)
         ctx['exercise'] = exercise
-        ctx['object_list'] = self.object_list
+        ctx['reviewsubmission_list'] = self.object_list
         return ctx
 
 

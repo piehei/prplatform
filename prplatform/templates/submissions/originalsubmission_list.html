@@ -16,11 +16,12 @@
 
   <div class="row">
     <div class="col-md-12">
+
       <h2>Submissions to task: </h2>
 
-      {% if object_list %}
+      {% if originalsubmission_list %}
         <div class="list-group">
-          {% for origsub in object_list %}
+          {% for origsub in originalsubmission_list %}
           <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
              {{ origsub }}
             </a>
@@ -29,6 +30,8 @@
       {% else %}
         No submissions yet
       {% endif %}
+
     </div>
   </div>
+
 {% endblock content %}
