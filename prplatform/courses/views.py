@@ -10,21 +10,13 @@ from django.contrib import messages
 
 from .models import BaseCourse, Course
 
-# def is_teacher_decorator():
-#     def decorator(func):
-#         def wrapper(request, *args, **kwargs):
-#             # nananannanana
-#             return func(request, *args, **kwargs)
-#         return wrapper
-#     return decorator
 
-
-class CourseContextMixin:
+class CourseContextMixin(object):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['course'] = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
-                                              base_course__url_slug=self.kwargs['base_url_slug'])
+                                          base_course__url_slug=self.kwargs['base_url_slug'])
         ctx['teacher'] = ctx['course'].is_teacher(self.request.user)
         ctx['enrolled'] = ctx['course'].is_enrolled(self.request.user)
         return ctx
@@ -56,9 +48,12 @@ class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
     raise_exception = True
     permission_denied_message = "Only enrolled users can access this page."
 
-    def test_func(self, **kwargs):
-        ctx = self.get_context_data(**self.kwargs)
-        return ctx['teacher'] or ctx['enrolled']
+    def test_func(self):
+        course = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
+                                   base_course__url_slug=self.kwargs['base_url_slug'])
+        is_enrolled = course.is_enrolled(self.request.user)
+        is_teacher = course.is_teacher(self.request.user)
+        return is_enrolled or is_teacher
 
 
 class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
@@ -72,7 +67,7 @@ class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
         return is_submitter or is_teacher
 
 
-class CourseMixin:
+class CourseMixin(object):
     """ This returns the course object itself """
 
     def get_object(self):
@@ -80,15 +75,13 @@ class CourseMixin:
                                  base_course__url_slug=self.kwargs['base_url_slug'])
 
 
-class CourseDetailView(CourseMixin, DetailView):
+class CourseDetailView(CourseContextMixin, DetailView):
     model = Course
     slug_field = "url_slug"
     slug_url_kwarg = "url_slug"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['teacher'] = context['course'].is_teacher(self.request.user)
-        context['enrolled'] = context['course'].is_enrolled(self.request.user)
         return context
 
 
@@ -96,7 +89,7 @@ class CourseTeacherView(IsTeacherMixin, CourseDetailView):
     template_name = "courses/teacher.html"
 
 
-class CourseUpdateView(CourseMixin, IsTeacherMixin, UpdateView):
+class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
     fields = ['start_date', 'end_date', 'aplus_apikey']
     # 403 if not teacher
@@ -106,7 +99,7 @@ class CourseListView(ListView):
     model = Course
 
 
-class CourseEnroll(CourseMixin, LoginRequiredMixin, ProcessFormView):
+class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
     model = Course
 
     def get_success_url(self):
