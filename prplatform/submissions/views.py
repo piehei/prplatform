@@ -3,7 +3,7 @@ from django.views.generic import DetailView, ListView
 from .models import OriginalSubmission, ReviewSubmission
 
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin, IsEnrolledMixin
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 ###
@@ -12,24 +12,32 @@ from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 #
 
 
-class OriginalSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
+class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = OriginalSubmission
+    object_list = []
 
-    def get(self, *args, **kwargs):
-        self.object_list = OriginalSubmission.objects.filter(exercise=kwargs['pk'])
-        context = super(OriginalSubmissionListView, self).get_context_data(**kwargs)
-        context['exercise'] = SubmissionExercise.objects.get(pk=kwargs['pk'])
-        return self.render_to_response(context)
-
+    def get_context_data(self):
+        exercise = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
+        self.object_list = exercise.submissions.all()
+        ctx = super().get_context_data(**self.kwargs)
+        if not ctx['teacher']:
+            self.object_list = self.object_list.filter(submitter=self.request.user)
+        ctx['exercise'] = exercise
+        ctx['object_list'] = self.object_list
+        return ctx
 
 class ReviewSubmissionListView(IsTeacherMixin, CourseContextMixin, ListView):
     model = ReviewSubmission
 
-    def get(self, *args, **kwargs):
-        self.object_list = ReviewSubmission.objects.filter(exercise=kwargs['pk'])
-        context = super().get_context_data(**kwargs)
-        context['exercise'] = ReviewExercise.objects.get(pk=kwargs['pk'])
-        return self.render_to_response(context)
+    def get_context_data(self):
+        exercise = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+        self.object_list = exercise.submissions.all()
+        ctx = super().get_context_data(**self.kwargs)
+        if not ctx['teacher']:
+            self.object_list = self.object_list.filter(submitter=self.request.uer)
+        ctx['exercise'] = exercise
+        ctx['object_list'] = self.object_list
+        return ctx
 
 
 ###
@@ -54,8 +62,10 @@ class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin
 
 class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
+    pk_url_kwargs = "sub_pk"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
+

@@ -27,6 +27,17 @@
               List of submissions
             </a>
           </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
+               href="{% if type == 'original' %}
+                        {% url 'courses:submissions:original-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% else %}
+                        {% url 'courses:submissions:review-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
+                     {% endif %}">
+              My submissions
+            </a>
+          </li>
         {% endif %}
       </ul>
     </div>
