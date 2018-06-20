@@ -28,6 +28,11 @@ window.onload = function() {
     }
   })
 
+  // if no questions has been added, show the first empty question
+  if (INITIAL_FORMS === 0) {
+    multiFields[0].style.display = "";
+    document.querySelector(PREFIX + '-0-ORDER').value = 1;
+  }
 
   $('#add-new-question').on('click', function() {
     console.log('add-new-question clicked');
