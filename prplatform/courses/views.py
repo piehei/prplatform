@@ -91,8 +91,9 @@ class CourseTeacherView(IsTeacherMixin, CourseDetailView):
 
 class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
+    slug_field = "url_slug"
+    slug_url_kwarg = "url_slug"
     fields = ['start_date', 'end_date', 'aplus_apikey']
-    # 403 if not teacher
 
 
 class CourseListView(ListView):
