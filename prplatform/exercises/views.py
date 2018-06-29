@@ -1,6 +1,7 @@
 from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.core.exceptions import FieldError
 
@@ -24,6 +25,10 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
     model = SubmissionExercise
     template_name = "exercises/submissionexercise_create.html"
     form_class = SubmissionExerciseForm
+    initial = {
+            'opening_time': timezone.now(),
+            'closing_time': timezone.now(),
+            }
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
@@ -50,7 +55,10 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     def get(self, *args, **kwargs):
         self.object = None
         context = self.get_context_data(**kwargs)
-        context['form'] = ReviewExerciseForm()
+        context['form'] = ReviewExerciseForm(initial={
+                                                'opening_time': timezone.now(),
+                                                'closing_time': timezone.now(),
+                                            })
         qs = QuestionModelFormSet(queryset=Question.objects.none())
         context['formset'] = qs
 
