@@ -37,4 +37,9 @@
     </div>
   </div>
 
+  {% load static %}
+  {% block extra_js %}
+    <script src="{% static 'js/submissionexercise.js' %}"></script>
+  {% endblock extra_js %}
+
 {% endblock %}
