@@ -6,13 +6,16 @@ from .models import SubmissionExercise, ReviewExercise, Question
 class SubmissionExerciseForm(ModelForm):
     class Meta:
         model = SubmissionExercise
-        fields = ['name', 'description', 'type', 'aplus_course_id', 'aplus_exercise_id',
+        fields = ['name', 'description', 'opening_time', 'closing_time',
+                  'type', 'aplus_course_id', 'aplus_exercise_id',
                   'accepted_file_types', 'upload_instructions']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
                 }
         help_texts = {
+                'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'accepted_file_types': 'A comma separated list of file types. Do not include the period character. ' + \
                                        'Valid examples: pdf or pdf,pptx,docx or py,txt'
                 }
@@ -86,12 +89,16 @@ class SubmissionExerciseForm(ModelForm):
 class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
-        fields = ['name', 'description', 'model_answer', 'reviewable_exercise', 'type', 'review_count']
+        fields = ['name', 'description', 'opening_time', 'closing_time',
+                  'model_answer', 'reviewable_exercise', 'type', 'review_count']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'model_answer': Textarea(attrs={'cols': 80, 'rows': 5}),
                 }
-
+        help_texts = {
+                'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                }
 
 class QuestionForm(ModelForm):
     class Meta:
