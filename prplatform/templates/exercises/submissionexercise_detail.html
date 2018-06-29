@@ -25,6 +25,13 @@
         {% endif %}
       </h2>
 
+      {% if denied_msg %}
+
+        <div class="alert alert-danger">
+          {{ denied_msg }}
+        </div>
+
+      {% endif %}
 
       <div class="col-md-12">
         {{ object.description | linebreaks }}
@@ -41,7 +48,9 @@
           </a>
         {% endfor %}
 
-      {% else %}
+      {% endif %}
+
+      {% if not hide_form %}
 
         {% if object.type == 'APLUS' %}
 

@@ -2,8 +2,10 @@ from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.shortcuts import redirect
 from django.http import HttpResponseRedirect, HttpResponseServerError
 from django.core.exceptions import FieldError
+from django.contrib import messages
 
 import re
 
@@ -156,19 +158,28 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
 
     model = SubmissionExercise
 
+    # TODO: restrict submissions by both opening AND closing times
+    #       refactor the logic to a class method instead of inlining it here
+
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
+        teacher = self.object.is_teacher(self.request.user)
 
         my_submissions = self.object.submissions.filter(submitter=self.request.user)
 
-        if len(my_submissions) > 0:
+        if not teacher and len(my_submissions) > 0:
             context['my_submissions'] = my_submissions
+            context['hide_form'] = True
             return self.render_to_response(context)
 
+        now = timezone.now()
+        if not teacher and self.object.closing_time < now:
+            context['denied_msg'] = 'The exercise has closed. You cannot make a new submission.'
+            context['hide_form'] = True
+            return self.render_to_response(context)
 
-        type = self.object.type
-        context['form'] = OriginalSubmissionForm(type=type)
+        context['form'] = OriginalSubmissionForm(type=self.object.type)
 
         return self.render_to_response(context)
 
@@ -180,6 +191,12 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
         user = self.request.user
         course = context['course']
         exercise = self.object
+        teacher = exercise.is_teacher(user)
+
+        if not teacher and exercise.closing_time < timezone.now():
+            messages.error(self.request, 'Closing time for the exercise has passed. You cannot submit.')
+            context['hide_form'] = True
+            return self.render_to_response(context)
 
         type = exercise.type
         form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=type)
@@ -193,15 +210,13 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
         if form.is_valid():
             # this initializes a new OriginalSubmission object object
             # --> after injecting the ForeignKey course it is safe to save
-            exer = form.save(commit=False)
-            exer.course = course
-            exer.exercise = exercise
-            exer.submitter = user
-            exer.save()
-            return HttpResponseRedirect(reverse('courses:detail', kwargs={
-                    'base_url_slug': self.kwargs['base_url_slug'],
-                    'url_slug': self.kwargs['url_slug']
-                    }))
+            sub = form.save(commit=False)
+            sub.course = course
+            sub.exercise = exercise
+            sub.submitter = user
+            sub.save()
+            messages.success(self.request, 'Submission successful! You may see it below.')
+            return redirect(sub)
 
         context['form'] = form
         return self.render_to_response(context)
