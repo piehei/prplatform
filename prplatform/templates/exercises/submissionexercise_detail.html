@@ -25,19 +25,17 @@
         {% endif %}
       </h2>
 
-      {% if denied_msg %}
-
+      {% if not object.is_open %}
         <div class="alert alert-danger">
-          {{ denied_msg }}
+          This exercise is closed.
         </div>
-
       {% endif %}
 
       <div class="col-md-12">
         {{ object.description | linebreaks }}
       </div>
 
-
+      <!--
       {% if my_submissions %}
 
       <p>You have already made a submissions to this exercise. You may find your submissions below:</p>
@@ -49,6 +47,7 @@
         {% endfor %}
 
       {% endif %}
+      -->
 
       {% if not hide_form %}
 

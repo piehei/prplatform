@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.db import models
+from django.utils import timezone
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
@@ -28,6 +29,9 @@ class BaseExercise(TimeStampedModel):
 
     def is_teacher(self, user):
         return self.base_course.is_teacher(user)
+
+    def is_open(self):
+        return self.opening_time < timezone.now() and self.closing_time > timezone.now()
 
     class Meta:
         abstract = True
@@ -72,6 +76,15 @@ class SubmissionExercise(BaseExercise):
 
     def __str__(self):
         return f"Submission exercise: {self.name}"
+
+    def can_submit(self, user):
+        if self.is_teacher(user):
+            return True
+        if not self.is_open():
+            return False
+        if self.submissions.filter(submitter=user):
+            return False
+        return True
 
 
 class ReviewExercise(BaseExercise):

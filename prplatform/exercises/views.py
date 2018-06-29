@@ -163,40 +163,35 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        teacher = self.object.is_teacher(self.request.user)
+        exercise = self.object
+        user = self.request.user
+        ctx = self.get_context_data(**kwargs)
 
-        my_submissions = self.object.submissions.filter(submitter=self.request.user)
+        my_submissions = exercise.submissions.filter(submitter=self.request.user)
+        ctx['my_submissions'] = my_submissions
 
-        if not teacher and len(my_submissions) > 0:
-            context['my_submissions'] = my_submissions
-            context['hide_form'] = True
-            return self.render_to_response(context)
+        if not exercise.can_submit(user):
+            ctx['hide_form'] = True
+            return self.render_to_response(ctx)
 
-        now = timezone.now()
-        if not teacher and self.object.closing_time < now:
-            context['denied_msg'] = 'The exercise has closed. You cannot make a new submission.'
-            context['hide_form'] = True
-            return self.render_to_response(context)
+        ctx['form'] = OriginalSubmissionForm(type=self.object.type)
 
-        context['form'] = OriginalSubmissionForm(type=self.object.type)
-
-        return self.render_to_response(context)
+        return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         self.object = self.get_object()
-        context = self.get_context_data()
+        ctx = self.get_context_data()
 
         user = self.request.user
-        course = context['course']
+        course = ctx['course']
         exercise = self.object
         teacher = exercise.is_teacher(user)
 
         if not teacher and exercise.closing_time < timezone.now():
             messages.error(self.request, 'Closing time for the exercise has passed. You cannot submit.')
-            context['hide_form'] = True
-            return self.render_to_response(context)
+            ctx['hide_form'] = True
+            return self.render_to_response(ctx)
 
         type = exercise.type
         form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=type)
@@ -218,8 +213,8 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
             messages.success(self.request, 'Submission successful! You may see it below.')
             return redirect(sub)
 
-        context['form'] = form
-        return self.render_to_response(context)
+        ctx['form'] = form
+        return self.render_to_response(ctx)
 
 
 class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
