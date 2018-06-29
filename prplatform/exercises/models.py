@@ -26,6 +26,9 @@ class BaseExercise(TimeStampedModel):
     def base_course(self):
         return self.course.base_course
 
+    def is_teacher(self, user):
+        return self.base_course.is_teacher(user)
+
     class Meta:
         abstract = True
 
