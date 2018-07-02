@@ -35,19 +35,13 @@
         {{ object.description | linebreaks }}
       </div>
 
-      <!--
-      {% if my_submissions %}
+      {% if my_submissions and hide_form %}
 
-      <p>You have already made a submissions to this exercise. You may find your submissions below:</p>
-
-        {% for origsub in my_submissions %}
-          <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
-             {{ origsub }}
-          </a>
-        {% endfor %}
+        <div class="alert alert-warning font-italic">
+          You have reached the maximum number of submissions.
+        </div>
 
       {% endif %}
-      -->
 
       {% if not hide_form %}
 
