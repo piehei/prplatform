@@ -4,7 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect, HttpResponseServerError
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, PermissionDenied
 from django.contrib import messages
 
 import re
@@ -14,7 +14,7 @@ from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
+from prplatform.submissions.models import ReviewSubmission, Answer, ReviewLock
 from prplatform.aplus_integration.core import get_submissions_by_id
 
 
@@ -128,7 +128,7 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
             r_exercise = r_exercise_form.save()
             question_formset = QuestionModelFormSet(self.request.POST)
 
-            #TODO:
+            # TODO:
             # järjestyksen näyttäminen onnistuu nyt
             # mutta tallennuksessa ei ole validointia
             # overridaa valid, jotta virhe voidaan näyttää
@@ -166,6 +166,9 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
         exercise = self.object
         user = self.request.user
         ctx = self.get_context_data(**kwargs)
+
+        if not ctx['teacher'] and not exercise.visible_to_students:
+            raise PermissionDenied
 
         my_submissions = exercise.submissions.filter(submitter=self.request.user)
         ctx['my_submissions'] = my_submissions
@@ -229,12 +232,16 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             # TODO: this is not good way to check for errors etc.
             error = get_submissions_by_id(self.object.reviewable_exercise)
             if error:
-                return HttpResponseServerError("APLUS APIKEY MISSING: teacher should add the apikey to the course's details")
+                return HttpResponseServerError(
+                        "APLUS APIKEY MISSING: teacher should add the apikey to the course's details")
 
-        context = self.get_context_data(**kwargs)
-        is_teacher = context['teacher']
+        ctx = self.get_context_data(**kwargs)
+        is_teacher = ctx['teacher']
         exercise = self.get_object()
         questions = exercise.questions.all()
+
+        if not is_teacher and not exercise.visible_to_students:
+            raise PermissionDenied
 
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
@@ -243,31 +250,31 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             # if previous_submission:
                 # print(previous_submission.answers[index])
             forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
-        context['forms'] = forms
+        ctx['forms'] = forms
 
         if is_teacher:
 
             reviewable = exercise.reviewable_exercise.submissions.first()
-            context['reviewable'] = reviewable
+            ctx['reviewable'] = reviewable
             if reviewable.file:
-                context['filecontents'] = reviewable.file.read().decode('utf-8')
+                ctx['filecontents'] = reviewable.file.read().decode('utf-8')
 
             my_submission = exercise.reviewable_exercise.submissions.last()
-            context['my_submission'] = my_submission
+            ctx['my_submission'] = my_submission
             if my_submission.file:
-                context['my_filecontents'] = my_submission.file.read().decode('utf-8')
+                ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
 
-            return self.render_to_response(context)
+            return self.render_to_response(ctx)
 
         my_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
         if not my_submission:
-            return self.render_to_response(context)
+            return self.render_to_response(ctx)
 
         my_submission = my_submission[0]
-        context['my_submission'] = my_submission
+        ctx['my_submission'] = my_submission
 
         if my_submission.file:
-            context['my_filecontents'] = my_submission.file.read().decode('utf-8')
+            ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
 
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
@@ -278,8 +285,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
             # if last rlock has a ReviewSubmission and the user has done max num of reviews
             if last_rlock.review_submission and exercise.review_count == len(rlock_list):
-                context['reviews_done'] = True
-                return self.render_to_response(context)
+                ctx['reviews_done'] = True
+                return self.render_to_response(ctx)
             elif not last_rlock.review_submission:
                 # work on the last review lock
                 rlock = last_rlock
@@ -302,12 +309,12 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             except FieldError:
                 pass
 
-        context['reviewable'] = reviewable
+        ctx['reviewable'] = reviewable
 
         if reviewable and reviewable.file:
-            context['filecontents'] = reviewable.file.read().decode('utf-8')
+            ctx['filecontents'] = reviewable.file.read().decode('utf-8')
 
-        return self.render_to_response(context)
+        return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)
@@ -367,4 +374,3 @@ class ReviewExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
             'base_url_slug': self.kwargs['base_url_slug'],
             'url_slug': self.kwargs['url_slug']
             })
-
