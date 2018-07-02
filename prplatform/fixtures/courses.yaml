@@ -112,6 +112,8 @@
     type: "TEXT"
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
 
 - model: exercises.submissionexercise
   pk: 2
@@ -123,6 +125,8 @@
     upload_instructions: Upload the final Python code into the system
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
 
 - model: exercises.submissionexercise
   pk: 3
@@ -134,4 +138,6 @@
     upload_instructions: Upload the final Python code into the system
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
 
