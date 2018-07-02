@@ -1,5 +1,3 @@
-
-
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -113,14 +111,31 @@ class ExerciseTest(TestCase):
         user = User.objects.get(username="student1")
         exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        OriginalSubmission.objects.create(course=course, submitter=user, exercise=exercise, text="jadajada")
-
+        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
         # then load the page and check it disables second submission
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = User.objects.get(username="student1")
+        request.user = user
         self.kwargs['pk'] = 1
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
 
         self.assertContains(response, "You have reached the maximum number of submissions.")
         self.assertNotContains(response, "Submit")
+
+    def test_teacherCanSubmitMultipleTimes(self):
+
+        user = User.objects.get(username="teacher1")
+        exercise = SubmissionExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
+        request.user = user
+        self.kwargs['pk'] = 1
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+
+        self.assertNotContains(response, "You have reached the maximum number of submissions.")
+        self.assertContains(response, "Submit")
