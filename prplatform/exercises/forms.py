@@ -6,7 +6,7 @@ from .models import SubmissionExercise, ReviewExercise, Question
 class SubmissionExerciseForm(ModelForm):
     class Meta:
         model = SubmissionExercise
-        fields = ['name', 'description', 'opening_time', 'closing_time',
+        fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
                   'type', 'aplus_course_id', 'aplus_exercise_id',
                   'accepted_file_types', 'upload_instructions']
         widgets = {
@@ -89,7 +89,7 @@ class SubmissionExerciseForm(ModelForm):
 class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
-        fields = ['name', 'description', 'opening_time', 'closing_time',
+        fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
                   'model_answer', 'reviewable_exercise', 'type', 'review_count']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),

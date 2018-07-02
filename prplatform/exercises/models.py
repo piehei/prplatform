@@ -3,7 +3,6 @@ from django.db import models
 from django.utils import timezone
 
 from prplatform.core.models import TimeStampedModel
-from prplatform.users.models import User
 from prplatform.courses.models import Course
 
 
@@ -22,6 +21,8 @@ class BaseExercise(TimeStampedModel):
 
     opening_time = models.DateTimeField()
     closing_time = models.DateTimeField()
+
+    visible_to_students = models.BooleanField(default=True)
 
     @property
     def base_course(self):
