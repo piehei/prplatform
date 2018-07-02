@@ -1,10 +1,8 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import ListView, CreateView, DetailView, UpdateView
-from django.views.generic.detail import SingleObjectMixin
+from django.views.generic import ListView, DetailView, UpdateView
 from django.views.generic.edit import ProcessFormView
-from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 
@@ -81,8 +79,16 @@ class CourseDetailView(CourseContextMixin, DetailView):
     slug_url_kwarg = "url_slug"
 
     def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        return context
+        ctx = super().get_context_data(**kwargs)
+
+        sub_exercises = self.object.submissionexercise_exercises.all()
+        rev_exercises = self.object.reviewexercise_exercises.all()
+        if not ctx['teacher']:
+            sub_exercises = sub_exercises.filter(visible_to_students=True)
+            rev_exercises = rev_exercises.filter(visible_to_students=True)
+        ctx['submissionexercises'] = sub_exercises
+        ctx['reviewexercises'] = rev_exercises
+        return ctx
 
 
 class CourseTeacherView(IsTeacherMixin, CourseDetailView):

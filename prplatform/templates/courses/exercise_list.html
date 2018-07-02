@@ -14,12 +14,15 @@
         {% endif %}
 
       <div class="list-group ex-list">
-      {% for ex in object.submissionexercise_exercises.all %}
+      {% for ex in submissionexercises %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
               <a href="{{ ex.get_absolute_url }}">
                 {{ ex.name }}
               </a>
+              {% if not ex.visible_to_students %}
+                [hidden]
+              {% endif %}
             </div>
 
             {% if teacher %}
@@ -55,12 +58,15 @@
         {% endif %}
 
       <div class="list-group ex-list">
-      {% for ex in object.reviewexercise_exercises.all %}
+      {% for ex in reviewexercises %}
         <div class="list-group-item d-flex justify-content-between">
             <div class="p-2">
               <a href="{{ ex.get_absolute_url }}">
                 {{ ex.name }}
               </a>
+              {% if not ex.visible_to_students %}
+                [hidden]
+              {% endif %}
             </div>
             {% if teacher %}
             <div class="p-2">
