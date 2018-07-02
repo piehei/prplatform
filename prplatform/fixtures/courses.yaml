@@ -141,3 +141,16 @@
     opening_time: 2018-01-01 00:00+02:00
     closing_time: 2025-01-01 00:00+02:00
 
+- model: exercises.submissionexercise
+  pk: 4
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T4 *closed*
+    description: Say bla bla bla and add this and that
+    type: "TEXT"
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2018-06-30 00:00+02:00
+
+
