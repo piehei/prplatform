@@ -70,3 +70,20 @@ INSTALLED_APPS += ['django_extensions', 'django_pdb']  # noqa F405
 # ------------------------------------------------------------------------------
 
 ACCOUNT_EMAIL_VERIFICATION = False
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        # '' is a catch-all logger
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',  # os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
+    },
+}
