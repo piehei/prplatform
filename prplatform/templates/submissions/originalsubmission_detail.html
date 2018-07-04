@@ -13,41 +13,41 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+
+  {% include "../tabs.html" with tab="submissions" type="original" object=object.exercise %}
 
   <div class="row">
     <div class="col-sm-12">
       <h4>Original submission to exercise {{ object.exercise.name }}</h4>
-      <p>Submitter: {{ object.submitter }}</p>
-      <p>Submission time: {{ object.created }}</p>
+      <p><b>Submitter</b>: {{ object.submitter }}
+      <br>
+      <b>Submission time</b>: {{ object.created }}</p>
 
-      <p>Submission text:</p>
-      <div class="col-sm-6 ml-4 mb-4">
+      {% if object.text %}
 
-        {% if object.text %}
+        <p><b>Submission text:</b></p>
+        <div class="col-sm-6 ml-4 mb-4">
           {{ object.text | linebreaks }}
-        {% else %}
-          No text submitted.
-        {% endif %}
+        </div>
 
-      </div>
+      {% endif %}
 
-      <p>Submitted file:</p>
-      <div class="col-sm-6 ml-4">
+      {% if object.file %}
 
-        {% if object.file %}
-          <b>{{ object.file }}</b>
-          <br>
+        <p><b>Submitted file:</b></p>
+        <div class="card card-body"
+             style="background:#FFE;">
+        <br>
+        {% load pygmentify %}
+        {% pygment %}
+          <!-- TODO: general implementation for any contents -->
+          <pre lang="python">{{ filecontents }}</pre>
+        {% endpygment %}
 
-          <pre class="codebox">{{ filecontents }}</pre>
-        {% else %}
-          No file submitted.
-        {% endif %}
-
-      </div>
+        </div>
+      {% endif %}
 
     </div>
   </div>
-</div>
 {% endblock content %}
 
