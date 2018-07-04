@@ -3,7 +3,7 @@ from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.shortcuts import redirect
-from django.http import HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponseRedirect
 from django.core.exceptions import FieldError, PermissionDenied
 from django.contrib import messages
 
@@ -15,7 +15,6 @@ from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelForm
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
 from prplatform.submissions.models import ReviewSubmission, Answer, ReviewLock
-from prplatform.aplus_integration.core import get_submissions_by_id
 
 
 ###
@@ -227,13 +226,6 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     def get(self, *args, **kwargs):
 
         self.object = self.get_object()
-
-        if self.object.reviewable_exercise.type == SubmissionExercise.APLUS:
-            # TODO: this is not good way to check for errors etc.
-            error = get_submissions_by_id(self.object.reviewable_exercise)
-            if error:
-                return HttpResponseServerError(
-                        "APLUS APIKEY MISSING: teacher should add the apikey to the course's details")
 
         ctx = self.get_context_data(**kwargs)
         is_teacher = ctx['teacher']
