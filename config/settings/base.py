@@ -76,6 +76,7 @@ LOCAL_APPS = [
     'prplatform.courses.apps.CoursesConfig',
     'prplatform.exercises.apps.ExercisesConfig',
     'prplatform.submissions.apps.SubmissionsConfig',
+    'prplatform.aplus_integration'
 ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
