@@ -5,6 +5,10 @@
 set -o nounset
 set -o xtrace
 
+
+# this will setup cronjobs that will call django mgmt commands
+./crons/setup.sh
+
 python manage.py migrate
 
 while true; do
