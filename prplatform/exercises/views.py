@@ -311,13 +311,15 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
-        course = self.get_context_data(**kwargs)['course']
+        ctx = self.get_context_data(**kwargs)
+        course = ctx['course']
         exercise = self.object
 
         # TODO: should it be possible to update the previous review submission?
         rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
         rlock = rlock_list.last()
 
+        # TODO: this crashes when teacher submits since there's no release lock
         reviewed_submission = rlock.original_submission
         submission = ReviewSubmission.objects.create(course=course,
                                                      submitter=self.request.user,
