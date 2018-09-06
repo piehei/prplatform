@@ -100,7 +100,9 @@ class ReviewExercise(BaseExercise):
         SubmissionExercise describes the returning of an original answer.
     """
 
-    reviewable_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
+    reviewable_exercise = models.OneToOneField(SubmissionExercise,
+                                               related_name="review_exercise",
+                                               on_delete=models.CASCADE)
 
     RANDOM = 'RANDOM'
     REVIEW_EXERCISE_TYPE_CHOICES = (
