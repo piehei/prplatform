@@ -9,4 +9,5 @@ urlpatterns = [
         path('r/<int:pk>/list/', view=views.ReviewSubmissionListView.as_view(), name="review-list"),
         path('s/<int:pk>/<int:sub_pk>/', view=views.OriginalSubmissionDetailView.as_view(), name="original-detail"),
         path('r/<int:pk>/<int:sub_pk>/', view=views.ReviewSubmissionDetailView.as_view(), name="review-detail"),
+        path('download/<int:pk>/', view=views.DownloadSubmissionView.as_view(), name="download")
 ]

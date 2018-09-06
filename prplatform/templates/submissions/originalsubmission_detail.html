@@ -34,7 +34,7 @@
 
       {% if object.file %}
 
-        <p><b>Submitted file:</b></p>
+      <p><b>Submitted file: (<a href="{{ object.get_file_download_url }}">download</a>)</b></p>
         <div class="card card-body"
              style="background:#FFE;">
         <br>

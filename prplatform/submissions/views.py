@@ -1,3 +1,7 @@
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.views import View
 from django.views.generic import DetailView, ListView
 
 from .models import OriginalSubmission, ReviewSubmission
@@ -56,7 +60,7 @@ class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin
         if self.object.file:
             lines = self.object.file.read().decode("utf-8")
             context['filecontents'] = lines
-
+            print(self.object.file.url)
         return self.render_to_response(context)
 
 
@@ -69,3 +73,28 @@ class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView)
         context = self.get_context_data(**kwargs)
         return self.render_to_response(context)
 
+
+class DownloadSubmissionView(View):
+
+    def get(self, *args, **kwargs):
+        user = self.request.user
+
+        # user tries to download this
+        obj = get_object_or_404(OriginalSubmission, pk=kwargs['pk'])
+        print(obj)
+        teacher = obj.course.is_teacher(user)
+        owner = obj.submitter == user
+
+        pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
+        reviewer = kwargs['pk'] in pks_of_users_reviewables
+
+        if not teacher and not owner and not reviewer:
+            raise PermissionDenied
+
+        filename = obj.file.name.split('/')[-1]
+        response = HttpResponse(obj.file, content_type='text/plain')
+
+        # TODO: enough headers? meta type etc.?
+        response['Content-Disposition'] = 'attachment; filename=%s' % filename
+
+        return response
