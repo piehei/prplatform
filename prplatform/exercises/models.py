@@ -37,6 +37,16 @@ class BaseExercise(TimeStampedModel):
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
 
+    def get_list_url(self):
+        urls = {'SubmissionExercise': 'courses:submissions:original-list',
+                'ReviewExercise': 'courses:submissions:review-list'}
+        base_course = self.course.base_course
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
     class Meta:
         abstract = True
 
@@ -73,6 +83,14 @@ class SubmissionExercise(BaseExercise):
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:submission-detail', kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
+    def get_edit_url(self):
+        base_course = self.course.base_course
+        return reverse('courses:update-submission-exercise', kwargs={
             'base_url_slug': base_course.url_slug,
             'url_slug': self.course.url_slug,
             'pk': self.pk

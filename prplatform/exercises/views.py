@@ -252,14 +252,16 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         if is_teacher:
 
             reviewable = exercise.reviewable_exercise.submissions.first()
-            ctx['reviewable'] = reviewable
-            if reviewable.file:
-                ctx['filecontents'] = reviewable.file.read().decode('utf-8')
+            if reviewable:
+                ctx['reviewable'] = reviewable
+                if reviewable.file:
+                    ctx['filecontents'] = reviewable.file.read().decode('utf-8')
 
             my_submission = exercise.reviewable_exercise.submissions.last()
-            ctx['my_submission'] = my_submission
-            if my_submission.file:
-                ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
+            if my_submission:
+                ctx['my_submission'] = my_submission
+                if my_submission.file:
+                    ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
 
             return self.render_to_response(ctx)
 
