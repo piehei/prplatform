@@ -115,8 +115,8 @@ QuestionModelFormSet = modelformset_factory(Question,
                                             max_num=10,
                                             extra=10)
 
-QuestionFormSet = inlineformset_factory(ReviewExercise, Question,
-                                        fields=('text',),
-                                        can_delete=True,
-                                        can_order=True,
-                                        max_num=10, extra=10)
+# QuestionFormSet = inlineformset_factory(ReviewExercise, Question,
+                                        # fields=('text',),
+                                        # can_delete=True,
+                                        # can_order=True,
+                                        # max_num=10, extra=10)

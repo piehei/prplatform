@@ -134,17 +134,22 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
             # lue ero modelformset ja inline_formset jne.
 
             if question_formset.is_valid():
+                question_formset.save(commit=False)
                 # update the order values of the question objects
                 # and make sure they reference the correct exercise object
                 for q_form in question_formset.ordered_forms:
-                    q_form.instance.exercise = r_exercise
+                    q_form.instance.course = self.object.course
+                    # q_form.instance.exercise.add(r_exercise)
                     q_form.instance.order = q_form.cleaned_data['ORDER']
 
                 # this saves the Question model objects created and/or modified by
                 # the POSTed formset
                 # this takes care of deletion and not saving empty Question forms
-                question_formset.save()
 
+                for saved_q in question_formset.save():
+                    print(saved_q)
+                    print(saved_q.course)
+                    r_exercise.questions.add(saved_q)
             return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 
 

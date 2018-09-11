@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Question details{% endblock %}
+
+{% block content %}
+  <h1>Questions...</h1>
+  {{ object }}
+  <form class="form-horizontal" method="post" action="{% url 'courses:update-question' course.base_course.url_slug course.url_slug object.pk %}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Update</button>
+      </div>
+    </div>
+  </form>
+  <h2 class="mt-4">Add more choices:</h2>
+  <form class="form-horizontal" method="post" action="{% url 'courses:update-question' course.base_course.url_slug course.url_slug object.pk %}?choice=true">
+    {% csrf_token %}
+    {{ customForm|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn">Update</button>
+      </div>
+    </div>
+  </form>
+
+{% endblock %}

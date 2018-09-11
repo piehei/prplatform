@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Question details{% endblock %}
+
+{% block content %}
+  <h1>Question
+    <a class="btn btn-primary btn-sm"
+       href="{{ object.get_edit_url }}">
+      Edit
+    </a>
+  </h1>
+
+  <div class="col-md-6">
+    <b>Text:</b> {{ object.text }}
+
+    <br><br>
+
+    {% if not object.choices.all %}
+      No choices added to the question.
+    {% endif %}
+
+    {% for choice in object.choices.all %}
+    <div class="list-group-item">
+      Choice {{ forloop.counter }}:
+      {{ choice.text }}
+    </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}
