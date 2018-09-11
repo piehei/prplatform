@@ -17,6 +17,22 @@
 
   {% include "../tabs.html" with tab="edit" %}
 
+  <style>
+    .question-form {
+      padding: 4px;
+      margin-bottom:10px;
+      margin-left:10px;
+    }
+
+    .question-form:nth-child(even) {
+      background: #cfd8dc;
+    }
+    .question-form:nth-child(odd) {
+      background: #d3d3d345;
+    }
+
+  </style>
+
   <div class="row">
     <div class="col-md-12">
 
@@ -24,8 +40,23 @@
 
       <form class="form-horizontal" method="post" action="{% url 'courses:update-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">
         {% csrf_token %}
+
+        <h2>Exercise configuration</h2>
         {{ form | crispy }}
-        {{ formset | crispy }}
+
+        <hr></hr>
+        <h2>Questions in the exercise</h2>
+
+        {{ formset.management_form }}
+
+
+        {% for form in formset %}
+          <div class="multiField question-form">
+            <h5>Q: {{ forloop.counter }}</h5>
+            {{ form | crispy }}
+          </div>
+        {% endfor %}
+
 
         <div class="control-group">
           <div class="controls">
