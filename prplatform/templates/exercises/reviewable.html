@@ -14,7 +14,10 @@
 
       <h5>To peer-review:</h5>
 
-      {% if reviewable.text %}
+      {% if not reviewable %}
+        Not available
+
+      {% elif reviewable.text %}
 
         {{ reviewable.text }}
 

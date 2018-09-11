@@ -36,19 +36,19 @@
         </div>
       {% endif %}
 
-      {% if not my_submission %}
+      {% if not my_submission and not teacher %}
 
         <div class="alert alert-warning">
           You cannot make peer-reviews before making your own original submission.
         </div>
 
-      {% elif reviews_done %}
+      {% elif reviews_done and not teacher %}
 
         <div class="alert alert-warning font-italic">
           You have already submitted your peer-reviews to this exercise.
         </div>
 
-      {% elif not reviewable %}
+      {% elif not reviewable and not teacher %}
 
         <div class="alert alert-warning">
           Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.

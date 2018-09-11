@@ -14,7 +14,10 @@
 
       <h5>My submission:</h5>
 
-      {% if my_submission.text %}
+      {% if not my_submission %}
+        Not available
+
+      {% elif my_submission.text %}
 
         {{ my_submission.text }}
 
