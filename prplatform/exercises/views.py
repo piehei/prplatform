@@ -9,7 +9,8 @@ from django.contrib import messages
 
 import re
 
-from .models import SubmissionExercise, ReviewExercise, Question
+from .models import SubmissionExercise, ReviewExercise
+from .question_models import Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin

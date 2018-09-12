@@ -1,6 +1,8 @@
 from django.contrib import admin
 
-from .models import SubmissionExercise, ReviewExercise, Question
+from .models import SubmissionExercise, ReviewExercise
+from .question_models import Question
+
 
 @admin.register(SubmissionExercise)
 class SubmissionExerciseModelAdmin(admin.ModelAdmin):

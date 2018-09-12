@@ -23,6 +23,7 @@ class BaseExercise(TimeStampedModel):
     closing_time = models.DateTimeField()
 
     visible_to_students = models.BooleanField(default=True)
+    use_groups = models.BooleanField(default=False)
 
     @property
     def base_course(self):

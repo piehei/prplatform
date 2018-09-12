@@ -6,8 +6,8 @@ from django.urls import reverse
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
 from prplatform.courses.models import Course
-from prplatform.exercises.models import SubmissionExercise, ReviewExercise, Question
-
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise
+from prplatform.exercises.question_models import Question
 
 class BaseSubmission(TimeStampedModel):
 

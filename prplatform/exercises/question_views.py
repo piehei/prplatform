@@ -3,7 +3,7 @@ from django import forms
 from django.http import HttpResponseRedirect
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin
-from .models import Question, QuestionChoice
+from .question_models import Question, QuestionChoice
 
 
 class QuestionModelForm(forms.ModelForm):

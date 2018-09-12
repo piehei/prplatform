@@ -1,6 +1,7 @@
 from django.forms import ModelForm, Textarea, inlineformset_factory, modelformset_factory, ValidationError
 
-from .models import SubmissionExercise, ReviewExercise, Question
+from .models import SubmissionExercise, ReviewExercise
+from .question_models import Question
 
 
 class SubmissionExerciseForm(ModelForm):
