@@ -22,3 +22,9 @@ class User(AbstractUser):
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})
+
+
+class StudentGroup(models.Model):
+    name = models.CharField(max_length=30, blank=True)
+    course = models.ForeignKey('courses.Course', related_name='student_groups', on_delete=models.CASCADE)
+    students = models.ManyToManyField(User, related_name='my_groups')
