@@ -9,6 +9,15 @@ from django.contrib import messages
 from .models import BaseCourse, Course
 
 
+class GroupMixin(object):
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if ctx['object'].use_groups:
+            ctx['my_group'] = ctx['course'].find_studentgroup_by_user(self.request.user)
+        return ctx
+
+
 class CourseContextMixin(object):
 
     def get_context_data(self, **kwargs):

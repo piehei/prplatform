@@ -38,6 +38,11 @@ class BaseExercise(TimeStampedModel):
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
 
+    def submissions_by_submitter(self, user):
+        if self.use_groups:
+            return self.submissions.filter(submitter_group=self.course.find_studentgroup_by_user(user))
+        return self.submissions.filter(submitter_user=user)
+
     def get_list_url(self):
         urls = {'SubmissionExercise': 'courses:submissions:original-list',
                 'ReviewExercise': 'courses:submissions:review-list'}

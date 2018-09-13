@@ -41,7 +41,7 @@
         </div>
       {% endif %}
 
-      {% if my_submissions and hide_form %}
+      {% if my_submissions and disable_form %}
 
         <div class="alert alert-warning font-italic">
           You have reached the maximum number of submissions.
@@ -61,7 +61,7 @@
               {% csrf_token %}
               {{ form | crispy }}
               <input type="submit" class="btn btn-primary" value="Submit"
-                     {% if hide_form or object.use_groups and not my_group %}disabled{% endif %}>
+                     {% if disable_form or object.use_groups and not my_group %}disabled{% endif %}>
           </form>
 
       {% endif %}
