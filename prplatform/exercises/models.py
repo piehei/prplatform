@@ -55,7 +55,7 @@ class BaseExercise(TimeStampedModel):
 
     class Meta:
         abstract = True
-
+        ordering = ['-closing_time']
 
 class SubmissionExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.
