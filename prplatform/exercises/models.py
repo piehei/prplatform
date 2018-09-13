@@ -105,7 +105,11 @@ class SubmissionExercise(BaseExercise):
             return True
         if not self.is_open():
             return False
-        if self.submissions.filter(submitter=user):
+        # TODO: multiple submissions? boomerang?
+        if self.submissions.filter(submitter_user=user):
+            return False
+        if self.use_groups and \
+           self.submissions.filter(submitter_group=self.course.find_studentgroup_by_user(user)):
             return False
         return True
 

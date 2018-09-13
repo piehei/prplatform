@@ -175,12 +175,21 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
         if not ctx['teacher'] and not exercise.visible_to_students:
             raise PermissionDenied
 
-        my_submissions = exercise.submissions.filter(submitter=self.request.user)
+        my_submissions = None
+        if exercise.use_groups:
+            ctx['use_groups'] = True
+            my_group = exercise.course.find_studentgroup_by_user(user)
+            ctx['my_group'] = my_group
+            if my_group:
+                my_submissions = exercise.submissions.filter(submitter_group=my_group)
+        else:
+            my_submissions = exercise.submissions.filter(submitter_user=user)
+
         ctx['my_submissions'] = my_submissions
 
         if not exercise.can_submit(user):
             ctx['hide_form'] = True
-            return self.render_to_response(ctx)
+            # return self.render_to_response(ctx)
 
         ctx['form'] = OriginalSubmissionForm(type=self.object.type)
 
@@ -196,6 +205,7 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
         exercise = self.object
         teacher = exercise.is_teacher(user)
 
+        # TODO: teacher has to be able to override this!??!?!
         if not teacher and exercise.closing_time < timezone.now():
             messages.error(self.request, 'Closing time for the exercise has passed. You cannot submit.')
             ctx['hide_form'] = True
@@ -216,7 +226,9 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailVi
             sub = form.save(commit=False)
             sub.course = course
             sub.exercise = exercise
-            sub.submitter = user
+            sub.submitter_user = user
+            if exercise.use_groups:
+                sub.submitter_group = course.find_studentgroup_by_user(user)
             sub.save()
             messages.success(self.request, 'Submission successful! You may see it below.')
             return redirect(sub)

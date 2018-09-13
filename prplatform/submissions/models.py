@@ -4,7 +4,7 @@ from django.core.exceptions import FieldError
 from django.urls import reverse
 
 from prplatform.core.models import TimeStampedModel
-from prplatform.users.models import User
+from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
@@ -12,12 +12,18 @@ from prplatform.exercises.question_models import Question
 class BaseSubmission(TimeStampedModel):
 
     course = models.ForeignKey(Course, related_name="%(class)s_submissions", on_delete=models.CASCADE)
-    # TODO: Group submission?
-    submitter = models.ForeignKey(User, related_name="%(class)s_submitters", on_delete=models.CASCADE)
+    submitter_user = models.ForeignKey(User, related_name="%(class)s_submitters", on_delete=models.CASCADE)
+    submitter_group = models.ForeignKey(StudentGroup, on_delete=models.CASCADE, null=True)
 
     class Meta:
         abstract = True
 
+    @property
+    def submitter(self):
+        if self.submitter_group:
+            return self.submitter_group.name
+        else:
+            return self.submitter_user.username
 
 def upload_fp(instance, filename):
     """ This will be the filename of the uploaded file """

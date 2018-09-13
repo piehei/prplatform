@@ -60,9 +60,13 @@ class IsSubmitterOrTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
     permission_denied_message = "Only the submitter or a teacher can access this page."
 
     def test_func(self):
-        is_submitter = self.get_object().submitter == self.request.user
+        submission = self.get_object()
         is_teacher = get_object_or_404(BaseCourse, url_slug=self.kwargs['base_url_slug']).is_teacher(self.request.user)
-        return is_submitter or is_teacher
+        is_submitter = submission.submitter_user == self.request.user
+        is_in_group = False
+        if submission.submitter_group:
+            is_in_group = submission.course.find_studentgroup_by_user(self.request.user) == submission.submitter_group
+        return is_submitter or is_teacher or is_in_group
 
 
 class CourseMixin(object):

@@ -8,7 +8,7 @@ class SubmissionExerciseForm(ModelForm):
     class Meta:
         model = SubmissionExercise
         fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
-                  'type', 'aplus_course_id', 'aplus_exercise_id',
+                  'type', 'aplus_course_id', 'aplus_exercise_id', 'use_groups',
                   'accepted_file_types', 'upload_instructions']
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
@@ -18,7 +18,10 @@ class SubmissionExerciseForm(ModelForm):
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'accepted_file_types': 'A comma separated list of file types. Do not include the period character. ' + \
-                                       'Valid examples: pdf or pdf,pptx,docx or py,txt'
+                                       'Valid examples: pdf or pdf,pptx,docx or py,txt',
+                'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
+                              'teacher has to configure groups from course edit view.<br><b>Do not change this</b> ' + \
+                              'after submissions have been made.',
                 }
 
     def clean(self):
@@ -91,7 +94,8 @@ class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
         fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
-                  'model_answer', 'reviewable_exercise', 'type', 'review_count']
+                  'model_answer', 'reviewable_exercise', 'type', 'review_count', 'use_groups',
+                  ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'model_answer': Textarea(attrs={'cols': 80, 'rows': 5}),
@@ -99,6 +103,8 @@ class ReviewExerciseForm(ModelForm):
         help_texts = {
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
+                              'teacher has to configure groups from course edit view.',
                 }
 
 class QuestionForm(ModelForm):

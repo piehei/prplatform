@@ -35,6 +35,18 @@
         {{ object.description | linebreaks }}
       </div>
 
+      {% if object.use_groups %}
+      <div class="alert alert-{% if my_group %}warning{% else %}danger{% endif %}">
+          In this exercise you're submitting as a group.
+          <br>
+          {% if my_group %}
+            Members in your group: {{ my_group.student_usernames }}
+            {% else %} <!-- TODO: how can the teacher override this and submit as a group???? -->
+            You have not been assigned to any group! Contact course personnel to make a submission.
+          {% endif %}
+        </div>
+      {% endif %}
+
       {% if my_submissions and hide_form %}
 
         <div class="alert alert-warning font-italic">
@@ -43,50 +55,22 @@
 
       {% endif %}
 
-      {% if not hide_form %}
+      {% if object.type == 'APLUS' %}
 
-        {% if object.type == 'APLUS' %}
+        This exercise retrieves your submission in Plus. You're supposed to make your submission over there.
 
-          This exercise retrieves your submission in Plus. You're supposed to make your submission over there.
+      {% else %}
 
-        {% else %}
-
-          <form enctype="multipart/form-data"
-                action="{{ object.get_absolute_url }}"
-                method="post">
-                {% csrf_token %}
-                {{ form | crispy }}
-                <input type="submit" class="btn btn-primary" value="Submit" />
-            </form>
-
-        {% endif %}
+        <form enctype="multipart/form-data"
+              action="{{ object.get_absolute_url }}"
+              method="post">
+              {% csrf_token %}
+              {{ form | crispy }}
+              <input type="submit" class="btn btn-primary" value="Submit"
+                     {% if hide_form or object.use_groups and not my_group %}disabled{% endif %}>
+          </form>
 
       {% endif %}
-
-
-        <!-- TODO: this hand-crafted form might need to be replaced
-                   with some future submission model form
-      {% if object.file_upload %}
-      <div class="col-md-12 mt-4">
-
-
-        <form>
-          <div class="form-group mb-4">
-            <label for="exampleFormControlFile1">
-              {{ object.upload_instructions }}
-            </label>
-            <input type="file" class="form-control-file" id="exampleFormControlFile1">
-          </div>
-
-          <button type="button" class="btn btn-primary btn-sm">Submit</button>
-        </form>
-
-
-
-
-      </div>
-      {% endif %}
-        -->
 
     </div>
   </div>

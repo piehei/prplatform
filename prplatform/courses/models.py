@@ -95,6 +95,9 @@ class Course(TimeStampedModel):
         new_enrollment = Enrollment(student=user, course=self)
         new_enrollment.save()
 
+    def find_studentgroup_by_user(self, user):
+        return self.student_groups.filter(student_usernames__contains=[user.username]).first()
+
 
 class Enrollment(TimeStampedModel):
     student = models.ForeignKey(User, related_name="enrollments", on_delete=models.CASCADE)
