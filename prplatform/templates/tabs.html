@@ -12,21 +12,13 @@
         {% if teacher %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'edit' %}active{% endif %}"
-               href="{% if type == 'original' %}
-                        {% url 'courses:update-submission-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% else %}
-                        {% url 'courses:update-review-exercise' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% endif %}">
+               href="{{ object.get_edit_url }}">
               Edit
             </a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
-               href="{% if type == 'original' %}
-                        {% url 'courses:submissions:original-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% else %}
-                        {% url 'courses:submissions:review-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% endif %}">
+               href="{{ object.get_list_url }}">
               List of submissions
               <span class="ml-1 badge badge-primary badge-pill">{{ object.submissions.count }}</span>
             </a>
@@ -34,11 +26,7 @@
         {% else %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
-               href="{% if type == 'original' %}
-                        {% url 'courses:submissions:original-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% else %}
-                        {% url 'courses:submissions:review-list' object.course.base_course.url_slug object.course.url_slug object.pk %}
-                     {% endif %}">
+               href="{{ object.get_list_url }}">
               My submissions
               <span class="ml-1 badge badge-primary badge-pill">{{ object|my_submission_count:user }}</span>
             </a>

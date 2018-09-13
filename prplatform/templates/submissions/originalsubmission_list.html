@@ -22,9 +22,10 @@
       {% if originalsubmission_list %}
         <div class="list-group">
           {% for origsub in originalsubmission_list %}
+
           <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
-             {{ origsub }}
-            </a>
+            {{ origsub.created }} || {{ origsub.submitter }}
+          </a>
           {% endfor %}
         </div>
       {% else %}
