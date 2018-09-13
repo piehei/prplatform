@@ -17,6 +17,7 @@ class BaseSubmission(TimeStampedModel):
 
     class Meta:
         abstract = True
+        ordering = ['-created']
 
     @property
     def submitter(self):
