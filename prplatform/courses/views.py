@@ -1,12 +1,14 @@
 from django.http import HttpResponseRedirect
+from django import forms
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
-from django.views.generic import ListView, DetailView, UpdateView
+from django.views.generic import ListView, DetailView, UpdateView, TemplateView
 from django.views.generic.edit import ProcessFormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 
 from .models import BaseCourse, Course
+from prplatform.users.models import StudentGroup
 
 
 class GroupMixin(object):
@@ -141,3 +143,69 @@ class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
     def get(self, request, *args, **kwargs):
         return HttpResponseRedirect(reverse("courses:detail", kwargs={'url_slug': self.kwargs['url_slug'],
                                     'base_url_slug': self.kwargs['base_url_slug']}))
+
+
+class GroupUploadForm(forms.Form):
+    group_file = forms.FileField()
+
+class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
+    model = Course
+    template_name = "courses/groups.html"
+
+
+    def get(self, args, **kwargs):
+        ctx = self.get_context_data(**kwargs)
+        ctx['form'] = GroupUploadForm()
+        return self.render_to_response(ctx)
+
+
+    def post(self, args, **kwargs):
+        ctx = self.get_context_data(**kwargs)
+
+        group_file = self.request.FILES['group_file']
+        contents = group_file.read().decode('utf-8')
+
+
+        # TODO TODO TODO TODO TODO TODO:
+        # take this whole filehandling into studentgroup or course model
+        # or make a *TESTABLE* utility function in core package
+        groups = {}
+        used_usernames = []
+        group_file_is_valid = True
+        for row in contents.strip().split("\n"):
+            parts = row.strip().split(",")
+            if len(parts) == 0:
+                continue
+            name = parts[0]
+            usernames = parts[1:]
+
+            if name in groups:
+                messages.error(self.request, f'Group name {name} appears twice in the file. Cannot continue.')
+                group_file_is_valid = False
+            else:
+                groups[name] = usernames
+
+            for username in usernames:
+                if username in used_usernames:
+                    messages.error(self.request, f'Username {username} appears in more than one group. Cannot continue.')
+                    group_file_is_valid = False
+                used_usernames.append(username)
+
+        if group_file_is_valid:
+            print("Group file IS valid! Can continue!")
+
+            for group_name in groups:
+                existing_group = StudentGroup.objects.filter(course=ctx['course'], name=group_name).first()
+                if existing_group:
+                    existing_usernames = existing_group.student_usernames
+                    existing_group.student_usernames = groups[group_name]
+                    existing_group.save()
+                    messages.warning(self.request, f'Updated group: {existing_group.name};; students: {existing_usernames} ---> {existing_group.student_usernames}')
+                else:
+                    new_group = StudentGroup.objects.create(course=ctx['course'],
+                                                            name=group_name,
+                                                            student_usernames=groups[group_name])
+                    messages.success(self.request, f'Created group: {new_group}')
+
+        return HttpResponseRedirect(reverse("courses:groups", kwargs={'url_slug': self.kwargs['url_slug'],
+                                            'base_url_slug': self.kwargs['base_url_slug']}))
