@@ -22,11 +22,15 @@
 
       <div class="list-group-item d-flex justify-content-between">
 
-        <div class="col-3" style="font-weight: bold; border-right:0px solid grey; text-align:right;">
-          {% if ex.visible_to_students %}
-            <a href="{{ ex.get_absolute_url }}">{{ ex.name }}</a>
+        <div class="col-3" style=" border-right:0px solid grey; text-align:right;">
+          {% if ex.visible_to_students or teacher %}
+            <a href="{{ ex.get_absolute_url }}" style="font-weight: bold;">{{ ex.name }}</a>
+            <br>
+            Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
           {% elif teacher %}
-            <a href="{{ ex.get_absolute_url }}">{{ ex.name }}</a> [hidden]
+            <a href="{{ ex.get_absolute_url }}" style="font-weight: bold;">{{ ex.name }}</a> [hidden]
+            <br>
+            Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
           {% endif %}
         </div>
 
@@ -43,12 +47,16 @@
         {% endif %}
         </div>
 
-        <div class="col-3" style="font-weight: bold; border-left:0px solid grey; text-align:right;">
+        <div class="col-3" style=" border-left:0px solid grey; text-align:right;">
           {% if ex.review_exercise %}
             {% if ex.review_exercise.visible_to_students %}
-              <a href="{{ ex.review_exercise.get_absolute_url }}">{{ ex.review_exercise.name }}</a>
+              <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
+              <br>
+              Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
             {% elif teacher %}
-              <a href="{{ ex.review_exercise.get_absolute_url }}">{{ ex.review_exercise.name }}</a> [hidden]
+              <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a> [hidden]
+              <br>
+              Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
             {% endif %}
           {% else %}
             {% if teacher %}
