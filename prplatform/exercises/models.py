@@ -83,6 +83,8 @@ class SubmissionExercise(BaseExercise):
     upload_instructions = models.CharField(max_length=500, blank=True)
     accepted_file_types = models.CharField(max_length=100, blank=True)
 
+    use_states = models.BooleanField(default=False)
+
     aplus_course_id = models.IntegerField(null=True, blank=True)
     aplus_exercise_id = models.IntegerField(null=True, blank=True)
 
