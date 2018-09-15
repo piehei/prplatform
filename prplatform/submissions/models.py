@@ -26,6 +26,7 @@ class BaseSubmission(TimeStampedModel):
         else:
             return self.submitter_user.username
 
+
 def upload_fp(instance, filename):
     """ This will be the filename of the uploaded file """
     return f"uploads/course_{instance.course.pk}/ex_{instance.exercise.pk}/sub_{instance.pk}/{filename}"
@@ -42,6 +43,21 @@ class OriginalSubmission(BaseSubmission):
     text = models.TextField(max_length=5000, blank=True)
     file = models.FileField(upload_to=upload_fp, blank=True)
 
+    SUBMITTED = 'submitted'
+    BOOMERANG = 'boomerang'
+    READY_FOR_REVIEW = 'ready_for_review'
+
+    SUBMISSION_STATE_CHOICES = (
+        (SUBMITTED, 'Submitted'),
+        (BOOMERANG, 'Boomerang'),
+        (READY_FOR_REVIEW, 'Ready for review'),
+    )
+    state = models.CharField(
+        max_length=16,
+        choices=SUBMISSION_STATE_CHOICES,
+        default=READY_FOR_REVIEW,
+    )
+
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
 
@@ -52,13 +68,13 @@ class OriginalSubmission(BaseSubmission):
             'pk': self.exercise.pk,
             'sub_pk': self.pk
             })
+
     def get_file_download_url(self):
         return reverse('courses:submissions:download', kwargs={
             'base_url_slug': self.course.base_course.url_slug,
             'url_slug': self.course.url_slug,
             'pk': self.pk
             })
-
 
     def save(self, *args, **kwargs):
         """ Overrides the model's save method so that when a file is uploaded
