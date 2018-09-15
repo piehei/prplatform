@@ -3,6 +3,7 @@ from django.conf.urls import include, url
 
 from . import views
 from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseUpdateView, ReviewExerciseCreateView, ReviewExerciseUpdateView, SubmissionExerciseDeleteView, ReviewExerciseDeleteView
+from prplatform.submissions.views import OriginalSubmissionUpdateView
 from prplatform.exercises.question_views import QuestionCreateView, QuestionUpdateView
 app_name = "courses"
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/update/r/<int:pk>', view=ReviewExerciseUpdateView.as_view(), name="update-review-exercise"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/delete/s/<int:pk>', view=SubmissionExerciseDeleteView.as_view(), name="delete-submission-exercise"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/delete/r/<int:pk>', view=ReviewExerciseDeleteView.as_view(), name="delete-review-exercise"),
+    path('<slug:base_url_slug>/<slug:url_slug>/teacher/update-state/s/<int:pk>', view=OriginalSubmissionUpdateView.as_view(), name="update-submission-state"),
 ]

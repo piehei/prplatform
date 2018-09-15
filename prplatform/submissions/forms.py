@@ -42,6 +42,14 @@ class OriginalSubmissionForm(ModelForm):
                                       'Accepted file types are: ' + self.accepted_file_types)
 
 
+
+class OriginalSubmissionStateForm(ModelForm):
+
+    class Meta:
+        model = OriginalSubmission
+        fields = ['state']
+
+
 class AnswerForm(ModelForm):
 
     class Meta:

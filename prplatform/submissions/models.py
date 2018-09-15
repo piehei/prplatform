@@ -76,6 +76,13 @@ class OriginalSubmission(BaseSubmission):
             'pk': self.pk
             })
 
+    def get_update_state_url(self):
+        return reverse('courses:update-submission-state', kwargs={
+            'base_url_slug': self.course.base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
     def save(self, *args, **kwargs):
         """ Overrides the model's save method so that when a file is uploaded
             its name may contain the object's PK. The PK would not be available

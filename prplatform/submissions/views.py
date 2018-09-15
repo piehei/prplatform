@@ -1,11 +1,12 @@
 from django.core.exceptions import PermissionDenied
+from django import forms
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views import View
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, UpdateView
 
 from .models import OriginalSubmission, ReviewSubmission
-
+from .forms import OriginalSubmissionStateForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin, IsEnrolledMixin
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
@@ -52,6 +53,8 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
 # DETAIL VIEWS
 #
 
+
+
 class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin, DetailView):
     model = OriginalSubmission
     pk_url_kwarg = "sub_pk"
@@ -64,8 +67,32 @@ class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin
             lines = self.object.file.read().decode("utf-8")
             context['filecontents'] = lines
             print(self.object.file.url)
+
+        if context['teacher']:
+            context['state_form'] = OriginalSubmissionStateForm(instance=self.object)
         return self.render_to_response(context)
 
+
+class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
+    """
+    The teacher can submit this form from the detail view of a submission.
+    Using the form the teacher can either make the submission available in
+    the pool of peer-review ready submissions (change state from 'SUBMITTED' to
+    'READY_FOR_REVIEW') or give student(s) some feedback and request fixes with
+    the 'BOOMERANG' state.
+    """
+
+    model = OriginalSubmission
+    fields = ['state']
+
+    def post(self, *args, **kwargs):
+        self.object = self.get_object()
+        context = self.get_context_data(**kwargs)
+
+        form = OriginalSubmissionStateForm(self.request.POST, instance=self.object)
+        if form.is_valid():
+            form.save()
+        return redirect(self.object.get_absolute_url())
 
 class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
@@ -101,3 +128,4 @@ class DownloadSubmissionView(View):
         response['Content-Disposition'] = 'attachment; filename=%s' % filename
 
         return response
+
