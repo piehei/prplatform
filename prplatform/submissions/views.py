@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView, UpdateView
+from django.contrib import messages
 
 from .models import OriginalSubmission, ReviewSubmission
 from .forms import OriginalSubmissionStateForm
@@ -87,12 +88,12 @@ class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-
         form = OriginalSubmissionStateForm(self.request.POST, instance=self.object)
         if form.is_valid():
             form.save()
+            messages.success(self.request, 'The state of the submission has been updated')
         return redirect(self.object.get_absolute_url())
+
 
 class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
