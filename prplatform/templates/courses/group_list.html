@@ -1,0 +1,25 @@
+<div class="col mt-4">
+
+  <h4>List of groups</h4>
+
+  {% if not groups %}
+    No groups have been created for the course.
+  {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Name of the group</th>
+          <th scope="col">User identifiers</th>
+        </tr>
+      </head>
+      <tbody>
+        {% for group in groups %}
+          <tr>
+            <td scope="row">{{ group.name }}</td>
+            <td>{{ group.student_usernames }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</div>

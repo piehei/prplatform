@@ -146,18 +146,18 @@ class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
 
 
 class GroupUploadForm(forms.Form):
-    group_file = forms.FileField()
+    group_file = forms.FileField(label='CSV formatted group file')
+
 
 class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
     model = Course
     template_name = "courses/groups.html"
 
-
     def get(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)
         ctx['form'] = GroupUploadForm()
+        ctx['groups'] = StudentGroup.objects.filter(course=ctx['course'])
         return self.render_to_response(ctx)
-
 
     def post(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)

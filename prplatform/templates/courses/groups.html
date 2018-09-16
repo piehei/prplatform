@@ -20,9 +20,20 @@
             action="{% url 'courses:groups' course.base_course.url_slug course.url_slug %}">
         {% csrf_token %}
         {{ form|crispy }}
+        This CSV has these <b>constraints</b>:<br>
+        * delimiter is "," character<br>
+        * no header-row allowed<br>
+        * first field is group name, following fields are username fields (any number)<br>
+        * group name is unique, users can appear in only one group<br>
+        * uploading will either create groups or update previous groups if matching group names exist in the system<br>
+        * the system <b>will tell you about errors</b> in the file and do nothing, if errors are found<br>
+        <br>
         <button type="submit" class="btn btn-success">Update</button>
       </form>
     </div>
+
+    {% include "./group_list.html" %}
+
   </div>
 
 {% endblock %}
