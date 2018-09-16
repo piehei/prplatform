@@ -26,13 +26,14 @@
         </a>
       </div>
 
+      <div class="col-sm-12 mt-4">
+        <a href="{% url 'courses:dealings' object.base_course.url_slug object.url_slug %}" class="btn btn-primary btn-sm">
+          Dealings (who peer-reviews who)
+        </a>
+      </div>
+
+
     {% include "./exercise_list.html" %}
-
-
-
-
-
-
 
     <div class="col-sm-12 mt-4">
       <hr>

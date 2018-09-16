@@ -209,3 +209,27 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
         return HttpResponseRedirect(reverse("courses:groups", kwargs={'url_slug': self.kwargs['url_slug'],
                                             'base_url_slug': self.kwargs['base_url_slug']}))
+
+
+class ReviewDealUploadForm(forms.Form):
+    dealing_file = forms.FileField(label='CSV formatted review dealing file')
+
+
+class CourseReviewDealingView(CourseContextMixin, IsTeacherMixin, TemplateView):
+    model = Course
+    template_name = "courses/dealings.html"
+
+    def get(self, args, **kwargs):
+        ctx = self.get_context_data(**kwargs)
+        ctx['form'] = ReviewDealUploadForm()
+        return self.render_to_response(ctx)
+
+    def post(self, args, **kwargs):
+        print("NO OP")
+        # ctx = self.get_context_data(**kwargs)
+        # group_file = self.request.FILES['group_file']
+        # contents = group_file.read().decode('utf-8')
+        messages.warning(self.request, "Not implemented yet!")
+        return HttpResponseRedirect(reverse("courses:dealings", kwargs={'url_slug': self.kwargs['url_slug'],
+                                            'base_url_slug': self.kwargs['base_url_slug']}))
+

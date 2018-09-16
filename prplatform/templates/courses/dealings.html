@@ -1,0 +1,33 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Peer-review dealings{% endblock %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-md-12">
+
+      <div class="alert alert-danger">
+        BE CAREFUL
+      </div>
+      <form enctype="multipart/form-data"
+            class="form-horizontal" method="post"
+            action="{% url 'courses:dealings' course.base_course.url_slug course.url_slug %}">
+        {% csrf_token %}
+        {{ form|crispy }}
+        This CSV has these <b>constraints</b>:<br>
+        * delimiter is "," character<br>
+        * no header-row allowed<br>
+        <br>
+        <button type="submit" class="btn btn-success">Update</button>
+      </form>
+    </div>
+
+    {% include "./dealing_list.html" %}
+
+  </div>
+
+{% endblock %}
