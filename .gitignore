@@ -294,3 +294,5 @@ prplatform/media/
 example_files
 prplatform/django_lti_login
 crons/envs
+config/production.wsgi
+production.wsgi
