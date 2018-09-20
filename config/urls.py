@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from prplatform.users.views import ShibbolethRedirectView, ShibbolethLoginView
+
 urlpatterns = [
     # url(r"^", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     url(r"^$", lambda r: HttpResponseRedirect("/courses"), name="home"),
@@ -28,6 +30,8 @@ urlpatterns = [
     ),
     url(r"^accounts/", include("allauth.urls")),
     # Your stuff: custom urls includes go here
+    url(r"^shibboleth-login/", ShibbolethLoginView.as_view(), name="shibboleth_login"),
+    url(r"^shibboleth-redirect/", ShibbolethRedirectView.as_view(), name="shibboleth_redirect"),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )

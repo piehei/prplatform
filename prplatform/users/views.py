@@ -41,3 +41,22 @@ class UserListView(LoginRequiredMixin, ListView):
     # These next two lines tell the view to index lookups by username
     slug_field = "username"
     slug_url_kwarg = "username"
+
+
+class ShibbolethRedirectView(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self):
+        destination = self.request.META.get('HTTP_REFERER')
+        if "next=" in destination:
+            return f"/shibboleth-login/{destination}"
+        else:
+            return "/shibboleth-login/?next=/"
+
+class ShibbolethLoginView(RedirectView):
+    permanent = False
+
+    def get_redirect_url(self):
+        destination = self.request.GET.get('next', None)
+        return destination #  if destination else "/"
+
