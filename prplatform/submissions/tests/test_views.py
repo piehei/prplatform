@@ -23,7 +23,7 @@ class SubmissionsTest(TestCase):
 
         for username in ["student1", "student2", "student3"]:
             user = User.objects.get(username=username)
-            OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+            OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
 
         request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
         request.user = User.objects.get(username="student1")
@@ -43,7 +43,7 @@ class SubmissionsTest(TestCase):
 
         for username in ["student1", "student2", "student3", "teacher1"]:
             user = User.objects.get(username=username)
-            OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+            OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
 
         request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
         request.user = User.objects.get(username="teacher1")

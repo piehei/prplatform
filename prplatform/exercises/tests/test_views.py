@@ -111,7 +111,7 @@ class ExerciseTest(TestCase):
         user = User.objects.get(username="student1")
         exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
         # then load the page and check it disables second submission
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
         request.user = user
@@ -127,9 +127,9 @@ class ExerciseTest(TestCase):
         user = User.objects.get(username="teacher1")
         exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
         request.user = user
