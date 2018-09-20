@@ -61,6 +61,13 @@ class OriginalSubmission(BaseSubmission):
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
 
+    def submissions_by_same_submitter(self):
+        all_subs = OriginalSubmission.objects.filter(exercise=self.exercise)
+        if self.exercise.use_groups:
+            return all_subs.filter(submitter_group=self.submitter_group)
+        else:
+            return all_subs.filter(submitter_user=self.submitter_user)
+
     def get_absolute_url(self):
         return reverse('courses:submissions:original-detail', kwargs={
             'base_url_slug': self.course.base_course.url_slug,
