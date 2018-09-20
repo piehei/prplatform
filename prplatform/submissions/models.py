@@ -143,20 +143,31 @@ class ReviewLockManager(models.Manager):
                       reviews?
             """
 
-            # this is a list of all original submissions available for peer-reviewing
-            # sorted in ascending order (from zero to n)
-            reviewable_list = OriginalSubmission.objects \
-                                                .exclude(submitter=user) \
-                                                .filter(exercise=exercise.reviewable_exercise) \
-                                                .annotate(Count('reviews')) \
-                                                .order_by('reviews__count')
+            # this is all _last_ submissions by other submitters sorted by review count
+            candidates = OriginalSubmission.objects \
+                                           .filter(exercise=exercise.reviewable_exercise) \
+                                           .annotate(Count('reviews')) \
+                                           .order_by('reviews__count')
 
-            # this most likely has no reviews yet
-            # -> should they also be ordered by submission time?
-            if len(reviewable_list) == 0:
+            if exercise.reviewable_exercise.use_groups:
+                latest_submission_ids = OriginalSubmission.objects.values('id') \
+                                                          .order_by('submitter_group_id', '-created') \
+                                                          .distinct('submitter_group_id')
+                candidates = candidates.exclude(
+                                        submitter_group=exercise.course.find_studentgroup_by_user(user)) \
+                                       .filter(id__in=latest_submission_ids)
+            else:
+                latest_submission_ids = OriginalSubmission.objects.values('id') \
+                                                          .order_by('submitter_user_id', '-created') \
+                                                          .distinct('submitter_user_id')
+                candidates = candidates.exclude(
+                                        submitter_user=user) \
+                                       .filter(id__in=latest_submission_ids)
+
+            if candidates.count() == 0:
                 raise FieldError("nothing to review")
 
-            reviewable = reviewable_list[0]
+            reviewable = candidates.first()
 
         return self.create(user=user,
                            review_exercise=exercise,
