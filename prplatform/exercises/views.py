@@ -234,55 +234,55 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
     PREFIX = "question-index-"
 
+    def _get_answer_forms(self):
+        # this gathers all the teacher-chosen questions that
+        # the peer-reviewing student will answer
+        forms = []
+        for index, q in enumerate(self.object.questions.all()):
+            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
+
+    def _render_teacher_view(self, ctx, exercise):
+        reviewable = exercise.reviewable_exercise.submissions.first()
+        if reviewable:
+            ctx['reviewable'] = reviewable
+            if reviewable.file:
+                ctx['filecontents'] = reviewable.file.read().decode('utf-8')
+
+        my_submission = exercise.reviewable_exercise.submissions.last()
+        if my_submission:
+            ctx['my_submission'] = my_submission
+            if my_submission.file:
+                ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
+
+        return self.render_to_response(ctx)
+
     def get(self, *args, **kwargs):
 
         self.object = self.get_object()
 
         ctx = self.get_context_data(**kwargs)
         is_teacher = ctx['teacher']
+        user = self.request.user
         exercise = self.get_object()
-        questions = exercise.questions.all()
 
         if not is_teacher and not exercise.visible_to_students:
             raise PermissionDenied
 
-        # this gathers all the teacher-chosen questions that
-        # the peer-reviewing student will answer
-        forms = []
-        for index, q in enumerate(questions):
-            # if previous_submission:
-                # print(previous_submission.answers[index])
-            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
-        ctx['forms'] = forms
+        ctx['forms'] = self._get_answer_forms()
 
         if is_teacher:
+            self._render_teacher_view(ctx, exercise)
 
-            reviewable = exercise.reviewable_exercise.submissions.first()
-            if reviewable:
-                ctx['reviewable'] = reviewable
-                if reviewable.file:
-                    ctx['filecontents'] = reviewable.file.read().decode('utf-8')
-
-            my_submission = exercise.reviewable_exercise.submissions.last()
-            if my_submission:
-                ctx['my_submission'] = my_submission
-                if my_submission.file:
-                    ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
-
+        my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(user)
+        if not my_submission_qs:
             return self.render_to_response(ctx)
 
-        my_submission = exercise.reviewable_exercise.submissions.filter(submitter=self.request.user)
-        if not my_submission:
-            return self.render_to_response(ctx)
-
-        my_submission = my_submission[0]
-        ctx['my_submission'] = my_submission
-
-        if my_submission.file:
-            ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
+        ctx['my_submission'] = my_submission_qs.first()
+        if ctx['my_submission'].file:
+            ctx['my_filecontents'] = ctx['my_submission'].file.read().decode('utf-8')
 
         rlock = None
-        rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
+        rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
 
         # check if the user has review locks
         if rlock_list:
