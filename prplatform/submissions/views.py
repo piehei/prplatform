@@ -67,9 +67,8 @@ class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin
         if self.object.file:
             lines = self.object.file.read().decode("utf-8")
             context['filecontents'] = lines
-            print(self.object.file.url)
 
-        if context['teacher']:
+        if context['teacher'] and self.object.exercise.use_states:
             context['state_form'] = OriginalSubmissionStateForm(instance=self.object)
         return self.render_to_response(context)
 

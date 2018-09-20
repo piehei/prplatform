@@ -53,17 +53,23 @@
       {% if teacher %}
       <hr></hr>
       <h2>Teacher feedback to student:</h2>
-      <small>If you've enabled the "use states" option in the exercise configuration, you
-             can change the state of the submission here. You can either give the student
-             a boomerang or OK the submission and turn it ready for peer-review.</small>
-        <form class="form-horizontal" method="post"
-                                      action="{{ object.get_update_state_url }}">
-          {% csrf_token %}
+        {% if state_form %}
+          <small>If you've enabled the "use states" option in the exercise configuration, you
+                 can change the state of the submission here. You can either give the student
+                 a boomerang or OK the submission and turn it ready for peer-review.</small>
+          <form class="form-horizontal" method="post"
+                                        action="{{ object.get_update_state_url }}">
+            {% csrf_token %}
 
-          {{ state_form|crispy }}
+            {{ state_form|crispy }}
 
-          <button type="submit" class="btn btn-primary btn-sm">Save</button>
-        </form>
+            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+          </form>
+
+        {% else %}
+          You have not enabled "use states" in this exercise's configuration. This submission is automatically
+          put into peer-review queue for other students.
+        {% endif %}
       {% endif %}
 
     </div>
