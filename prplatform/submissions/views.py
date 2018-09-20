@@ -62,15 +62,17 @@ class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
+        ctx = self.get_context_data(**kwargs)
 
         if self.object.file:
             lines = self.object.file.read().decode("utf-8")
-            context['filecontents'] = lines
+            ctx['filecontents'] = lines
 
-        if context['teacher'] and self.object.exercise.use_states:
-            context['state_form'] = OriginalSubmissionStateForm(instance=self.object)
-        return self.render_to_response(context)
+        if ctx['teacher'] and self.object.exercise.use_states:
+            ctx['state_form'] = OriginalSubmissionStateForm(instance=self.object)
+            ctx['other_submissions'] = self.object.submissions_by_same_submitter()
+
+        return self.render_to_response(ctx)
 
 
 class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
