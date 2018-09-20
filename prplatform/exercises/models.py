@@ -110,13 +110,15 @@ class SubmissionExercise(BaseExercise):
     def can_submit(self, user):
         if self.is_teacher(user):
             return True
-        if not self.is_open():
-            return False
-        # TODO: multiple submissions? boomerang?
-        if self.submissions.filter(submitter_user=user):
-            return False
+        latest_submission = self.submissions_by_submitter(user).first()
+        if latest_submission and latest_submission.state == latest_submission.BOOMERANG:
+            return True
         if self.use_groups and \
            self.submissions.filter(submitter_group=self.course.find_studentgroup_by_user(user)):
+            return False
+        if self.submissions.filter(submitter_user=user):
+            return False
+        if not self.is_open():
             return False
         return True
 
