@@ -16,21 +16,38 @@
 
   <div class="row">
     <div class="col-md-12">
-
-      <h2>Submissions to task: </h2>
-
-      {% if originalsubmission_list %}
-        <div class="list-group">
-          {% for origsub in originalsubmission_list %}
-
-          <a href="{{ origsub.get_absolute_url }}" class="list-group-item">
-            {{ origsub.created }} || {{ origsub.submitter }}
-          </a>
-          {% endfor %}
-        </div>
-      {% else %}
-        No submissions yet
-      {% endif %}
+      <table class="table table-striped">
+        {% if teacher %}
+        <thead>
+          <tr>
+            <th>Submitter<br><input placeholder="not implemented"></th>
+            <th>Date<br><input placeholder="not implemented"></th>
+            <th>Status<br><input placeholder="not implemented"></th>
+          </tr>
+        </thead>
+        {% endif %}
+        <tbody>
+          {% if not originalsubmission_list %}
+            No submissions yet
+          {% else %}
+            {% for origsub in originalsubmission_list %}
+              <tr scope="row">
+                <td>
+                  {{ origsub.submitter }}
+                </td>
+                <td>
+                  <a href="{{ origsub.get_absolute_url }}">
+                    {{ origsub.created }}
+                  </a>
+                </td>
+                <td>
+                  {{ origsub.state }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
 
     </div>
   </div>
