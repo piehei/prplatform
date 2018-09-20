@@ -69,7 +69,8 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'django_pygments',
     'django_lti_login',
-    'django_bootstrap_breadcrumbs'
+    'django_bootstrap_breadcrumbs',
+    'shibboleth',
 ]
 LOCAL_APPS = [
     'prplatform.users.apps.UsersConfig',
@@ -96,6 +97,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
     'django_lti_login.backends.LTIAuthBackend',
+    'shibboleth.backends.ShibbolethRemoteUserBackend',
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
 AUTH_USER_MODEL = 'users.User'
@@ -140,6 +142,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'shibboleth.middleware.ShibbolethRemoteUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -245,3 +248,10 @@ SOCIALACCOUNT_ADAPTER = 'prplatform.users.adapters.SocialAccountAdapter'
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+SHIBBOLETH_ATTRIBUTE_MAP = {
+    "uid": (True, "username"),
+    "givenName": (True, "first_name"),
+    "sn": (True, "last_name"),
+    "mail": (False, "email"),
+}

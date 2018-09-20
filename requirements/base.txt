@@ -31,3 +31,5 @@ git+https://github.com/Aalto-LeTech/django-lti-login.git@2.0.1rc#egg=django-lti-
 
 # styles, bootstrap etc.
 django-bootstrap-breadcrumbs==0.9.1
+
+git+https://github.com/Brown-University-Library/django-shibboleth-remoteuser.git
