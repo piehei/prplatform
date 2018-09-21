@@ -1,11 +1,13 @@
 from django.test import RequestFactory, TestCase
+from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import PermissionDenied
 
 from prplatform.users.models import User
 from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise
 
 from prplatform.submissions.models import OriginalSubmission
-from prplatform.submissions.views import OriginalSubmissionListView
+from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView
 
 
 class SubmissionsTest(TestCase):
@@ -57,3 +59,25 @@ class SubmissionsTest(TestCase):
         self.assertContains(response, "student2")
         self.assertContains(response, "student3")
         self.assertContains(response, "teacher1")
+
+    def test_student_cannot_load_code_not_owned(self):
+        exercise = SubmissionExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+
+        user1 = User.objects.get(username="student1")
+        from django.core.files.uploadedfile import SimpleUploadedFile
+
+        exercise.type = 'FILE_UPLOAD'
+        exercise.accepted_filetypes = '.txt'
+        exercise.save()
+
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=course, file=tmpFile, submitter_user=user1, exercise=exercise)
+        sub.save()
+
+        request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{sub.pk}/')
+        request.user = User.objects.get(username="student2")
+        self.kwargs['pk'] = sub.pk
+
+        self.assertRaises(PermissionDenied,
+                          DownloadSubmissionView.as_view(), request, **self.kwargs)

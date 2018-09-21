@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView, UpdateView
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 import os
 
@@ -108,7 +109,7 @@ class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView)
         return self.render_to_response(context)
 
 
-class DownloadSubmissionView(View):
+class DownloadSubmissionView(LoginRequiredMixin, View):
 
     def get(self, *args, **kwargs):
         user = self.request.user
