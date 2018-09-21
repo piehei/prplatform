@@ -88,10 +88,8 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = 4
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-
         self.assertContains(response, "This exercise is closed.")
-        self.assertNotContains(response, "Submit")
-        self.assertNotContains(response, "<form")
+        self.assertEqual(response.context_data['disable_form'], True)
 
     def test_studentCanSubmit(self):
 
@@ -119,8 +117,8 @@ class ExerciseTest(TestCase):
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertContains(response, "You have reached the maximum number of submissions.")
-        self.assertNotContains(response, "Submit")
+        self.assertContains(response, "You have reached the maximum number of submissions")
+        self.assertEqual(response.context_data['disable_form'], True)
 
     def test_teacherCanSubmitMultipleTimes(self):
 
