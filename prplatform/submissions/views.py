@@ -115,9 +115,8 @@ class DownloadSubmissionView(View):
 
         # user tries to download this
         obj = get_object_or_404(OriginalSubmission, pk=kwargs['pk'])
-        print(obj)
         teacher = obj.course.is_teacher(user)
-        owner = obj.submitter == user
+        owner = obj.is_owner(user)
 
         pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
         reviewer = kwargs['pk'] in pks_of_users_reviewables
