@@ -9,6 +9,7 @@ from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
+
 class BaseSubmission(TimeStampedModel):
 
     course = models.ForeignKey(Course, related_name="%(class)s_submissions", on_delete=models.CASCADE)
@@ -25,6 +26,11 @@ class BaseSubmission(TimeStampedModel):
             return self.submitter_group.name
         else:
             return self.submitter_user.username
+
+    def is_owner(self, user):
+        if self.submitter_group:
+            return self.submitter_group.has_student(user)
+        return self.submitter_user == user
 
 
 def upload_fp(instance, filename):

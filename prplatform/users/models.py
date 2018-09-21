@@ -33,3 +33,6 @@ class StudentGroup(models.Model):
 
     def __str__(self):
         return f"{self.name} ({', '.join(self.student_usernames)})"
+
+    def has_student(self, user):
+        return user.username in self.student_usernames or user.email in self.student_usernames
