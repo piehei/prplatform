@@ -4,6 +4,7 @@ from django.utils import timezone
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.courses.models import Course
+# from .question_models import Question
 
 
 class BaseExercise(TimeStampedModel):
@@ -56,6 +57,7 @@ class BaseExercise(TimeStampedModel):
     class Meta:
         abstract = True
         ordering = ['-closing_time']
+
 
 class SubmissionExercise(BaseExercise):
     """ This is an exercise where the student uploads something to the system.
@@ -151,6 +153,7 @@ class ReviewExercise(BaseExercise):
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)
+    questions = models.ManyToManyField('exercises.Question', through='QuestionInUse')
 
     def get_absolute_url(self):
         base_course = self.course.base_course

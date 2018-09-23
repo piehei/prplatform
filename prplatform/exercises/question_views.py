@@ -2,8 +2,8 @@ from django.views.generic import DetailView, CreateView, UpdateView, ListView
 from django import forms
 from django.http import HttpResponseRedirect
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin
-from .question_models import Question, QuestionChoice
+from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
+from .question_models import Question, Choice
 
 
 class QuestionModelForm(forms.ModelForm):
@@ -11,7 +11,7 @@ class QuestionModelForm(forms.ModelForm):
         model = Question
         fields = ['text', 'choices']
 
-QuestionChoicesModelFormSet = forms.modelformset_factory(QuestionChoice,
+QuestionChoicesModelFormSet = forms.modelformset_factory(Choice,
                                             fields=('text',),
                                             can_delete=True,
                                             can_order=True,
@@ -93,7 +93,7 @@ class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
                 if cq.data['text']:
                     print("new text")
-                    new_choice = QuestionChoice.objects.create(
+                    new_choice = Choice.objects.create(
                             text=cq.data['text'],
                             course=course,
                             value=0)
@@ -106,7 +106,7 @@ class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
                     # for qcid in cq.data['previous_choice']:
                         # print(qcid)
-                    self.object.choices.add(QuestionChoice.objects.get(id=prev))
+                    self.object.choices.add(Choice.objects.get(id=prev))
 
             print(cq.errors)
             return HttpResponseRedirect(self.object.get_absolute_url())
