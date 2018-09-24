@@ -1,11 +1,18 @@
 prplatform
 ==========
 
-Peer-Review Platform for university courses etc.
+This is a peer-review web app for university courses etc. It allows teachers to create
+exercises, students to submit exercises, teachers to review students' submissions,
+students to peer-review other students' submissions etc. Groups are supported. The
+app can be used standalone or to peer-review exercises submitted in the A+ learning platform.
+
+This README will be updated later on, below you will find automatically
+generated Django Cookiecutter template README.
+
 
 .. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg
-     :target: https://github.com/pydanny/cookiecutter-django/
-     :alt: Built with Cookiecutter Django
+  :target: https://github.com/pydanny/cookiecutter-django/
+  :alt: Built with Cookiecutter Django
 
 
 :License: MIT
@@ -28,7 +35,7 @@ Setting Up Your Users
 
 * To create an **superuser account**, use this command::
 
-    $ python manage.py createsuperuser
+$ python manage.py createsuperuser
 
 For convenience, you can keep your normal user logged in on Chrome and your superuser logged in on Firefox (or similar), so that you can see how the site behaves for both kinds of users.
 
@@ -37,16 +44,16 @@ Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report::
 
-    $ coverage run manage.py test
-    $ coverage html
-    $ open htmlcov/index.html
+$ coverage run manage.py test
+$ coverage html
+$ open htmlcov/index.html
 
 Running tests with py.test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-  $ py.test
+$ py.test
 
 Live reloading and Sass CSS compilation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
