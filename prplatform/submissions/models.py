@@ -3,6 +3,8 @@ from django.db.models import Count
 from django.core.exceptions import FieldError
 from django.urls import reverse
 
+import os
+
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
@@ -66,6 +68,14 @@ class OriginalSubmission(BaseSubmission):
 
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+
+    def filecontents_or_none(self):
+        if self.file and os.path.splitext(self.file.name)[1] in ['.py', '.txt']:
+            try:
+                return self.file.read().decode("utf-8")
+            except Exception:
+                pass
+        return None
 
     def submissions_by_same_submitter(self):
         all_subs = OriginalSubmission.objects.filter(exercise=self.exercise)

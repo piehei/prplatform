@@ -257,14 +257,12 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         reviewable = exercise.reviewable_exercise.submissions.first()
         if reviewable:
             ctx['reviewable'] = reviewable
-            if reviewable.file:
-                ctx['filecontents'] = reviewable.file.read().decode('utf-8')
+            ctx['filecontents'] = reviewable.filecontents_or_none()
 
         my_submission = exercise.reviewable_exercise.submissions.last()
         if my_submission:
             ctx['my_submission'] = my_submission
-            if my_submission.file:
-                ctx['my_filecontents'] = my_submission.file.read().decode('utf-8')
+            ctx['my_filecontents'] = my_submission.filecontents_or_none()
 
         return self.render_to_response(ctx)
 
@@ -290,8 +288,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             return self.render_to_response(ctx)
 
         ctx['my_submission'] = my_submission_qs.first()
-        if ctx['my_submission'].file:
-            ctx['my_filecontents'] = ctx['my_submission'].file.read().decode('utf-8')
+        ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
 
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
@@ -328,8 +325,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         ctx['reviewable'] = reviewable
 
-        if reviewable and reviewable.file:
-            ctx['filecontents'] = reviewable.file.read().decode('utf-8')
+        if reviewable:
+            ctx['filecontents'] = reviewable.filecontents_or_none()
 
         return self.render_to_response(ctx)
 
