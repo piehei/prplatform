@@ -15,13 +15,14 @@
       <h5>To peer-review:</h5>
 
       {% if not reviewable %}
-        Not available
+
+        Not available for some reason. Something went wrong??
 
       {% elif reviewable.text %}
 
-        {{ reviewable.text }}
+        {{ reviewable.text | linebreaks }}
 
-      {% else %}
+      {% elif filecontents %}
 
         {% load pygmentify %}
         {% pygment %}
@@ -30,6 +31,10 @@
                class="codebox">{{ filecontents }}</pre>
         {% endpygment %}
 
+      {% else %}
+        You can download the other student's submission here:
+        <a href="{{ reviewable.get_file_download_url }}">download link</a>
+        View the file on your computer and answer questions below.
       {% endif %}
 
   </div>
