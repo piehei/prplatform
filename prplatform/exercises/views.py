@@ -182,7 +182,7 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMix
         if not exercise.can_submit(user):
             ctx['disable_form'] = True
 
-        ctx['form'] = OriginalSubmissionForm(type=self.object.type)
+        ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_file_types)
 
         return self.render_to_response(ctx)
 

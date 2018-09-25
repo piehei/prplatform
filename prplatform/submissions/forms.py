@@ -18,11 +18,14 @@ class OriginalSubmissionForm(ModelForm):
         """
         from django.forms.widgets import HiddenInput
         type = kwargs.pop('type', None)
+        filetypes = kwargs.pop('filetypes', None)
         super().__init__(*args, **kwargs)
         if type == SubmissionExercise.FILE_UPLOAD:
             # self.fields['text'].widget = HiddenInput()
             del self.fields['text']
             self.fields['file'].required = True
+            self.fields['file'].label = 'Upload your answer here.'
+            self.fields['file'].help_text = f'<b>Accepted filetypes are: {filetypes}</b>'
         if type == SubmissionExercise.TEXT:
             # self.fields['text'].widget = HiddenInput()
             del self.fields['file']
