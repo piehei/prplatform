@@ -344,7 +344,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         # TODO: this crashes when teacher submits since there's no release lock
         reviewed_submission = rlock.original_submission
         submission = ReviewSubmission.objects.create(course=course,
-                                                     submitter=self.request.user,
+                                                     submitter_user=self.request.user,  # TODO: groups?
                                                      exercise=exercise,
                                                      reviewed_submission=reviewed_submission)
         rlock.review_submission = submission
@@ -352,15 +352,20 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         questions = exercise.questions.all()
 
+        # TODO: modelformset *MUST* be used here
         for key in self.request.POST:
-            print(key)
-            if self.PREFIX not in key:
+            if self.PREFIX not in key or not self.request.POST[key]:
                 continue
             indx = int(re.match(r".*(\d).*", key).groups()[0])
             q_now = questions[indx]
-            Answer.objects.create(submission=submission,
-                                  question=q_now,
-                                  value=self.request.POST[key])
+
+            answer_value = self.request.POST[key]
+            answer = Answer(submission=submission, question=q_now)
+            if "value_text" in key:
+                answer.value_text = answer_value
+            else:
+                answer.value_choice = q_now.choices.get(id=answer_value)
+            answer.save()
 
         return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 

@@ -44,6 +44,9 @@ class QuestionInUse(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     value = models.IntegerField()
 
+    class Meta:
+        ordering = ['value']
+
 
 class ChoiceInUse(models.Model):
     choice = models.ForeignKey(Choice, on_delete=models.CASCADE)
