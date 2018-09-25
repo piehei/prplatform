@@ -7,7 +7,7 @@ from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
-from prplatform.exercises.question_models import Question
+from prplatform.exercises.question_models import Question, Choice
 
 
 class BaseSubmission(TimeStampedModel):
@@ -132,7 +132,8 @@ class Answer(models.Model):
 
     submission = models.ForeignKey(ReviewSubmission, related_name="answers", on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
-    value = models.CharField(max_length=1000)
+    value_text = models.CharField(max_length=1000, blank=True)
+    value_choice = models.ForeignKey(Choice, on_delete=models.CASCADE, blank=True, null=True)
 
 
 class ReviewLockManager(models.Manager):

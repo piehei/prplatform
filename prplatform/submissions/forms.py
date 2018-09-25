@@ -1,6 +1,7 @@
 from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput
 from .models import OriginalSubmission, Answer
 from prplatform.exercises.models import SubmissionExercise
+from django import forms
 
 class OriginalSubmissionForm(ModelForm):
 
@@ -54,15 +55,24 @@ class AnswerForm(ModelForm):
 
     class Meta:
         model = Answer
-        fields = ['value']
+        fields = ['value_text', 'value_choice']  # one of these is removed below
         widgets = {
-            'value': Textarea(attrs={'cols': 80, 'rows': 5}),
+            'value_text': Textarea(attrs={'cols': 80, 'rows': 3}),
         }
-
 
     def __init__(self, *args, **kwargs):
         question_text = kwargs.pop('question_text')
+        choices = kwargs.pop('question_choices')
         super().__init__(*args, **kwargs)
-        self.fields['value'].label = question_text
 
+        # if this is a question with choices, remove free text field
+        # and limit the choices to the teacher chosen choices
+        # (by default the QS is all Choice model objects)
+        if choices:
+            self.fields['value_choice'].label = question_text
+            self.fields['value_choice'].queryset = choices  # this is necessary
+            self.fields.pop('value_text')
+        else:
+            self.fields['value_text'].label = question_text
+            self.fields.pop('value_choice')
 

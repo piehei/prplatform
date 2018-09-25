@@ -239,9 +239,19 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     def _get_answer_forms(self):
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
+        print(self.object.questions.all())
         forms = []
         for index, q in enumerate(self.object.questions.all()):
-            forms.append(AnswerForm(prefix=self.PREFIX + str(index), question_text=q.text))
+            print(index)
+            print(q)
+            print(q.text)
+            print(q.choices.all())
+            forms.append(AnswerForm(prefix=self.PREFIX + str(index),
+                                    question_text=q.text,
+                                    question_choices=q.choices.all()))
+        print(forms)
+
+        return forms
 
     def _render_teacher_view(self, ctx, exercise):
         reviewable = exercise.reviewable_exercise.submissions.first()
