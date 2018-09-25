@@ -28,11 +28,14 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
         exercise = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
         self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
+
         if not ctx['teacher']:
+            # TODO: this is ugly as hell
             if exercise.use_groups:
                 self.object_list = self.object_list.filter(submitter_group=exercise.course.find_studentgroup_by_user(self.request.user))
             else:
                 self.object_list = self.object_list.filter(submitter_user=self.request.user)
+
         ctx['exercise'] = exercise
         ctx['originalsubmission_list'] = self.object_list
         return ctx
@@ -45,8 +48,13 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
         exercise = ReviewExercise.objects.get(pk=self.kwargs['pk'])
         self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
+
         if not ctx['teacher']:
-            self.object_list = self.object_list.filter(submitter=self.request.user)
+            if exercise.use_groups:
+                self.object_list = self.object_list.filter(submitter_group=exercise.course.find_studentgroup_by_user(self.request.user))
+            else:
+                self.object_list = self.object_list.filter(submitter_user=self.request.user)
+
         ctx['exercise'] = exercise
         ctx['reviewsubmission_list'] = self.object_list
         return ctx
