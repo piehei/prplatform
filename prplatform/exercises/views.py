@@ -116,8 +116,8 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
         self.object = self.get_object()
         context = self.get_context_data(**kwargs)
         context['form'] = ReviewExerciseForm(instance=self.object)
-        qs = QuestionModelFormSet(queryset=Question.objects.filter(exercise=self.object).order_by('order'))
-        context['formset'] = qs
+        # qs = QuestionModelFormSet(queryset=Question.objects.filter(exercise=self.object).order_by('order'))
+        # context['formset'] = qs
         return self.render_to_response(context)
 
     def post(self, *args, **kwargs):
@@ -128,7 +128,7 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
         if r_exercise_form.is_valid():
             r_exercise = r_exercise_form.save()
-            question_formset = QuestionModelFormSet(self.request.POST)
+            # question_formset = QuestionModelFormSet(self.request.POST)
 
             # TODO:
             # järjestyksen näyttäminen onnistuu nyt
@@ -136,23 +136,23 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
             # overridaa valid, jotta virhe voidaan näyttää
             # lue ero modelformset ja inline_formset jne.
 
-            if question_formset.is_valid():
-                question_formset.save(commit=False)
-                # update the order values of the question objects
-                # and make sure they reference the correct exercise object
-                for q_form in question_formset.ordered_forms:
-                    q_form.instance.course = self.object.course
-                    # q_form.instance.exercise.add(r_exercise)
-                    q_form.instance.order = q_form.cleaned_data['ORDER']
+            # if question_formset.is_valid():
+            #     question_formset.save(commit=False)
+            #     # update the order values of the question objects
+            #     # and make sure they reference the correct exercise object
+            #     for q_form in question_formset.ordered_forms:
+            #         q_form.instance.course = self.object.course
+            #         # q_form.instance.exercise.add(r_exercise)
+            #         q_form.instance.order = q_form.cleaned_data['ORDER']
 
-                # this saves the Question model objects created and/or modified by
-                # the POSTed formset
-                # this takes care of deletion and not saving empty Question forms
+            #     # this saves the Question model objects created and/or modified by
+            #     # the POSTed formset
+            #     # this takes care of deletion and not saving empty Question forms
 
-                for saved_q in question_formset.save():
-                    print(saved_q)
-                    print(saved_q.course)
-                    r_exercise.questions.add(saved_q)
+            #     for saved_q in question_formset.save():
+            #         print(saved_q)
+            #         print(saved_q.course)
+            #         r_exercise.questions.add(saved_q)
             return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
 
 
@@ -301,7 +301,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             last_rlock = rlock_list.last()
 
             # if last rlock has a ReviewSubmission and the user has done max num of reviews
-            if last_rlock.review_submission and exercise.review_count == len(rlock_list):
+            if last_rlock.review_submission and exercise.max_reviews_per_student == len(rlock_list):
                 ctx['reviews_done'] = True
                 return self.render_to_response(ctx)
             elif not last_rlock.review_submission:

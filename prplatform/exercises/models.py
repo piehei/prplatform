@@ -149,7 +149,8 @@ class ReviewExercise(BaseExercise):
             default=RANDOM
             )
 
-    review_count = models.IntegerField("How many peer-reviews one student can do", default=1)
+    max_reviews_per_student = models.IntegerField("How many peer-reviews one student can do", default=1)
+    max_reviews_per_submission = models.IntegerField("How many peer-reviews one submission can receive", default=1)
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)

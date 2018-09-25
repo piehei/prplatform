@@ -97,7 +97,8 @@ class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
         fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
-                  'model_answer', 'reviewable_exercise', 'type', 'review_count', 'use_groups',
+                  'model_answer', 'reviewable_exercise', 'type', 'max_reviews_per_student',
+                  'max_reviews_per_submission', 'use_groups',
                   ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
