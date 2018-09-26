@@ -17,15 +17,16 @@
 
   <div class="row">
     <div class="col-sm-12">
-      <h4>Review submission to exercise {{ object.exercise.name }}</h4>
+      <h4>Peer-review to exercise {{ object.exercise.name }}</h4>
       <p>Submitter: {{ object.submitter }}</p>
       <p>Submission time: {{ object.created }}</p>
       <ul>
-        {% for a in object.answers.all %}
+        {% for item in qa_list %}
           <li>
-            Q: {{ a.question.text }}
+            Question: <b>{{ item.q }}</b>
             <br>
-            A: {{ a.value }}
+            A: <br>
+              {{ item.a | linebreaks }}
           </li>
         {% endfor %}
       </ul>
