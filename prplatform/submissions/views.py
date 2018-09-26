@@ -114,13 +114,19 @@ class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
         return redirect(self.object.get_absolute_url())
 
 
-class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
+class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
     pk_url_kwarg = "sub_pk"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
+
+        owner = self.object.is_owner(self.request.user)
+        receiver = self.object.reviewed_submission.is_owner(self.request.user)
+
+        if not owner and not receiver and not ctx['teacher']:
+            raise PermissionDenied
 
         data = []
 
