@@ -13,43 +13,48 @@
 
 {% block content %}
 
-  {% include "../tabs.html" with tab="submissions" object=exercise %}
 
+  {% if my_mode %}
+  {% include "../tabs.html" with tab="submissions_me" object=exercise %}
+  {% else %}
+  {% include "../tabs.html" with tab="submissions" object=exercise %}
+  {% endif %}
   <div class="row">
     <div class="col-md-12">
 
       <table class="table table-striped">
-        {% if teacher %}
         <thead>
           <tr>
+            <th>#</th>
+            {% if teacher %}
             <th>Submitter<br><input placeholder="not implemented"></th>
-            <th>Date<br><input placeholder="not implemented"></th>
-            <th>Status<br><input placeholder="not implemented"></th>
+            {% endif %}
+            <th>Date{% if teacher %}<br><input placeholder="not implemented">{% endif %}</th>
           </tr>
         </thead>
-        {% endif %}
         <tbody>
-          {% if not reviewsubmission_list %}
-            No submissions yet
-          {% else %}
             {% for origsub in reviewsubmission_list %}
               <tr scope="row">
-                <td>
-                  {{ origsub.submitter }}
-                </td>
+                <td> {{ forloop.counter }} </td>
+                {% if not my_mode %}
+                  <td>
+                    {{ origsub.submitter }}
+                  </td>
+                {% endif %}
                 <td>
                   <a href="{{ origsub.get_absolute_url }}">
                     {{ origsub.created }}
                   </a>
                 </td>
-                <td>
-                  {{ origsub.state }}
-                </td>
               </tr>
             {% endfor %}
-          {% endif %}
         </tbody>
       </table>
+      {% if not reviewsubmission_list and not teacher %}
+        No submissions/peer-reviews available yet
+      {% elif not reviewsubmission_list and teacher %}
+        This page would list feedback from other students to you. You're a teacher, so the list is empty.
+      {% endif %}
 
     </div>
   </div>
