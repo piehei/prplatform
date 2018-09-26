@@ -236,12 +236,14 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
     PREFIX = "question-index-"
 
-    def _get_answer_forms(self):
+    def _get_answer_forms(self, exercise):
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
         print(self.object.questions.all())
         forms = []
-        for index, q in enumerate(self.object.questions.all()):
+
+        sorted_questions = exercise.question_list_in_order()
+        for index, q in enumerate(sorted_questions):
             forms.append(AnswerForm(prefix=self.PREFIX + str(index),
                                     question_text=q.text,
                                     question_choices=q.choices))
@@ -273,7 +275,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         if not is_teacher and not exercise.visible_to_students:
             raise PermissionDenied
 
-        ctx['forms'] = self._get_answer_forms()
+        ctx['forms'] = self._get_answer_forms(exercise)
 
         if is_teacher:
             self._render_teacher_view(ctx, exercise)
@@ -345,7 +347,9 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         rlock.review_submission = submission
         rlock.save()
 
-        questions = exercise.questions.all()
+        questions = exercise.question_list_in_order()
+
+        print(self.request.POST)
 
         # TODO: modelformset *MUST* be used here
         for key in self.request.POST:

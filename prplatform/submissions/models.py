@@ -126,6 +126,9 @@ class ReviewSubmission(BaseSubmission):
     exercise = models.ForeignKey(ReviewExercise, related_name="submissions", on_delete=models.CASCADE)
     reviewed_submission = models.ForeignKey(OriginalSubmission, related_name="reviews", on_delete=models.CASCADE)
 
+    def answers_in_ordered_list(self):
+        return sorted(self.answers.all(), key=lambda a: self.exercise.question_order.index(a.question.pk))
+
     def __str__(self):
         return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
 

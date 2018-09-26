@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.courses.models import Course
@@ -155,6 +156,10 @@ class ReviewExercise(BaseExercise):
                                     blank=True,
                                     max_length=6000)
     questions = models.ManyToManyField('exercises.Question')
+    question_order = ArrayField(models.IntegerField("PKs of questions"))
+
+    def question_list_in_order(self):
+        return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
 
     def get_absolute_url(self):
         base_course = self.course.base_course
