@@ -107,12 +107,24 @@ class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
 
 class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
-    pk_url_kwargs = "sub_pk"
+    pk_url_kwarg = "sub_pk"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        return self.render_to_response(context)
+        ctx = self.get_context_data(**kwargs)
+
+        data = []
+
+        for ans in self.object.answers.all():
+            if ans.value_text:
+                data.append({'q': ans.question.text, 'a': ans.value_text})
+            else:
+                # TODO : braindead ???
+                choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
+                data.append({'q': ans.question.text, 'a': choice})
+
+        ctx['qa_list'] = data
+        return self.render_to_response(ctx)
 
 
 class DownloadSubmissionView(LoginRequiredMixin, View):

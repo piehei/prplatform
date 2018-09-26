@@ -1,4 +1,4 @@
-from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput
+from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput, RadioSelect
 from .models import OriginalSubmission, Answer
 from prplatform.exercises.models import SubmissionExercise
 from django import forms
@@ -61,6 +61,7 @@ class AnswerForm(ModelForm):
         fields = ['value_text', 'value_choice']  # one of these is removed below
         widgets = {
             'value_text': Textarea(attrs={'cols': 80, 'rows': 3}),
+            'value_choice': RadioSelect(),
         }
 
     def __init__(self, *args, **kwargs):
@@ -72,10 +73,12 @@ class AnswerForm(ModelForm):
         # and limit the choices to the teacher chosen choices
         # (by default the QS is all Choice model objects)
         if choices:
+            print(choices)
             self.fields['value_choice'].label = question_text
-            self.fields['value_choice'].queryset = choices  # this is necessary
+            self.fields['value_choice'].choices = sorted(choices, key=lambda c: c[0])
             self.fields.pop('value_text')
         else:
             self.fields['value_text'].label = question_text
+            self.fields['value_text'].help_text = '<b>You can make this text area bigger from the bottom-right corner!</b>'
             self.fields.pop('value_choice')
 

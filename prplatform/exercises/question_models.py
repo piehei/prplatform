@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.urls import reverse
 
 from prplatform.courses.models import Course
@@ -16,10 +17,10 @@ class Choice(models.Model):
 class Question(models.Model):
     course = models.ForeignKey(Course, related_name="questions", on_delete=models.CASCADE)
     text = models.CharField(max_length=200)
-    choices = models.ManyToManyField(Choice, through='ChoiceInUse', blank=True)
-
-    # class Meta:
-        # ordering = ['order']
+    choices = ArrayField(
+                        ArrayField(models.CharField(max_length=20),
+                                   size=2),
+                        blank=True, null=True)
 
     def __str__(self):
         return f"Q: {self.text}"

@@ -154,7 +154,7 @@ class ReviewExercise(BaseExercise):
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)
-    questions = models.ManyToManyField('exercises.Question', through='QuestionInUse')
+    questions = models.ManyToManyField('exercises.Question')
 
     def get_absolute_url(self):
         base_course = self.course.base_course

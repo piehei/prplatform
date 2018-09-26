@@ -142,8 +142,8 @@ class Answer(models.Model):
 
     submission = models.ForeignKey(ReviewSubmission, related_name="answers", on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
-    value_text = models.CharField(max_length=1000, blank=True)
-    value_choice = models.ForeignKey(Choice, on_delete=models.CASCADE, blank=True, null=True)
+    value_text = models.CharField(max_length=1000, blank=True, null=True)
+    value_choice = models.CharField(max_length=20, blank=True, null=True)
 
 
 class ReviewLockManager(models.Manager):

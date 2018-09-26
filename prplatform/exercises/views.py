@@ -242,14 +242,9 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         print(self.object.questions.all())
         forms = []
         for index, q in enumerate(self.object.questions.all()):
-            print(index)
-            print(q)
-            print(q.text)
-            print(q.choices.all())
             forms.append(AnswerForm(prefix=self.PREFIX + str(index),
                                     question_text=q.text,
-                                    question_choices=q.choices.all()))
-        print(forms)
+                                    question_choices=q.choices))
 
         return forms
 
@@ -364,7 +359,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             if "value_text" in key:
                 answer.value_text = answer_value
             else:
-                answer.value_choice = q_now.choices.get(id=answer_value)
+                answer.value_choice = answer_value
             answer.save()
 
         return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
