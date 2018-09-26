@@ -125,6 +125,9 @@ class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView)
         data = []
 
         for ans in self.object.answers.all():
+            if ans.question.hide_from_receiver and not ctx['teacher']:
+                continue
+
             if ans.value_text:
                 data.append({'q': ans.question.text, 'a': ans.value_text})
             else:
