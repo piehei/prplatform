@@ -154,3 +154,33 @@
     closing_time: 2018-06-30 00:00+02:00
 
 
+- model: exercises.reviewexercise
+  pk: 1
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T2 REVIEW
+    reviewable_exercise: 2
+    question_order: [2, 1]
+    questions: [1, 2]
+    description: Sum this and that
+    type: "RANDOM"
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
+
+- model: exercises.question
+  pk: 1
+  fields:
+    text: Midi
+    choices: []
+    course: ["TIE-02100", "TIE-02100-1"]
+    hide_from_receiver: False
+
+- model: exercises.question
+  pk: 2
+  fields:
+    text: Score the work
+    choices: [["1", "1"], ["2", "2"], ["3", "3"]]
+    course: ["TIE-02100", "TIE-02100-1"]
+    hide_from_receiver: True
