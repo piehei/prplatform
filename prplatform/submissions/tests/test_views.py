@@ -8,7 +8,7 @@ from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
-from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, ReviewSubmissionListView
+from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, ReviewSubmissionListView, ReviewSubmissionDetailView
 
 
 class SubmissionsTest(TestCase):
@@ -108,6 +108,56 @@ class SubmissionsTest(TestCase):
         self.assertEqual(ReviewSubmission.objects.all().count(), 2)
         self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
         self.assertEqual(response.context_data['reviewsubmission_list'][0].submitter_user, users[0])
+
+    def test_ReviewSubPagePermissionsWork(self):
+
+        sub_exercise = SubmissionExercise.objects.get(pk=1)
+        rev_exercise = ReviewExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+
+        users = [
+            User.objects.get(username="student1"),
+            User.objects.get(username="student2")
+        ]
+
+        for user in users:
+            OriginalSubmission(course=course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
+
+        for user in users:
+            reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
+                                                            .exclude(submitter_user=user).first()
+            rs = ReviewSubmission.objects.create(course=course, submitter_user=user,
+                                                 exercise=rev_exercise, reviewed_submission=reviewed_sub)
+            Answer.objects.create(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1))
+            Answer.objects.create(submission=rs, value_choice="1", question=Question.objects.get(pk=2))
+
+
+        # teacher sees all reviews
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
+        request.user = User.objects.get(username="teacher1")
+        self.kwargs['pk'] = 1
+        self.kwargs['sub_pk'] = 1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "juupase juu")
+        self.assertContains(response, "Score the work")
+
+        # student sees hidden answer *given* by him
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
+        request.user = users[0]
+        self.kwargs['pk'] = 1
+        self.kwargs['sub_pk'] = 1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "juupase juu")
+        self.assertContains(response, "Score the work")
+
+        # student cannot see answer to a hidden question
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
+        request.user = users[1]
+        self.kwargs['pk'] = 1
+        self.kwargs['sub_pk'] = 1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "juupase juu")
+        self.assertNotContains(response, "Score the work")
 
     def test_student_cannot_load_code_not_owned(self):
         exercise = SubmissionExercise.objects.get(pk=1)

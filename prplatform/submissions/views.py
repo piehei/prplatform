@@ -131,7 +131,7 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         data = []
 
         for ans in self.object.answers_in_ordered_list():
-            if ans.question.hide_from_receiver and not ctx['teacher']:
+            if ans.question.hide_from_receiver and not owner and not ctx['teacher']:
                 continue
 
             if ans.value_text:
