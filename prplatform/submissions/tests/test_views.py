@@ -4,10 +4,11 @@ from django.core.exceptions import PermissionDenied
 
 from prplatform.users.models import User
 from prplatform.courses.models import Course
-from prplatform.exercises.models import SubmissionExercise
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise
+from prplatform.exercises.question_models import Question
 
-from prplatform.submissions.models import OriginalSubmission
-from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
+from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, ReviewSubmissionListView
 
 
 class SubmissionsTest(TestCase):
@@ -59,6 +60,54 @@ class SubmissionsTest(TestCase):
         self.assertContains(response, "student2")
         self.assertContains(response, "student3")
         self.assertContains(response, "teacher1")
+
+    def test_ReviewSubmissionListPermissionsWork(self):
+
+        sub_exercise = SubmissionExercise.objects.get(pk=1)
+        rev_exercise = ReviewExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+
+        users = [
+            User.objects.get(username="student1"),
+            User.objects.get(username="student2")
+        ]
+
+        for user in users:
+            OriginalSubmission(course=course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
+
+        for user in users:
+            revsub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
+                                                            .exclude(submitter_user=user).first()
+            ReviewSubmission(course=course, submitter_user=user,
+                             exercise=rev_exercise, reviewed_submission=revsub).save()
+
+        # teacher sees all reviews
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/')
+        request.user = User.objects.get(username="teacher1")
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewSubmission.objects.all().count(), 2)
+        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 2)
+        self.assertContains(response, "student1")  # hacky
+        self.assertContains(response, "student2")
+
+        # student1 sees reviews of him by student2
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+        request.user = users[0]
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewSubmission.objects.all().count(), 2)
+        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
+        self.assertEqual(response.context_data['reviewsubmission_list'][0].submitter_user, users[1])
+
+        # student2 sees reviews of him by student1
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+        request.user = users[1]
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewSubmission.objects.all().count(), 2)
+        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
+        self.assertEqual(response.context_data['reviewsubmission_list'][0].submitter_user, users[0])
 
     def test_student_cannot_load_code_not_owned(self):
         exercise = SubmissionExercise.objects.get(pk=1)
