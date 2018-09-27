@@ -155,7 +155,7 @@ class ReviewExercise(BaseExercise):
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)
-    questions = models.ManyToManyField('exercises.Question')
+    questions = models.ManyToManyField('exercises.Question', related_name='exercises')
     question_order = ArrayField(models.IntegerField("PKs of questions"))
 
     def question_list_in_order(self):
