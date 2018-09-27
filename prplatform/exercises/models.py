@@ -140,8 +140,10 @@ class ReviewExercise(BaseExercise):
                                                on_delete=models.CASCADE)
 
     RANDOM = 'RANDOM'
+    CHOOCE = 'CHOOCE'
     REVIEW_EXERCISE_TYPE_CHOICES = (
             (RANDOM, 'Random by other user'),
+            (CHOOCE, 'Student chooces'),
         )
 
     type = models.CharField(
