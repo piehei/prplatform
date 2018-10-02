@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Textarea, inlineformset_factory, modelformset_factory, ValidationError
+from django.forms import Form, ModelForm, Textarea, inlineformset_factory, modelformset_factory, ValidationError, ModelChoiceField
 
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
@@ -131,3 +131,24 @@ QuestionModelFormSet = modelformset_factory(Question,
                                         # can_delete=True,
                                         # can_order=True,
                                         # max_num=10, extra=10)
+
+
+class ChooceForm(Form):
+    """
+    If CHOOCE type is used in ReviewExercise, then this form is used
+    to offer the student the choices. This form shows student all the
+    other students' submissions so the student can chooce who to review.
+    """
+    choice = ModelChoiceField(queryset=None)
+
+    def __init__(self, *args, **kwargs):
+        exercise = kwargs.pop('exercise')
+        user = kwargs.pop('user')
+        super().__init__(*args, **kwargs)
+        # TODO: groups?
+        qs = exercise.reviewable_exercise.submissions \
+                     .order_by('submitter_user_id') \
+                     .distinct('submitter_user_id') \
+                     .exclude(
+                        id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id'))
+        self.fields['choice'].queryset = qs
