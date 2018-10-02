@@ -67,7 +67,7 @@ class OriginalSubmission(BaseSubmission):
     )
 
     def __str__(self):
-        return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+        return f"{self.submitter} {self.exercise} ({str(self.created)[:16]})"
 
     def filecontents_or_none(self):
         if self.file and os.path.splitext(self.file.name)[1] in ['.py', '.txt']:
