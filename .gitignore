@@ -298,3 +298,5 @@ prplatform/django_lti_login
 crons/envs
 config/production.wsgi
 production.wsgi
+config/production_wsgi.py
+prplatform/users/middleware
