@@ -8,7 +8,7 @@ from .base import env
 # https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = env('DJANGO_SECRET_KEY')
 # https://docs.djangoproject.com/en/dev/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['vpalaute.fi'])
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['peer-review.cs.tut.fi'])
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -87,8 +87,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # MEDIA
 # ------------------------------------------------------------------------------
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-MEDIA_URL = f'https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# MEDIA_URL = f'https://s3.amazonaws.com/{AWS_STORAGE_BUCKET_NAME}/'
 
 # TEMPLATES
 # ------------------------------------------------------------------------------
@@ -153,10 +153,10 @@ SENTRY_DSN = env('DJANGO_SENTRY_DSN')
 SENTRY_CLIENT = env('DJANGO_SENTRY_CLIENT', default='raven.contrib.django.raven_compat.DjangoClient')
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
+    'disable_existing_loggers': False,
     'root': {
-        'level': 'WARNING',
-        'handlers': ['sentry'],
+        'level': 'DEBUG',
+        'handlers': ['console'],
     },
     'formatters': {
         'verbose': {
@@ -176,15 +176,19 @@ LOGGING = {
         }
     },
     'loggers': {
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        },
         'django.db.backends': {
             'level': 'ERROR',
             'handlers': ['console'],
-            'propagate': False,
+            'propagate': True,
         },
         'raven': {
             'level': 'DEBUG',
             'handlers': ['console'],
-            'propagate': False,
+            'propagate': True,
         },
         'sentry.errors': {
             'level': 'DEBUG',
