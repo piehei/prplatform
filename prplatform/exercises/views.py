@@ -270,25 +270,14 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
-        # check if the user has review locks
         if rlock_list:
             last_rlock = rlock_list.last()
 
-            # if last rlock has a ReviewSubmission and the user has done max num of reviews
             if last_rlock.review_submission and exercise.max_reviews_per_student == len(rlock_list):
                 ctx['reviews_done'] = True
                 return ctx
             elif not last_rlock.review_submission:
-                # work on the last review lock
                 rlock = last_rlock
-            else:
-                # user has no current rlocks -> continue and get a new one
-                pass
-
-        # this decides what to show to the student;
-        # --> what is the thing that is going to get peer-reviewed
-
-        reviewable = None if not rlock else rlock.original_submission
 
         if not rlock:
             # TODO: can field errors be raised from something not thought about here?
@@ -296,13 +285,12 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             #       of the reviewlock?
             try:
                 rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
-                reviewable = rlock.original_submission
             except FieldError:
                 pass
 
-        ctx['reviewable'] = reviewable
-        if reviewable:
-            ctx['filecontents'] = reviewable.filecontents_or_none()
+        ctx['reviewable'] = rlock.original_submission
+        if rlock.original_submission:
+            ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
     def _get_chooce_ctx(self, ctx, my_submission_qs):
