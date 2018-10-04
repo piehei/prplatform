@@ -240,9 +240,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     def _get_answer_forms(self, exercise):
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
-        print(self.object.questions.all())
         forms = []
-
         sorted_questions = exercise.question_list_in_order()
         for index, q in enumerate(sorted_questions):
             forms.append(AnswerForm(prefix=self.PREFIX + str(index),
@@ -272,7 +270,6 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
-
         # check if the user has review locks
         if rlock_list:
             last_rlock = rlock_list.last()
@@ -280,7 +277,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             # if last rlock has a ReviewSubmission and the user has done max num of reviews
             if last_rlock.review_submission and exercise.max_reviews_per_student == len(rlock_list):
                 ctx['reviews_done'] = True
-                return self.render_to_response(ctx)
+                return ctx
             elif not last_rlock.review_submission:
                 # work on the last review lock
                 rlock = last_rlock
