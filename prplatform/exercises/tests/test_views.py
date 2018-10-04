@@ -141,7 +141,6 @@ class ExerciseTest(TestCase):
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
 
-
     def test_teacherCanSubmitMultipleTimes(self):
 
         user = User.objects.get(username="teacher1")
@@ -157,5 +156,67 @@ class ExerciseTest(TestCase):
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertNotContains(response, "You have reached the maximum number of submissions.")
+        self.assertNotContains(response, "You have reached the maximum number of submissions")
         self.assertContains(response, "Submit")
+
+    def test_submissionStatesWork(self):
+
+        students = [
+            User.objects.get(username="student1"),
+            User.objects.get(username="student2")
+        ]
+        exercise = SubmissionExercise.objects.get(name='T5 STATE')
+        course = Course.objects.get(pk=1)
+
+        subs = []
+        for s in students:
+            sub = OriginalSubmission(course=course, submitter_user=s, exercise=exercise, text=f"answer by {s.username}")
+            sub.save()
+            subs.append(sub)
+
+        # submissions used
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/5/')
+        request.user = students[0]
+        self.kwargs['pk'] = 5
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "You have reached the maximum number of submissions")
+
+        subs[0].state = OriginalSubmission.BOOMERANG
+        subs[0].save()
+
+        # can submit when BOOMERANG
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/5/')
+        request.user = students[0]
+        self.kwargs['pk'] = 5
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, "You have reached the maximum number of submissions")
+
+        # cannot peer-review while BOOMERANG
+        r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
+        request = self.factory.get(r_exer.get_absolute_url())
+        request.user = students[0]
+        self.kwargs['pk'] = r_exer.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "You cannot make peer-reviews before")
+
+        subs[1].state = OriginalSubmission.READY_FOR_REVIEW
+        subs[1].save()
+
+        # only READY_FOR_REVIEW is available for review
+        r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
+        request = self.factory.get(r_exer.get_absolute_url())
+        request.user = students[1]
+        self.kwargs['pk'] = r_exer.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "Not a thing was found")
+
+        subs[0].state = OriginalSubmission.READY_FOR_REVIEW
+        subs[0].save()
+
+        r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
+        request = self.factory.get(r_exer.get_absolute_url())
+        request.user = students[0]
+        self.kwargs['pk'] = r_exer.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "answer by student2")
+        self.assertEqual(ReviewLock.objects.count(), 1)

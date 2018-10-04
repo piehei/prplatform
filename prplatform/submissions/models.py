@@ -184,6 +184,8 @@ class ReviewLockManager(models.Manager):
                                         submitter_user=user) \
                                        .filter(id__in=latest_submission_ids)
 
+            candidates = candidates.filter(state=OriginalSubmission.READY_FOR_REVIEW)
+
             if candidates.count() == 0:
                 raise EmptyResultSet("nothing to review")
 
