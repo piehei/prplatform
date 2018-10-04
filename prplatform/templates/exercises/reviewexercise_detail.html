@@ -81,9 +81,13 @@
           <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-my-submission" aria-expanded="false" aria-controls="collapseExample">
             My submission
           </button>
-          <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-model-answer" aria-expanded="false" aria-controls="collapseExample">
-            Teacher's solution
-          </button>
+
+          {% if object.model_answer %}
+            <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-model-answer" aria-expanded="false" aria-controls="collapseExample">
+              Teacher's solution
+            </button>
+          {% endif %}
+
         </p>
 
         <div class="collapse" id="collapse-my-submission">
