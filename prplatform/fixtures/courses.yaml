@@ -153,6 +153,19 @@
     opening_time: 2018-01-01 00:00+02:00
     closing_time: 2018-06-30 00:00+02:00
 
+- model: exercises.submissionexercise
+  pk: 5
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T5 STATE
+    description: Say bla bla bla and add this and that
+    type: "TEXT"
+    use_states: true
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2018-06-30 00:00+02:00
+
 
 - model: exercises.reviewexercise
   pk: 1
@@ -175,6 +188,21 @@
     course: ["TIE-02100", "TIE-02100-1"]
     name: T2 FILE REVIEW
     reviewable_exercise: 2
+    question_order: [1]
+    questions: [1]
+    description: Sum this and that
+    type: "RANDOM"
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
+
+- model: exercises.reviewexercise
+  pk: 3
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T5 STATE REVIEW
+    reviewable_exercise: 5
     question_order: [1]
     questions: [1]
     description: Sum this and that

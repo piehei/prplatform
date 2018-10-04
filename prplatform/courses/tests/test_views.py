@@ -21,15 +21,17 @@ class CoursesTest(TestCase):
 
         response = CourseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertEqual(response.context_data['submissionexercises'].count(), 4)
+        self.assertEqual(response.context_data['submissionexercises'].count(),
+                         SubmissionExercise.objects.count())
 
-        sub = SubmissionExercise.objects.get(id=2)
+        sub = SubmissionExercise.objects.get(name='T2 FILE')
         sub.visible_to_students = False
         sub.save()
 
         response = CourseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertEqual(response.context_data['submissionexercises'].count(), 3)
+        self.assertEqual(response.context_data['submissionexercises'].count(),
+                         SubmissionExercise.objects.count() - 1)
 
     def test_teacherSeesHiddenSubmissionExercises(self):
 
@@ -38,12 +40,14 @@ class CoursesTest(TestCase):
 
         response = CourseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertEqual(response.context_data['submissionexercises'].count(), 4)
+        self.assertEqual(response.context_data['submissionexercises'].count(),
+                         SubmissionExercise.objects.count())
 
-        sub = SubmissionExercise.objects.get(id=2)
+        sub = SubmissionExercise.objects.get(name='T2 FILE')
         sub.visible_to_students = False
         sub.save()
 
         response = CourseDetailView.as_view()(request, **self.kwargs)
 
-        self.assertEqual(response.context_data['submissionexercises'].count(), 4)
+        self.assertEqual(response.context_data['submissionexercises'].count(),
+                         SubmissionExercise.objects.count())
