@@ -24,6 +24,9 @@
         <b>Submitter</b>: {{ object.submitter_user }}<br>
         {% if object.submitter_group %}<b>Group</b>: {{ object.submitter_group }}<br>{% endif %}
         <b>Submission time</b>: {{ object.created }}<br>
+        {% if object.exercise.use_states %}
+        <b>Submission state</b>: {{ object.state }}<br>
+        {% endif %}
       </p>
 
       {% if object.text %}
@@ -53,34 +56,37 @@
         {% endif %}
       {% endif %}
 
-      {% if teacher %}
-      <hr></hr>
-      <h2>Teacher feedback to student:</h2>
-        {% if state_form %}
-          <h6 class="mt-4">Submission state</h6>
-          <small>If you've enabled the "use states" option in the exercise configuration, you
-                 can change the state of the submission here. You can either give the student
-                 a boomerang or OK the submission and turn it ready for peer-review.</small>
-          <form class="form-horizontal" method="post"
-                                        action="{{ object.get_update_state_url }}">
-            {% csrf_token %}
-            {{ state_form|crispy }}
-            <button type="submit" class="btn btn-primary btn-sm">Save</button>
-          </form>
+      {% if object.exercise.use_states %}
 
-        {% else %}
-          You have not enabled "use states" in this exercise's configuration. This submission is automatically
-          put into peer-review queue for other students.
-        {% endif %}
+        {% if teacher %}
+          <hr></hr>
+          <h2>Teacher feedback to student:</h2>
+            {% if state_form %}
+              <h6 class="mt-4">Submission state</h6>
+              <small>If you've enabled the "use states" option in the exercise configuration, you
+                     can change the state of the submission here. You can either give the student
+                     a boomerang or OK the submission and turn it ready for peer-review.</small>
+              <form class="form-horizontal" method="post"
+                                            action="{{ object.get_update_state_url }}">
+                {% csrf_token %}
+                {{ state_form|crispy }}
+                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              </form>
 
-        <h6 class="mt-4">All submissions by the same submitter</h6>
-        <div class="list-group">
-          {% for sub in other_submissions %}
-            <div class="list-group-item {% if sub == object %}bg-success{% endif %}">
-              <a href="{{ sub.get_absolute_url }}">{{ sub }}</a>
+            {% else %}
+              You have not enabled "use states" in this exercise's configuration. This submission is automatically
+              put into peer-review queue for other students.
+            {% endif %}
+
+            <h6 class="mt-4">All submissions by the same submitter</h6>
+            <div class="list-group">
+              {% for sub in other_submissions %}
+                <div class="list-group-item {% if sub == object %}bg-success{% endif %}">
+                  <a href="{{ sub.get_absolute_url }}">{{ sub }}</a>
+                </div>
+              {% endfor %}
             </div>
-          {% endfor %}
-        </div>
+        {% endif %}
 
       {% endif %}
 
