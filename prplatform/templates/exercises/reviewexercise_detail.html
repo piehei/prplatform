@@ -29,6 +29,17 @@
         </a>.
       </div>
 
+      {% if chooceForm %}
+      <div class="card card-body mb-4">
+      You can chooce the subject of your peer-review here:
+        <form class="form-horizontal" method="get"
+                                      action="{{ object.get_absolute_url }}?mode=chooce">
+          {{ chooceForm | crispy }}
+          <button type="submit" class="btn btn-sm btn-primary">Change subject</button>
+        </form>
+      </div>
+      {% endif %}
+
       {% if teacher %}
         <div class="alert alert-danger" role="alert">
           <h4 class="alert-heading">Alert teacher!</h4>
@@ -48,7 +59,7 @@
           You have already submitted your peer-reviews to this exercise.
         </div>
 
-      {% elif not reviewable and not teacher %}
+      {% elif not reviewable and not chooceForm and not teacher %}
 
         <div class="alert alert-warning">
           Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
@@ -62,7 +73,6 @@
         {% endif %}
 
       {% else %}
-
 
         <p>
           <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">

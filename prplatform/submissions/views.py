@@ -49,11 +49,20 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
         self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
 
-        if not ctx['teacher']:
+        my_group = exercise.course.find_studentgroup_by_user(self.request.user)
+
+        if self.request.GET.get('mode') == "my":
+            ctx['my_mode'] = True
             if exercise.use_groups:
-                self.object_list = self.object_list.filter(submitter_group=exercise.course.find_studentgroup_by_user(self.request.user))
+                self.object_list = self.object_list.filter(reviewed_submission__submitter_group=my_group)
             else:
-                self.object_list = self.object_list.filter(submitter_user=self.request.user)
+                self.object_list = self.object_list.filter(reviewed_submission__submitter_user=self.request.user)
+        else:
+            if not ctx['teacher']:
+                if exercise.use_groups:
+                    self.object_list = self.object_list.filter(submitter_group=my_group)
+                else:
+                    self.object_list = self.object_list.filter(submitter_user=self.request.user)
 
         ctx['exercise'] = exercise
         ctx['reviewsubmission_list'] = self.object_list
@@ -105,7 +114,7 @@ class OriginalSubmissionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateVie
         return redirect(self.object.get_absolute_url())
 
 
-class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView):
+class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailView):
     model = ReviewSubmission
     pk_url_kwarg = "sub_pk"
 
@@ -113,9 +122,18 @@ class ReviewSubmissionDetailView(IsTeacherMixin, CourseContextMixin, DetailView)
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
 
+        owner = self.object.is_owner(self.request.user)
+        receiver = self.object.reviewed_submission.is_owner(self.request.user)
+
+        if not owner and not receiver and not ctx['teacher']:
+            raise PermissionDenied
+
         data = []
 
-        for ans in self.object.answers.all():
+        for ans in self.object.answers_in_ordered_list():
+            if ans.question.hide_from_receiver and not owner and not ctx['teacher']:
+                continue
+
             if ans.value_text:
                 data.append({'q': ans.question.text, 'a': ans.value_text})
             else:

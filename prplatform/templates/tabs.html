@@ -32,6 +32,15 @@
             </a>
           </li>
         {% endif %}
+        {% if object.questions %} {# if we're looking at a ReviewExercise, show tab #}
+          <li class="nav-item">
+            <a class="nav-link {% if tab == 'submissions_me' %}active{% endif %}"
+               href="{{ object.get_list_url }}?mode=my">
+              Feedback for me
+              <span class="ml-1 badge badge-primary badge-pill">{{ object|my_received_feedback_count:user }}</span>
+            </a>
+          </li>
+        {% endif %}
       </ul>
     </div>
   </div>

@@ -1,6 +1,7 @@
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
+from django.contrib.postgres.fields import ArrayField
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.courses.models import Course
@@ -139,8 +140,10 @@ class ReviewExercise(BaseExercise):
                                                on_delete=models.CASCADE)
 
     RANDOM = 'RANDOM'
+    CHOOCE = 'CHOOCE'
     REVIEW_EXERCISE_TYPE_CHOICES = (
             (RANDOM, 'Random by other user'),
+            (CHOOCE, 'Student chooces'),
         )
 
     type = models.CharField(
@@ -154,7 +157,11 @@ class ReviewExercise(BaseExercise):
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)
-    questions = models.ManyToManyField('exercises.Question')
+    questions = models.ManyToManyField('exercises.Question', related_name='exercises')
+    question_order = ArrayField(models.IntegerField("PKs of questions"))
+
+    def question_list_in_order(self):
+        return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
 
     def get_absolute_url(self):
         base_course = self.course.base_course
