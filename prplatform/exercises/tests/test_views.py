@@ -6,10 +6,10 @@ from django.test import RequestFactory, TestCase
 
 from prplatform.users.models import User
 from prplatform.courses.models import Course
-from prplatform.submissions.models import OriginalSubmission
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
 
-from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView
-from prplatform.exercises.models import SubmissionExercise
+from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, ReviewExerciseDetailView
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 
 def add_middleware(request, middleware_class):
@@ -106,19 +106,41 @@ class ExerciseTest(TestCase):
     def test_studentCannotSubmitMultipleTimes(self):
 
         # first create a submission by a student
-        user = User.objects.get(username="student1")
-        exercise = SubmissionExercise.objects.get(pk=1)
+        user1 = User.objects.get(username="student1")
+        s_exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
+        orig_sub_user1 = OriginalSubmission(course=course, submitter_user=user1, exercise=s_exercise, text="jadajada")
+        orig_sub_user1.save()
         # then load the page and check it disables second submission
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = user
+        request.user = user1
         self.kwargs['pk'] = 1
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
 
         self.assertContains(response, "You have reached the maximum number of submissions")
         self.assertEqual(response.context_data['disable_form'], True)
+
+        user2 = User.objects.get(username="student2")
+        OriginalSubmission(course=course, submitter_user=user2, exercise=s_exercise, text="juuh").save()
+        r_exercise = ReviewExercise.objects.get(reviewable_exercise=s_exercise)
+        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        request.user = user2
+        self.kwargs['pk'] = 1
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "jadajada")
+        self.assertEqual(ReviewLock.objects.all().count(), 1)
+        rsub = ReviewSubmission(course=course, exercise=r_exercise, submitter_user=user2, reviewed_submission=orig_sub_user1)
+        rsub.save()
+        rlock = ReviewLock.objects.first()
+        rlock.review_submission = rsub
+        rlock.save()
+        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        request.user = user2
+        self.kwargs['pk'] = 1
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
+
 
     def test_teacherCanSubmitMultipleTimes(self):
 

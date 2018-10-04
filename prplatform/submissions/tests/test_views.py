@@ -111,10 +111,9 @@ class SubmissionsTest(TestCase):
 
     def test_ReviewSubPagePermissionsWork(self):
 
-        sub_exercise = SubmissionExercise.objects.get(pk=1)
-        rev_exercise = ReviewExercise.objects.get(pk=1)
+        sub_exercise = SubmissionExercise.objects.get(name='T1 TEXT')
+        rev_exercise = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
         course = Course.objects.get(pk=1)
-
         users = [
             User.objects.get(username="student1"),
             User.objects.get(username="student2")
@@ -123,11 +122,14 @@ class SubmissionsTest(TestCase):
         for user in users:
             OriginalSubmission(course=course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
 
+        rs_objects = []
+
         for user in users:
             reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
                                                             .exclude(submitter_user=user).first()
             rs = ReviewSubmission.objects.create(course=course, submitter_user=user,
                                                  exercise=rev_exercise, reviewed_submission=reviewed_sub)
+            rs_objects.append(rs)
             Answer.objects.create(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1))
             Answer.objects.create(submission=rs, value_choice="1", question=Question.objects.get(pk=2))
 
@@ -135,8 +137,8 @@ class SubmissionsTest(TestCase):
         # teacher sees all reviews
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
         request.user = User.objects.get(username="teacher1")
-        self.kwargs['pk'] = 1
-        self.kwargs['sub_pk'] = 1
+        self.kwargs['pk'] = rev_exercise.pk
+        self.kwargs['sub_pk'] = rs_objects[0].pk
         response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "juupase juu")
         self.assertContains(response, "Score the work")
@@ -144,8 +146,8 @@ class SubmissionsTest(TestCase):
         # student sees hidden answer *given* by him
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
         request.user = users[0]
-        self.kwargs['pk'] = 1
-        self.kwargs['sub_pk'] = 1
+        self.kwargs['pk'] = rev_exercise.pk
+        self.kwargs['sub_pk'] = rs_objects[0].pk
         response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "juupase juu")
         self.assertContains(response, "Score the work")
@@ -153,8 +155,8 @@ class SubmissionsTest(TestCase):
         # student cannot see answer to a hidden question
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
         request.user = users[1]
-        self.kwargs['pk'] = 1
-        self.kwargs['sub_pk'] = 1
+        self.kwargs['pk'] = rev_exercise.pk
+        self.kwargs['sub_pk'] = rs_objects[0].pk
         response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "juupase juu")
         self.assertNotContains(response, "Score the work")
