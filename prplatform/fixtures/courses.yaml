@@ -107,7 +107,7 @@
   pk: 1
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T1 text submission
+    name: T1 TEXT
     description: Say bla bla bla and add this and that
     type: "TEXT"
     created: 2018-01-01 00:00+02:00
@@ -119,7 +119,7 @@
   pk: 2
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T2 file upload
+    name: T2 FILE
     description: Sum this and that
     type: "FILE_UPLOAD"
     upload_instructions: Upload the final Python code into the system
@@ -158,10 +158,25 @@
   pk: 1
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T2 REVIEW
-    reviewable_exercise: 2
+    name: T1 TEXT REVIEW
+    reviewable_exercise: 1
     question_order: [2, 1]
     questions: [1, 2]
+    description: Sum this and that
+    type: "RANDOM"
+    created: 2018-01-01 00:00+02:00
+    modified: 2018-01-01 00:00+02:00
+    opening_time: 2018-01-01 00:00+02:00
+    closing_time: 2025-01-01 00:00+02:00
+
+- model: exercises.reviewexercise
+  pk: 2
+  fields:
+    course: ["TIE-02100", "TIE-02100-1"]
+    name: T2 FILE REVIEW
+    reviewable_exercise: 2
+    question_order: [1]
+    questions: [1]
     description: Sum this and that
     type: "RANDOM"
     created: 2018-01-01 00:00+02:00
