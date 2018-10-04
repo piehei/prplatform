@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models import Count
-from django.core.exceptions import FieldError
+from django.core.exceptions import EmptyResultSet
 from django.urls import reverse
 
 import os
@@ -185,7 +185,7 @@ class ReviewLockManager(models.Manager):
                                        .filter(id__in=latest_submission_ids)
 
             if candidates.count() == 0:
-                raise FieldError("nothing to review")
+                raise EmptyResultSet("nothing to review")
 
             reviewable = candidates.first()
 

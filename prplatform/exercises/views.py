@@ -4,7 +4,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
-from django.core.exceptions import FieldError, PermissionDenied
+from django.core.exceptions import EmptyResultSet, PermissionDenied
 from django.contrib import messages
 
 import re
@@ -15,7 +15,7 @@ from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
-from prplatform.submissions.models import ReviewSubmission, Answer, ReviewLock
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 
 
 ###
@@ -225,6 +225,8 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMix
             sub.submitter_user = user
             if exercise.use_groups:
                 sub.submitter_group = course.find_studentgroup_by_user(user)
+            if exercise.use_states:
+                sub.state = OriginalSubmission.SUBMITTED
             sub.save()
             messages.success(self.request, 'Submission successful! You may see it below.')
             return redirect(sub)
@@ -285,11 +287,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             #       of the reviewlock?
             try:
                 rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
-            except FieldError:
-                pass
+            except EmptyResultSet: # nothing to review just yet
+                rlock = None
 
-        ctx['reviewable'] = rlock.original_submission
-        if rlock.original_submission:
+        ctx['reviewable'] = rlock.original_submission if rlock else None
+        if rlock and rlock.original_submission:
             ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
@@ -323,6 +325,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             self._render_teacher_view(ctx, exercise)
 
         my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(user)
+        my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
         if not my_submission_qs:
             return self.render_to_response(ctx)
 
@@ -346,6 +349,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
                                                      submitter_user=self.request.user,  # TODO: groups?
                                                      exercise=exercise,
                                                      reviewed_submission=reviewed_submission)
+
         rlock.review_submission = submission
         rlock.save()
 
