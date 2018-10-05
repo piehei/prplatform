@@ -99,17 +99,14 @@
             <ul class="nav flex-column">
               {% if course %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{{ course.get_absolute_url }}">
-                    Exercises
+                  <a class="nav-link font-weight-bold" href="{{ course.get_absolute_url }}">
+                    Course page
                   </a>
                 </li>
               {% endif %}
 
               {% if teacher %}
                 <li class="nav-item">
-                  <a class="nav-link" href="{% url 'courses:teacher' course.base_course.url_slug course.url_slug %}">
-                    Teacher area
-                  </a>
                 </li>
               {% endif %}
 
