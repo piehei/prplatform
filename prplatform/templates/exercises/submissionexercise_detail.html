@@ -35,7 +35,9 @@
           <br>
           {% if my_group %}
             Members in your group: {{ my_group.student_usernames }}
-            {% else %} <!-- TODO: how can the teacher override this and submit as a group???? -->
+          {% elif teacher %} <!-- TODO: how can the teacher override this and submit as a group???? -->
+            You're a teacher. You don't belong to any group and cannot submit.
+          {% else %}
             You have not been assigned to any group! Contact course personnel to make a submission.
           {% endif %}
         </div>

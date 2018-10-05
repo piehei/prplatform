@@ -157,5 +157,8 @@ body {
 
 .breadcrumb li {
   margin-left: 5px;
+}
 
+.table th {
+  border-top: none;
 }

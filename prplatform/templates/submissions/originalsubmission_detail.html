@@ -81,7 +81,7 @@
             <h6 class="mt-4">All submissions by the same submitter</h6>
             <div class="list-group">
               {% for sub in other_submissions %}
-                <div class="list-group-item {% if sub == object %}bg-success{% endif %}">
+                <div class="list-group-item {% if sub == object %}border-success{% endif %}">
                   <a href="{{ sub.get_absolute_url }}">{{ sub }}</a>
                 </div>
               {% endfor %}
