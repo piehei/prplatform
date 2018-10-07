@@ -4,8 +4,8 @@
 {% block title %}Question details{% endblock %}
 
 {% block content %}
-  <h1>Questions...</h1>
-  {{ object }}
+
+  <h1>Question edit</h1>
   <form class="form-horizontal" method="post" action="{% url 'courses:update-question' course.base_course.url_slug course.url_slug object.pk %}">
     {% csrf_token %}
     {{ form|crispy }}
@@ -15,15 +15,17 @@
       </div>
     </div>
   </form>
-  <h2 class="mt-4">Add more choices:</h2>
-  <form class="form-horizontal" method="post" action="{% url 'courses:update-question' course.base_course.url_slug course.url_slug object.pk %}?choice=true">
-    {% csrf_token %}
-    {{ customForm|crispy }}
-    <div class="control-group">
-      <div class="controls">
-        <button type="submit" class="btn">Update</button>
-      </div>
-    </div>
-  </form>
+
+  <br>
+
+  <b>Example of choices:</b>
+  <br>
+  <pre>
+  0|Bad
+  1|Not so good
+  2|Average
+  3|Good
+  4|Perfect
+  </pre>
 
 {% endblock %}

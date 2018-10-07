@@ -11,19 +11,23 @@
     </a>
   </h1>
 
-  <div class="col-md-6">
-    <b>Text:</b> {{ object.text }}
+  <div class="col-md-6 mt-4">
+    <b>Question:</b>
+    {{ object.text }}
 
-    <br><br>
+    <br>
 
-    {% if not object.choices.all %}
-      No choices added to the question.
+    {% if not object.choices %}
+      No choices added to the question. The student answers in text.
+    {% else %}
+    <br>
+    <b>Choices:</b>
     {% endif %}
 
-    {% for choice in object.choices.all %}
+    {% for choice in object.choices %}
     <div class="list-group-item">
       Choice {{ forloop.counter }}:
-      {{ choice.text }}
+      {{ choice.1 }} ({{ choice.0 }})
     </div>
     {% endfor %}
   </div>
