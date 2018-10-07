@@ -20,13 +20,32 @@
             action="{% url 'courses:groups' course.base_course.url_slug course.url_slug %}">
         {% csrf_token %}
         {{ form|crispy }}
-        This CSV has these <b>constraints</b>:<br>
-        * delimiter is "," character<br>
-        * no header-row allowed<br>
-        * first field is group name, following fields are username fields (any number)<br>
-        * group name is unique, users can appear in only one group<br>
-        * uploading will either create groups or update previous groups if matching group names exist in the system<br>
-        * the system <b>will tell you about errors</b> in the file and do nothing, if errors are found<br>
+        If you use the <b>*Moodle group plugin*</b> formatted CSV, it will be used in the following manner:<br>
+        <ul>
+        <li>Group Description field will be interpreted as the name of the group
+        <li>Users in the group will be taken from Member N Username fields
+        </ul>
+        <br>
+
+
+        If you use the <b>*custom*</b> CSV, it has these <b>constraints</b>:<br>
+        <ul>
+        <li>delimiter is "," character
+        <li>no header-row allowed
+        <li>first field is group name, following fields are username fields (any number)
+        <li>group name is unique, users can appear in only one group
+        </ul>
+        An example of the csv file looks like this:<br>
+        <code>
+    group1,username1,username2,usernameN<br>
+    group2,username1,username2
+        </code>
+        <br><br><br>
+        This applies to <b>*both*</b> of the file formats:<br>
+        <ul>
+        <li>uploading will either create groups or update previous groups if matching group names exist in the system
+        <li>the system <b>will tell you about errors</b> in the file and do nothing, if errors are found
+        </ul>
         <br>
         <button type="submit" class="btn btn-success">Update</button>
       </form>
