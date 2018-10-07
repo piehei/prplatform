@@ -1,24 +1,28 @@
-from django.views.generic import DetailView, CreateView, UpdateView, ListView
+from django.views.generic import CreateView, UpdateView, ListView
 from django import forms
+from django.contrib.postgres.forms import SimpleArrayField
 from django.http import HttpResponseRedirect
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
-from .question_models import Question, Choice
+from .question_models import Question
 
 
 class QuestionModelForm(forms.ModelForm):
+    choices = SimpleArrayField(
+                            SimpleArrayField(forms.CharField(), delimiter="|"),
+                            delimiter="\n",
+                            widget=forms.Textarea(attrs={'rows': 5}),
+                            required=False,
+                            label='Choices <i>(leave empty if student should answer in text)</i>'
+                            )
+
     class Meta:
         model = Question
         fields = ['text', 'choices']
+        help_texts = {
+                'choices': ''
+        }
 
-QuestionChoicesModelFormSet = forms.modelformset_factory(Choice,
-                                            fields=('text',),
-                                            can_delete=True,
-                                            can_order=True,
-                                            min_num=0,
-                                            validate_min=True,
-                                            max_num=5,
-                                            extra=1)
 
 class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = Question
@@ -29,12 +33,8 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     def post(self, *args, **kwargs):
         self.object = None
         course = self.get_context_data()['course']
-
         form = QuestionModelForm(self.request.POST)
-        # formset = QuestionModelFormSet(self.request.POST)
-
-        if form.is_valid(): #and formset.is_valid():
-
+        if form.is_valid():  # and formset.is_valid():
             q = form.save(commit=False)
             q.course = course
             q.save()
@@ -43,9 +43,7 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         else:
             ctx = self.get_context_data(**kwargs)
             ctx['form'] = form
-            ctx['formset'] = formset
             return self.render_to_response(ctx)
-
 
 
 class CustomQuestionForm(forms.Form):
@@ -69,79 +67,29 @@ class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
         self.object = self.get_object()
         ctx = self.get_context_data()
         ctx['form'] = QuestionModelForm(instance=self.get_object())
-        ctx['formset'] = QuestionChoicesModelFormSet(queryset=self.object.choices.all())
-
         cq = CustomQuestionForm(course=ctx['course'])
-        # cq.fields['previous_choice'].choices = self.get_choices_for_question(ctx['course'])
-
         ctx['customForm'] = cq
 
         return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         self.object = self.get_object()
-        course = self.get_context_data()['course']
-
-        adding_a_choice = self.request.GET.get('choice', None)
-        if adding_a_choice:
-            print("adding_a_choice")
-            cq = CustomQuestionForm(course=course, data=self.request.POST)
-
-            if cq.is_valid():
-
-                print(cq.data)
-
-                if cq.data['text']:
-                    print("new text")
-                    new_choice = Choice.objects.create(
-                            text=cq.data['text'],
-                            course=course,
-                            value=0)
-                    self.object.choices.add(new_choice)
-
-                elif cq.data['previous_choice']:
-                    prev = cq.data['previous_choice']
-                    print("connecting old qc")
-                    print(prev)
-
-                    # for qcid in cq.data['previous_choice']:
-                        # print(qcid)
-                    self.object.choices.add(Choice.objects.get(id=prev))
-
-            print(cq.errors)
-            return HttpResponseRedirect(self.object.get_absolute_url())
-
         form = QuestionModelForm(self.request.POST, instance=self.object)
-        # formset = QuestionChoicesModelFormSet(self.request.POST)
 
-        if form.is_valid(): #and formset.is_valid():
-
-            print(form)
-            q = form.save(commit=False)
-            print(q)
-            q.save()
-            form.save_m2m()
-            # choices = formset.save(commit=False)
-            # print(choices)
-            # for c in choices:
-                # c.value = 0
-                # c.save()
-                # q.choices.add(c)
-
+        if form.is_valid():  # and formset.is_valid():
+            q = form.save()
             return HttpResponseRedirect(q.get_absolute_url())
-
         else:
-            print(form.errors)
-            print(formset.errors)
             ctx = self.get_context_data(**kwargs)
             ctx['form'] = form
-            ctx['formset'] = formset
             return self.render_to_response(ctx)
+
 
 class QuestionDetailView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = Question
     fields = '__all__'
     template_name = 'exercises/question_detail.html'
+
 
 class QuestionListView(IsTeacherMixin, CourseContextMixin, ListView):
     model = Question
