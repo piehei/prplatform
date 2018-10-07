@@ -251,7 +251,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         return forms
 
-    def _render_teacher_view(self, ctx, exercise):
+    def _get_teacher_random(self, ctx, exercise):
         reviewable = exercise.reviewable_exercise.submissions.first()
         if reviewable:
             ctx['reviewable'] = reviewable
@@ -262,11 +262,14 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             ctx['my_submission'] = my_submission
             ctx['my_filecontents'] = my_submission.filecontents_or_none()
 
-        return self.render_to_response(ctx)
+        return ctx
 
     def _get_random_ctx(self, ctx, my_submission_qs):
         user = self.request.user
         exercise = self.object
+        if ctx['teacher']:
+            return self._get_teacher_random(ctx, exercise)
+
         ctx['my_submission'] = my_submission_qs.first()
         ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
 
@@ -321,12 +324,9 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
 
         ctx['forms'] = self._get_answer_forms(exercise)
 
-        if is_teacher:
-            self._render_teacher_view(ctx, exercise)
-
         my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(user)
         my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
-        if not my_submission_qs:
+        if not my_submission_qs and not is_teacher:
             return self.render_to_response(ctx)
 
         if exercise.type == ReviewExercise.RANDOM:
