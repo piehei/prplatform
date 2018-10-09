@@ -337,27 +337,34 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         return self.render_to_response(ctx)
 
     def _post_random(self, ctx):
-        course = ctx['course']
-        exercise = ctx['exercise']
         # TODO: should it be possible to update the previous review submission?
-        rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=exercise)
+        rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=self.object)
         rlock = rlock_list.last()
 
         # TODO: this crashes when teacher submits since there's no release lock
         reviewed_submission = rlock.original_submission
-        submission = ReviewSubmission.objects.create(course=course,
-                                                     submitter_user=self.request.user,  # TODO: groups?
-                                                     exercise=exercise,
-                                                     reviewed_submission=reviewed_submission)
-
-        rlock.review_submission = submission
+        new_review_submission = ReviewSubmission.objects.create(course=ctx['course'],
+                                                                submitter_user=self.request.user,  # TODO: groups?
+                                                                exercise=self.object,
+                                                                reviewed_submission=reviewed_submission)
+        rlock.review_submission = new_review_submission
         rlock.save()
 
-        questions = exercise.question_list_in_order()
+        self._save_answers(ctx, new_review_submission)
+        return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
-        print(self.request.POST)
+    def _post_chooce(self, ctx):
+        reviewed_submission = OriginalSubmission.objects.get(pk=self.request.POST.get('reviewable_id'))
+        new_review_submission = ReviewSubmission.objects.create(course=ctx['course'],
+                                                                submitter_user=self.request.user,  # TODO: groups?
+                                                                exercise=self.object,
+                                                                reviewed_submission=reviewed_submission)
+        self._save_answers(ctx, new_review_submission)
+        return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
-        # TODO: modelformset *MUST* be used here
+    def _save_answers(self, ctx, review_submission):
+        # TODO: modelformset *MUST* be used here, THIS IS AWFUL SHIT
+        questions = self.object.question_list_in_order()
         for key in self.request.POST:
             if self.PREFIX not in key or not self.request.POST[key]:
                 continue
@@ -365,22 +372,12 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             q_now = questions[indx]
 
             answer_value = self.request.POST[key]
-            answer = Answer(submission=submission, question=q_now)
+            answer = Answer(submission=review_submission, question=q_now)
             if "value_text" in key:
                 answer.value_text = answer_value
             else:
                 answer.value_choice = answer_value
             answer.save()
-
-        return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=self.kwargs))
-
-    def _post_chooce(self, ctx):
-        print(self.request.POST)
-        if self.request.POST.get('mode') == 'chooce':
-            print("chooce")
-            if ChooceForm(exercise=self.object, user=self.request.user).is_valid():
-                print("valid")
-        return HttpResponseRedirect(self.object.get_absolute_url())
 
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)

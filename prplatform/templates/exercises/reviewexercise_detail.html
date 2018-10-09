@@ -134,6 +134,8 @@
             {{ form|crispy }}
           {% endfor %}
 
+          <input type="hidden" name="reviewable_id" value="{{ reviewable.pk }}">
+
           <div class="control-group">
             <div class="controls">
               <button type="submit" class="btn btn-success">Save answer</button>
