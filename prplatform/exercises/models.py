@@ -161,6 +161,7 @@ class ReviewExercise(BaseExercise):
     question_order = ArrayField(models.IntegerField("PKs of questions"))
 
     def question_list_in_order(self):
+        # TODO: THIS WILL THROW IF Q NOT IN self.question_order
         return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
 
     def get_absolute_url(self):
