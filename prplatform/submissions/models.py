@@ -169,15 +169,21 @@ class ReviewLockManager(models.Manager):
                                            .annotate(Count('reviews')) \
                                            .order_by('reviews__count')
 
+            # ATTENTION !!!!!!!!!!
+            # the query just above *CANNOT* be joined with the order_by/distinct queries
+            # that's why we need two queries
+
             if exercise.reviewable_exercise.use_groups:
-                latest_submission_ids = OriginalSubmission.objects.values('id') \
+                latest_submission_ids = OriginalSubmission.objects.filter(exercise=exercise.reviewable_exercise) \
+                                                          .values('id') \
                                                           .order_by('submitter_group_id', '-created') \
                                                           .distinct('submitter_group_id')
                 candidates = candidates.exclude(
                                         submitter_group=exercise.course.find_studentgroup_by_user(user)) \
                                        .filter(id__in=latest_submission_ids)
             else:
-                latest_submission_ids = OriginalSubmission.objects.values('id') \
+                latest_submission_ids = OriginalSubmission.objects.filter(exercise=exercise.reviewable_exercise) \
+                                                          .values('id') \
                                                           .order_by('submitter_user_id', '-created') \
                                                           .distinct('submitter_user_id')
                 candidates = candidates.exclude(
