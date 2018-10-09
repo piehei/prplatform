@@ -12,7 +12,7 @@
   <div style="background:lightyellow;"
        class="card card-body mb-4">
 
-      <h5>To peer-review:</h5>
+    <h5>To peer-review{% if chooceMode %}(submitted by: {{ reviewable.submitter }}){% endif %}:</h5>
 
       {% if not reviewable %}
 
@@ -32,9 +32,9 @@
         {% endpygment %}
 
       {% else %}
-        You can download the other student's submission here:
-        <a href="{{ reviewable.get_file_download_url }}">download link</a>
-        View the file on your computer and answer questions below.
+        <a href="{{ reviewable.get_file_download_url }}">
+          Click here to download the file submitted by the other student(s)
+        </a>
       {% endif %}
 
   </div>

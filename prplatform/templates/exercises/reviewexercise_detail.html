@@ -30,12 +30,14 @@
           </a>
         </i>
         </p>
+
       {% if teacher %}
         <div class="alert alert-danger" role="alert">
           <h4 class="alert-heading">Alert teacher!</h4>
           This page is now in <strong>teacher</strong> mode. TODO
         </div>
       {% endif %}
+
         <h5>Description</h5>
         {% if not object.description %}
           No description available
@@ -45,11 +47,11 @@
 
       {% if chooceForm %}
       <div class="card card-body mb-4">
-      You can chooce the subject of your peer-review here:
+        Chooce the subject of your peer-review here:
         <form class="form-horizontal" method="get"
                                       action="{{ object.get_absolute_url }}?mode=chooce">
           {{ chooceForm | crispy }}
-          <button type="submit" class="btn btn-sm btn-primary">Change subject</button>
+          <button type="submit" class="btn btn-sm btn-primary">Chooce</button>
         </form>
       </div>
       {% endif %}
@@ -80,8 +82,11 @@
           </a>
         {% endif %}
 
+      {% elif chooceForm and not reviewable %}
+        {# student has not yet chocen what to review #}
       {% else %}
 
+        {% if object.type != 'CHOOCE' %}
         <p>
           <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">
             To be reviewed
@@ -95,15 +100,15 @@
               Teacher's solution
             </button>
           {% endif %}
-
         </p>
+        {% endif %}
 
         <div class="collapse" id="collapse-my-submission">
           {% include "./my_submission.html" %}
         </div>
 
         <div class="collapse show" id="collapse-reviewable">
-          {% include "./reviewable.html" %}
+          {% include "./reviewable.html" with chooceMode=chooceForm %}
         </div>
 
         <div class="collapse" id="collapse-model-answer">

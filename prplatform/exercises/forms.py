@@ -139,7 +139,7 @@ class ChooceForm(Form):
     to offer the student the choices. This form shows student all the
     other students' submissions so the student can chooce who to review.
     """
-    choice = ModelChoiceField(queryset=None)
+    choice = ModelChoiceField(queryset=None, label='')
 
     def __init__(self, *args, **kwargs):
         exercise = kwargs.pop('exercise')
