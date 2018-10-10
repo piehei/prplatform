@@ -96,9 +96,18 @@ class SubmissionExerciseForm(ModelForm):
 class ReviewExerciseForm(ModelForm):
     class Meta:
         model = ReviewExercise
-        fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
-                  'model_answer', 'reviewable_exercise', 'type', 'max_reviews_per_student',
-                  'max_reviews_per_submission', 'use_groups',
+        fields = ['name',
+                  'description',
+                  'opening_time',
+                  'closing_time',
+                  'show_reviews_after_date',
+                  'visible_to_students',
+                  'model_answer',
+                  'reviewable_exercise',
+                  'type',
+                  'max_reviews_per_student',
+                  'max_reviews_per_submission',
+                  'use_groups',
                   ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
@@ -107,6 +116,7 @@ class ReviewExerciseForm(ModelForm):
         help_texts = {
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                'show_reviews_after_date': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
                 }

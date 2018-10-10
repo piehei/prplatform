@@ -139,6 +139,9 @@ class ReviewExercise(BaseExercise):
                                                related_name="review_exercise",
                                                on_delete=models.CASCADE)
 
+    show_reviews_after_date = models.DateTimeField("Show peer-reviews only after this date",
+                                                   blank=True, null=True)
+
     RANDOM = 'RANDOM'
     CHOOCE = 'CHOOCE'
     REVIEW_EXERCISE_TYPE_CHOICES = (

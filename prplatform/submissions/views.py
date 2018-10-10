@@ -6,6 +6,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView, UpdateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.utils import timezone
 
 import os
 
@@ -57,6 +58,9 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
                 self.object_list = self.object_list.filter(reviewed_submission__submitter_group=my_group)
             else:
                 self.object_list = self.object_list.filter(reviewed_submission__submitter_user=self.request.user)
+
+            if exercise.show_reviews_after_date and exercise.show_reviews_after_date > timezone.now():
+                ctx['show_reviews_date_not_passed'] = True
         else:
             if not ctx['teacher']:
                 if exercise.use_groups:
@@ -127,6 +131,10 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
 
         if not owner and not receiver and not ctx['teacher']:
             raise PermissionDenied
+
+        avail_date = self.object.exercise.show_reviews_after_date
+        if avail_date and avail_date > timezone.now() and receiver:
+            raise PermissionDenied(f'This will be available for viewing after {avail_date}')
 
         data = []
 

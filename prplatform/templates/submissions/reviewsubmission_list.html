@@ -22,8 +22,10 @@
   <div class="row">
     <div class="col-md-12">
 
+      {% if show_reviews_date_not_passed %}
+      Peer-reviews will be available after {{ exercise.show_reviews_after_date }}<br>
+      {% else %}
 
-      <h1>TODO: DISABLE THIS IF NOT ...</h1>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -52,6 +54,9 @@
             {% endfor %}
         </tbody>
       </table>
+
+      {% endif %}
+
       {% if not reviewsubmission_list and not teacher %}
         No submissions/peer-reviews available yet
       {% elif not reviewsubmission_list and teacher %}
