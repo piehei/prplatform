@@ -40,7 +40,7 @@
             {% for origsub in reviewsubmission_list %}
               <tr scope="row">
                 <td> {{ forloop.counter }} </td>
-                {% if not my_mode %}
+                {% if teacher %}
                   <td>
                     {{ origsub.submitter }}
                   </td>

@@ -13,12 +13,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="container">
+  {% if receiver %}
+  {% include "../tabs.html" with tab="submissions_me" object=object.exercise %}
+  {% else %}
+  {% include "../tabs.html" with tab="submissions" object=object.exercise %}
+  {% endif %}
 
   <div class="row">
     <div class="col-sm-12">
-      <h4>Peer-review to exercise {{ object.exercise.name }}</h4>
+      <h4>Peer-review to exercise <a class="font-italic" href="{{ object.get_absolute_url }}">{{ object.exercise.name }}</a></h4>
+      {% if not receiver %}
       <p>Submitter: {{ object.submitter }}</p>
+      {% endif %}
       <p>Submission time: {{ object.created }}</p>
       <ul>
         {% for item in qa_list %}
@@ -32,6 +38,5 @@
       </ul>
     </div>
   </div>
-</div>
 {% endblock content %}
 

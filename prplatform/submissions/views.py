@@ -136,6 +136,8 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         if avail_date and avail_date > timezone.now() and receiver:
             raise PermissionDenied(f'This will be available for viewing after {avail_date}')
 
+        ctx['receiver'] = receiver
+
         data = []
 
         for ans in self.object.answers_in_ordered_list():
