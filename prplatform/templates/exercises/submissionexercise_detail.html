@@ -29,19 +29,6 @@
         {{ object.description | linebreaks }}
       </div>
 
-      {% if object.use_groups %}
-      <div class="alert alert-{% if my_group %}warning{% else %}danger{% endif %}">
-          In this exercise you're submitting as a group.
-          <br>
-          {% if my_group %}
-            Members in your group: {{ my_group.student_usernames }}
-          {% elif teacher %} <!-- TODO: how can the teacher override this and submit as a group???? -->
-            You're a teacher. You don't belong to any group and cannot submit.
-          {% else %}
-            You have not been assigned to any group! Contact course personnel to make a submission.
-          {% endif %}
-        </div>
-      {% endif %}
 
       {% if my_submissions and disable_form %}
 
@@ -62,6 +49,21 @@
               method="post">
               {% csrf_token %}
               {{ form | crispy }}
+
+              {% if object.use_groups %}
+              <div class="alert alert-{% if my_group %}warning{% else %}danger{% endif %}">
+                  In this exercise you're submitting as a group.
+                  <br>
+                  {% if my_group %}
+                    Members in your group: {{ my_group.student_usernames }}
+                  {% elif teacher %} <!-- TODO: how can the teacher override this and submit as a group???? -->
+                    You're a teacher. You don't belong to any group and cannot submit.
+                  {% else %}
+                    You have not been assigned to any group! Contact course personnel to make a submission.
+                  {% endif %}
+                </div>
+              {% endif %}
+
               <input type="submit" class="btn btn-primary" value="Submit"
                      {% if disable_form or object.use_groups and not my_group %}disabled{% endif %}>
           </form>
