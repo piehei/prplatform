@@ -73,7 +73,7 @@
         <div class="sidebar-sticky">
 
           {% if request.user.is_authenticated %}
-            <h4 class="m-4">{{ request.user.email }}</h4>
+            <h4 class="m-4">{{ request.user.username }}</h4>
             <hr>
           {% endif %}
 
