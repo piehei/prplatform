@@ -210,6 +210,8 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
             sep = rows[0].split("sep=")[1]
             headers = rows[1].split(sep)
 
+            messages.info(self.request, f'Using {sep} as the separator')
+
             for group_row in rows[2:]:
                 parts = group_row.split(sep)
                 group_name = ""
@@ -239,13 +241,15 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
         if group_file_is_valid:
             print("Group file IS valid! Can continue!")
 
+            messages.info(self.request, f'Found {len(groups)} groups in the CSV file.')
+
             for group_name in groups:
                 existing_group = StudentGroup.objects.filter(course=ctx['course'], name=group_name).first()
                 if existing_group:
                     existing_usernames = existing_group.student_usernames
                     existing_group.student_usernames = groups[group_name]
                     existing_group.save()
-                    messages.warning(self.request, f'Updated group: {existing_group.name};; students: {existing_usernames} ---> {existing_group.student_usernames}')
+                    messages.warning(self.request, f'Updated group: {existing_group.name} with students: {existing_usernames} ---> {existing_group.student_usernames}')
                 else:
                     new_group = StudentGroup.objects.create(course=ctx['course'],
                                                             name=group_name,
