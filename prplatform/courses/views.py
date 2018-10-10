@@ -229,11 +229,12 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
                             groups[group_name] = []
 
                     if re.compile('Member [0-9] Username').fullmatch(field_name):
-                        if parts[i] in used_usernames:
+                        username_now = parts[i].split("@")[0]
+                        if username_now in used_usernames:
                             messages.error(self.request, f'Username {parts[i]} appears in more than one group. Cannot continue.')
                             group_file_is_valid = False
-                        groups[group_name].append(parts[i])
-                        used_usernames.append(parts[i])
+                        groups[group_name].append(username_now)
+                        used_usernames.append(username_now)
 
         if group_file_is_valid:
             print("Group file IS valid! Can continue!")
