@@ -42,8 +42,14 @@
         {{ form | crispy }}
 
         <hr></hr>
+
         <h2>Questions in the exercise</h2>
 
+        <div class="alert alert-danger">
+          You can add questions <strong>only after</strong> creating the exercise.
+        </div>
+
+        {% if False %}
         {{ formset.management_form }}
 
 
@@ -60,6 +66,7 @@
             <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
           </div>
         </div>
+        {% endif %}
 
         <div class="control-group mt-4">
           <div class="controls">
