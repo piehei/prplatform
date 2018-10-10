@@ -131,14 +131,14 @@ class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
                        'base_url_slug': self.kwargs['base_url_slug']})
 
     def post(self, request, *args, **kwargs):
-        course = self.get_object()
-
+        course = get_object_or_404(Course,
+                                   base_course__url_slug=kwargs['base_url_slug'],
+                                   url_slug=kwargs['url_slug'])
         if course.can_enroll(self.request.user):
             course.enroll(self.request.user)
             messages.info(request, "You're now enrolled into the course.")
         else:
             messages.error(request, "You cannot enroll to this course.")
-
         return HttpResponseRedirect(reverse("courses:detail", kwargs={'url_slug': self.kwargs['url_slug'],
                                     'base_url_slug': self.kwargs['base_url_slug']}))
 
