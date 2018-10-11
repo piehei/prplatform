@@ -37,7 +37,7 @@
           </tr>
         </thead>
         <tbody>
-            {% for origsub in reviewsubmission_list %}
+            {% for origsub in object_list %}
               <tr scope="row">
                 <td> {{ forloop.counter }} </td>
                 {% if teacher %}
@@ -57,9 +57,9 @@
 
       {% endif %}
 
-      {% if not reviewsubmission_list and not teacher %}
+      {% if not object_list and not teacher %}
         No submissions/peer-reviews available yet
-      {% elif not reviewsubmission_list and teacher %}
+      {% elif not object_list and teacher %}
         This page would list feedback from other students to you. You're a teacher, so the list is empty.
       {% endif %}
 

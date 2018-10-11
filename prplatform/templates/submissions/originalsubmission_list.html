@@ -27,10 +27,10 @@
         </thead>
         {% endif %}
         <tbody>
-          {% if not originalsubmission_list %}
+          {% if not object_list %}
             No submissions yet
           {% else %}
-            {% for origsub in originalsubmission_list %}
+            {% for origsub in object_list %}
               <tr scope="row">
                 <td>
                   {{ origsub.submitter }}

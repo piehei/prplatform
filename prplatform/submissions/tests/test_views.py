@@ -35,7 +35,7 @@ class SubmissionsTest(TestCase):
         response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
 
         self.assertEqual(OriginalSubmission.objects.all().count(), 3)
-        self.assertEqual(response.context_data['originalsubmission_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'].count(), 1)
         self.assertNotContains(response, "student2")  # hacky
         self.assertNotContains(response, "student3")
 
@@ -55,7 +55,7 @@ class SubmissionsTest(TestCase):
         response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
 
         self.assertEqual(OriginalSubmission.objects.all().count(), 4)
-        self.assertEqual(response.context_data['originalsubmission_list'].count(), 4)
+        self.assertEqual(response.context_data['object_list'].count(), 4)
         self.assertContains(response, "student1")  # hacky
         self.assertContains(response, "student2")
         self.assertContains(response, "student3")
@@ -87,7 +87,7 @@ class SubmissionsTest(TestCase):
         self.kwargs['pk'] = 1
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(ReviewSubmission.objects.all().count(), 2)
-        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 2)
+        self.assertEqual(response.context_data['object_list'].count(), 2)
         self.assertContains(response, "student1")  # hacky
         self.assertContains(response, "student2")
 
@@ -97,8 +97,8 @@ class SubmissionsTest(TestCase):
         self.kwargs['pk'] = 1
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(ReviewSubmission.objects.all().count(), 2)
-        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
-        self.assertEqual(response.context_data['reviewsubmission_list'][0].submitter_user, users[1])
+        self.assertEqual(response.context_data['object_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'][0].submitter_user, users[1])
 
         # student2 sees reviews of him by student1
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
@@ -106,8 +106,8 @@ class SubmissionsTest(TestCase):
         self.kwargs['pk'] = 1
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(ReviewSubmission.objects.all().count(), 2)
-        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
-        self.assertEqual(response.context_data['reviewsubmission_list'][0].submitter_user, users[0])
+        self.assertEqual(response.context_data['object_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'][0].submitter_user, users[0])
 
     def test_ReviewSubPagePermissionsWork(self):
 

@@ -26,15 +26,10 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = OriginalSubmission
 
     def get_context_data(self):
-        exercise = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
-        self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
-
+        ctx['exercise'] = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
         if not ctx['teacher']:
-            self.object_list = exercise.submissions_by_submitter(self.request.user)
-
-        ctx['exercise'] = exercise
-        ctx['originalsubmission_list'] = self.object_list
+            ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
         return ctx
 
 
@@ -42,21 +37,17 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = ReviewSubmission
 
     def get_context_data(self):
-        exercise = ReviewExercise.objects.get(pk=self.kwargs['pk'])
-        self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
+        ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
 
         if self.request.GET.get('mode') == "my":
             ctx['my_mode'] = True
-            self.object_list = exercise.last_reviews_for(self.request.user)
-            if exercise.show_reviews_after_date and exercise.show_reviews_after_date > timezone.now():
+            ctx['object_list'] = ctx['exercise'].last_reviews_for(self.request.user)
+            if ctx['exercise'].show_reviews_after_date and ctx['exercise'].show_reviews_after_date > timezone.now():
                 ctx['show_reviews_date_not_passed'] = True
         else:
             if not ctx['teacher']:
-                self.object_list = exercise.submissions_by_submitter(self.request.user)
-
-        ctx['exercise'] = exercise
-        ctx['reviewsubmission_list'] = self.object_list
+                ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
         return ctx
 
 
