@@ -167,6 +167,38 @@ class ReviewExercise(BaseExercise):
         # TODO: THIS WILL THROW IF Q NOT IN self.question_order
         return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
 
+    def last_submission_by_submitters(self):
+        """
+        ALERT!!!!! This returns last submissions by submitter which means:
+        if a submitter has done multiple submissions reviewing multiple
+        OriginalSubmissions, only the last review is returned
+        """
+        if self.use_groups:
+            last_ids = self.submissions \
+                           .values('id') \
+                           .order_by('submitter_group_id', '-created') \
+                           .distinct('submitter_group_id')
+        else:
+            last_ids = self.submissions \
+                           .values('id') \
+                           .order_by('submitter_user_id', '-created') \
+                           .distinct('submitter_user_id')
+        return self.submissions.filter(id__in=last_ids)
+
+    def last_reviews_for(self, user):
+
+        all_reviews = None
+        if self.use_groups:
+            all_reviews = self.submissions.filter(
+                    reviewed_submission__submitter_group=self.course.find_studentgroup_by_user(user)) \
+                                          .order_by('submitter_group_id', '-created') \
+                                          .distinct('submitter_group_id')
+        else:
+            all_reviews = self.submissions.filter(reviewed_submission__submitter_user=user) \
+                                          .order_by('submitter_user_id', '-created') \
+                                          .distinct('submitter_user_id')
+        return all_reviews
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={
