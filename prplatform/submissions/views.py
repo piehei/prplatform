@@ -50,20 +50,16 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
         self.object_list = exercise.submissions.all()
         ctx = super().get_context_data(**self.kwargs)
 
-        my_group = exercise.course.find_studentgroup_by_user(self.request.user)
-
         if self.request.GET.get('mode') == "my":
             ctx['my_mode'] = True
-            if exercise.use_groups:
-                self.object_list = self.object_list.filter(reviewed_submission__submitter_group=my_group)
-            else:
-                self.object_list = self.object_list.filter(reviewed_submission__submitter_user=self.request.user)
+            self.object_list = exercise.last_reviews_for(self.request.user)
 
             if exercise.show_reviews_after_date and exercise.show_reviews_after_date > timezone.now():
                 ctx['show_reviews_date_not_passed'] = True
         else:
             if not ctx['teacher']:
                 if exercise.use_groups:
+                    my_group = exercise.course.find_studentgroup_by_user(self.request.user)
                     self.object_list = self.object_list.filter(submitter_group=my_group)
                 else:
                     self.object_list = self.object_list.filter(submitter_user=self.request.user)
@@ -77,8 +73,6 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
 #
 # DETAIL VIEWS
 #
-
-
 
 class OriginalSubmissionDetailView(IsSubmitterOrTeacherMixin, CourseContextMixin, DetailView):
     model = OriginalSubmission
