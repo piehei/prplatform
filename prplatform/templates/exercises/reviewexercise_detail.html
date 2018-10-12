@@ -22,6 +22,16 @@
         {% endif %}
       </h2>
 
+      {% if not object.is_open %}
+        <div class="alert alert-danger">
+          {% if object.opens_in_future %}
+          This exercise will open on {{ object.opening_time }}
+          {% else %}
+          This exercise was closed on {{ object.closing_time }}
+          {% endif %}
+        </div>
+      {% endif %}
+
       <div class="col-md-12 mb-4">
         <p>
         <i>In this exercise you're peer-reviewing other students' submissions to the exercise

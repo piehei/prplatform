@@ -37,6 +37,9 @@ class BaseExercise(TimeStampedModel):
     def is_open(self):
         return self.opening_time < timezone.now() and self.closing_time > timezone.now()
 
+    def opens_in_future(self):
+        return self.opening_time > timezone.now()
+
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
 

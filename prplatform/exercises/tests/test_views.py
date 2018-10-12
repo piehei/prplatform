@@ -88,8 +88,24 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = 4
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise is closed.")
+        self.assertContains(response, "This exercise was closed on")
         self.assertEqual(response.context_data['disable_form'], True)
+
+    def test_exerciseOpens(self):
+
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
+        request.user = User.objects.get(username="student1")
+        self.kwargs['pk'] = 4
+
+        se = SubmissionExercise.objects.get(pk=4)
+        se.opening_time = "2020-01-01 10:10"
+        se.closing_time = "2021-01-01 10:10"
+        se.save()
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "This exercise will open on")
+        self.assertEqual(response.context_data['disable_form'], True)
+
 
     def test_studentCanSubmit(self):
 
