@@ -121,6 +121,13 @@ class ReviewExerciseForm(ModelForm):
                               'teacher has to configure groups from course edit view.',
                 }
 
+    def __init__(self, *args, **kwargs):
+        course = kwargs.pop('course', None)
+        super().__init__(*args, **kwargs)
+        if course:
+            self.fields['reviewable_exercise'].queryset = SubmissionExercise.objects.filter(course=course)
+
+
 class QuestionForm(ModelForm):
     class Meta:
         model = Question

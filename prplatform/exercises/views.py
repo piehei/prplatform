@@ -56,17 +56,13 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
 
     def get(self, *args, **kwargs):
         self.object = None
-        context = self.get_context_data(**kwargs)
-        context['form'] = ReviewExerciseForm(initial={
-                                                'opening_time': timezone.now(),
-                                                'closing_time': timezone.now(),
-                                            })
-
-        # TODO: first the teacher creates the exercise, then questions are added
-        # qs = QuestionModelFormSet(queryset=Question.objects.none())
-        # context['formset'] = qs
-
-        return self.render_to_response(context)
+        ctx = self.get_context_data(**kwargs)
+        ctx['form'] = ReviewExerciseForm(course=ctx['course'],
+                                         initial={
+                                            'opening_time': timezone.now(),
+                                            'closing_time': timezone.now(),
+                                         })
+        return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
@@ -113,13 +109,11 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
-    def get(self, *args, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         self.object = self.get_object()
-        context = self.get_context_data(**kwargs)
-        context['form'] = ReviewExerciseForm(instance=self.object)
-        # qs = QuestionModelFormSet(queryset=Question.objects.filter(exercise=self.object).order_by('order'))
-        # context['formset'] = qs
-        return self.render_to_response(context)
+        ctx = super().get_context_data(**kwargs)
+        ctx['form'] = ReviewExerciseForm(course=ctx['course'], instance=self.object)
+        return ctx
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
