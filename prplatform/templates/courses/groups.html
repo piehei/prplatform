@@ -14,35 +14,42 @@
             class="form-horizontal" method="post"
             action="{% url 'courses:groups' course.base_course.url_slug course.url_slug %}">
         {% csrf_token %}
+
         {{ form|crispy }}
+
+        {% if form.errors %}
+        <div class="alert alert-danger">
+          {{ form.errors }}
+        </div>
+        {% endif %}
+        <br>
         If you use the <b>*Moodle group plugin*</b> formatted CSV, it will be used in the following manner:<br>
         <ul>
         <li>Group Description field will be interpreted as the name of the group
-        <li>Users in the group will be taken from Member N Username fields
+        <li>Users in the group will be taken from Member N Email fields
         </ul>
         <br>
-
 
         If you use the <b>*custom*</b> CSV, it has these <b>constraints</b>:<br>
         <ul>
         <li>delimiter is "," character
         <li>no header-row allowed
-        <li>first field is group name, following fields are username fields (any number)
+        <li>first field is group name, following fields are user email fields (any number)
         <li>group name is unique, users can appear in only one group
         </ul>
         An example of the csv file looks like this:<br>
         <code>
-    group1,username1,username2,usernameN<br>
-    group2,username1,username2
+    group1,email1,email2,emailN<br>
+    group2,email1,email2,emailN<br>
         </code>
-        <br><br><br>
+        <br><br>
         This applies to <b>*both*</b> of the file formats:<br>
         <ul>
         <li>uploading will either create groups or update previous groups if matching group names exist in the system
         <li>the system <b>will tell you about errors</b> in the file and do nothing, if errors are found
         </ul>
         <br>
-        <button type="submit" class="btn btn-success">Update</button>
+        <button type="submit" class="btn btn-success">{% if not groups %}Add groups{% else %}Update groups{% endif %}</button>
       </form>
     </div>
 
