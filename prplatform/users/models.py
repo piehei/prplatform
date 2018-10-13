@@ -29,10 +29,10 @@ class StudentGroup(models.Model):
     name = models.CharField(max_length=30, unique=True)
     course = models.ForeignKey('courses.Course', related_name='student_groups', on_delete=models.CASCADE)
     students = models.ManyToManyField(User, related_name='my_groups')
-    student_usernames = ArrayField(models.CharField(max_length=20))
+    student_usernames = ArrayField(models.CharField(max_length=100))
 
     def __str__(self):
         return f"{self.name} ({', '.join(self.student_usernames)})"
 
     def has_student(self, user):
-        return user.username in self.student_usernames or user.email in self.student_usernames
+        return user.email in self.student_usernames
