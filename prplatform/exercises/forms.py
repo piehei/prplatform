@@ -7,9 +7,19 @@ from .question_models import Question
 class SubmissionExerciseForm(ModelForm):
     class Meta:
         model = SubmissionExercise
-        fields = ['name', 'description', 'opening_time', 'closing_time', 'visible_to_students',
-                  'type', 'aplus_course_id', 'aplus_exercise_id', 'use_groups', 'use_states',
-                  'accepted_file_types']
+        fields = ['name',
+                  'description',
+                  'opening_time',
+                  'closing_time',
+                  'visible_to_students',
+                  'max_submission_count',
+                  'type',
+                  'aplus_course_id',
+                  'aplus_exercise_id',
+                  'use_groups',
+                  'use_states',
+                  'accepted_file_types',
+                  ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})

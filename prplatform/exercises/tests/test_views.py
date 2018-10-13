@@ -81,16 +81,6 @@ class ExerciseTest(TestCase):
         self.assertContains(response, "Submit")
         self.assertContains(response, "<form")
 
-    def test_exerciseClosed(self):
-
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = User.objects.get(username="student1")
-        self.kwargs['pk'] = 4
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise was closed on")
-        self.assertEqual(response.context_data['disable_form'], True)
-
     def test_exerciseOpens(self):
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
@@ -106,6 +96,15 @@ class ExerciseTest(TestCase):
         self.assertContains(response, "This exercise will open on")
         self.assertEqual(response.context_data['disable_form'], True)
 
+    def test_exerciseClosed(self):
+
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
+        request.user = User.objects.get(username="student1")
+        self.kwargs['pk'] = 4
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "This exercise was closed on")
+        self.assertEqual(response.context_data['disable_form'], True)
 
     def test_studentCanSubmit(self):
 
@@ -186,7 +185,7 @@ class ExerciseTest(TestCase):
 
         subs = []
         for s in students:
-            sub = OriginalSubmission(course=course, submitter_user=s, exercise=exercise, text=f"answer by {s.username}")
+            sub = OriginalSubmission(course=course, submitter_user=s, state='submitted', exercise=exercise, text=f"answer by {s.username}")
             sub.save()
             subs.append(sub)
 
