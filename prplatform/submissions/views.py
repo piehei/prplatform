@@ -28,6 +28,7 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     def get_context_data(self):
         ctx = super().get_context_data(**self.kwargs)
         ctx['exercise'] = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
+        ctx['object_list'] = ctx['exercise'].submissions.all()
         if not ctx['teacher']:
             ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
         return ctx
@@ -39,6 +40,7 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     def get_context_data(self):
         ctx = super().get_context_data(**self.kwargs)
         ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+        ctx['object_list'] = ctx['exercise'].submissions.all()
 
         if self.request.GET.get('mode') == "my":
             ctx['my_mode'] = True
