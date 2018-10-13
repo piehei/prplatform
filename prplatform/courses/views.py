@@ -6,11 +6,11 @@ from django.views.generic import ListView, DetailView, UpdateView, TemplateView
 from django.views.generic.edit import ProcessFormView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-
-import re
+from django.core.validators import FileExtensionValidator
 
 from .models import BaseCourse, Course
 from prplatform.users.models import StudentGroup
+from . import utils
 
 
 class GroupMixin(object):
@@ -148,7 +148,8 @@ class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
 
 
 class GroupUploadForm(forms.Form):
-    group_file = forms.FileField(label='CSV formatted group file')
+    group_file = forms.FileField(label='CSV formatted group file',
+                                 validators=[FileExtensionValidator(allowed_extensions=['csv'])])
     moodle_format = forms.BooleanField(required=False, label='CSV is in Moodle format')
 
 
@@ -158,105 +159,24 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
     def get(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)
-        ctx['form'] = GroupUploadForm()
+        ctx['form'] = GroupUploadForm(initial={'moodle_format': True})
         ctx['groups'] = StudentGroup.objects.filter(course=ctx['course'])
         return self.render_to_response(ctx)
 
     def post(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)
 
-        group_file = self.request.FILES['group_file']
-        contents = group_file.read().decode('utf-8')
-        # TODO TODO TODO TODO TODO TODO:
-        # take this whole filehandling into studentgroup or course model
-        # or make a *TESTABLE* utility function in core package
+        form = GroupUploadForm(self.request.POST, self.request.FILES)
 
-        moodle_format = False
-        if 'moodle_format' in self.request.POST:
-            moodle_format = True
-
-        groups = {}
-        used_usernames = []
-        group_file_is_valid = True
-
-        if not moodle_format:
-            for row in contents.strip().split("\n"):
-                parts = row.strip().split(",")
-                if len(parts) == 0:
-                    continue
-                name = parts[0]
-                usernames = parts[1:]
-
-                if name in groups:
-                    messages.error(self.request, f'Group name {name} appears twice in the file. Cannot continue.')
-                    group_file_is_valid = False
-                else:
-                    groups[name] = usernames
-
-                for username in usernames:
-                    if username in used_usernames:
-                        messages.error(self.request, f'Username {username} appears in more than one group. Cannot continue.')
-                        group_file_is_valid = False
-                    used_usernames.append(username)
-
-        # Moodle format fiel header row:
-        # ['Group ID', 'Group Name', 'Group Size', 'Group Description', 'Assigned teacher Username', 'Assigned teacher Firstname',
-        # 'Assigned teacher Lastname', 'Assigned teacher Email', 'Member 1 Username', 'Member 1 ID Number', 'Member 1 Firstname',
-        # "'Member 1 Lastname', 'Member 1 Email', 'Member 2 Username', 'Member 2 ID Number', 'Member 2 Firstname', 'Member 2 Lastname',
-        # 'Member 2 Email', 'Member 3 Username', 'Member 3 ID Number', 'Member 3 Firstname', 'Member 3 Lastname', 'Member 3 Email']
-
-        if moodle_format:
-            rows = contents.split("\n")
-            sep = rows[0].split("sep=")[1]
-            headers = rows[1].split(sep)
-
-            messages.info(self.request, f'Using {sep} as the separator')
-
-            for group_row in rows[2:]:
-                parts = group_row.split(sep)
-                group_name = ""
-                for i in range(len(parts)):
-                    field_name = headers[i]
-                    parts[i] = parts[i].strip('"')  # stupid Moodle file has string values in the format '"makkara"'
-
-                    if len(parts[i]) == 0:  # empty fields on a row
-                        continue
-
-                    if field_name == "Group Description":
-                        group_name = parts[i][0:10]
-                        if group_name in groups:
-                            messages.error(self.request, f'Group name {group_name} appears twice in the file. Cannot continue.')
-                            group_file_is_valid = False
-                        else:
-                            groups[group_name] = []
-
-                    if re.compile('Member [0-9] Username').fullmatch(field_name):
-                        username_now = parts[i].split("@")[0]
-                        if username_now in used_usernames:
-                            messages.error(self.request, f'Username {parts[i]} appears in more than one group. Cannot continue.')
-                            group_file_is_valid = False
-                        groups[group_name].append(username_now)
-                        used_usernames.append(username_now)
-
-        if group_file_is_valid:
-            print("Group file IS valid! Can continue!")
-
-            messages.info(self.request, f'Found {len(groups)} groups in the CSV file.')
-
-            for group_name in groups:
-                existing_group = StudentGroup.objects.filter(course=ctx['course'], name=group_name).first()
-                if existing_group:
-                    existing_usernames = existing_group.student_usernames
-                    existing_group.student_usernames = groups[group_name]
-                    existing_group.save()
-                    messages.warning(self.request, f'Updated group: {existing_group.name} with students: {existing_usernames} ---> {existing_group.student_usernames}')
-                else:
-                    new_group = StudentGroup.objects.create(course=ctx['course'],
-                                                            name=group_name,
-                                                            student_usernames=groups[group_name])
-                    messages.success(self.request, f'Created group: {new_group}')
+        if form.is_valid():
+            print("is valid")
+            utils.handle_group_file(self.request, ctx, form)
         else:
-            messages.error(self.request, "Group file was not valid. Cannot do anything.")
+            print("is invalid")
+            ctx['form'] = form
+            ctx['groups'] = StudentGroup.objects.filter(course=ctx['course'])
+            print("moi")
+            return self.render_to_response(ctx)
 
         return HttpResponseRedirect(reverse("courses:groups", kwargs={'url_slug': self.kwargs['url_slug'],
                                             'base_url_slug': self.kwargs['base_url_slug']}))
