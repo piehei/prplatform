@@ -6,12 +6,15 @@ from prplatform.users.models import StudentGroup
 
 def handle_group_file(request, ctx, form):
     cd = form.cleaned_data
+    try:
+        contents = cd['group_file'].read().decode('utf-8')
+    except Exception as e:
+        print("an exception occurred")
+        print(e)
+        messages.error(request, "The uploaded file could not be parsed. Make sure it's either ASCII or UTF-8 encoded.")
+        return
 
-    contents = cd['group_file'].read().decode('utf-8')
-
-    moodle_format = False
-    if 'moodle_format' in request.POST:
-        moodle_format = True
+    moodle_format = cd['moodle_format']
 
     groups = {}
     used_usernames = []
@@ -45,16 +48,27 @@ def handle_group_file(request, ctx, form):
 
     if moodle_format:
         rows = contents.split("\n")
-        sep = rows[0].split("sep=")[1]
-        headers = rows[1].split(sep)
+        sep = ";"
+        header_row_number = 0
+        if "sep=" in rows[0]:
+            sep = rows[0].strip().split("sep=")[1]
+            headers = rows[1].strip().split(sep)
+            header_row_number = 1
+        else:
+            headers = rows[0].strip().split(sep)
 
         messages.info(request, f'Using {sep} as the separator')
 
-        for group_row in rows[2:]:
-            parts = group_row.split(sep)
+        for group_row in rows[header_row_number + 1:]:
+            if sep not in group_row:  # empty row or something
+                continue
+            columns = group_row.strip().split(sep)
             group_name = ""
-            for i in range(len(parts)):
-                field = parts[i].strip('"')
+
+            for i in range(len(columns)):
+                field = columns[i].strip('"')
+                if i >= len(headers):  # no header -> extra field
+                    continue
                 field_name = headers[i]
 
                 if len(field) == 0:  # empty fields on a row
@@ -92,6 +106,6 @@ def handle_group_file(request, ctx, form):
                 new_group = StudentGroup.objects.create(course=ctx['course'],
                                                         name=group_name,
                                                         student_usernames=groups[group_name])
-                messages.success(request, f'Created group: "{new_group}" with students: {new_group.student_usernames}')
+                messages.success(request, f'Created group: "{new_group.name}" with students: {new_group.student_usernames}')
     else:
         messages.error(request, "Group file was not valid. Cannot do anything.")
