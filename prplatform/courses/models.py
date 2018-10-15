@@ -96,7 +96,7 @@ class Course(TimeStampedModel):
         new_enrollment.save()
 
     def find_studentgroup_by_user(self, user):
-        return self.student_groups.filter(student_usernames__contains=[user.username]).first()
+        return self.student_groups.filter(student_usernames__contains=[user.email]).first()
 
 
 class Enrollment(TimeStampedModel):
