@@ -55,6 +55,9 @@
         {{ object.description | linebreaks }}
       </div>
 
+
+      {% if object.is_open %}
+
       {% if chooceForm %}
       <div class="card card-body mb-4">
         Chooce the subject of your peer-review here:
@@ -157,7 +160,7 @@
         {% endif %}
         </div>
       {% endif %}
-
+      {% endif %}
     </div>
   </div>
 {% endblock content %}
