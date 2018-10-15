@@ -26,10 +26,13 @@ class User(AbstractUser):
 
 
 class StudentGroup(models.Model):
-    name = models.CharField(max_length=30, unique=True)
+    name = models.CharField(max_length=30)
     course = models.ForeignKey('courses.Course', related_name='student_groups', on_delete=models.CASCADE)
     students = models.ManyToManyField(User, related_name='my_groups')
     student_usernames = ArrayField(models.CharField(max_length=100))
+
+    class Meta:
+        unique_together = ['course', 'name']
 
     def __str__(self):
         return f"{self.name} ({', '.join(self.student_usernames)})"
