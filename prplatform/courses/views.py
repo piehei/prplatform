@@ -57,7 +57,7 @@ class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
 class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
 
     raise_exception = True
-    permission_denied_message = "Only enrolled users can access this page."
+    permission_denied_message = "Only enrolled users can access this page. You can enroll to the course from the course front page."
 
     def test_func(self):
         course = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
