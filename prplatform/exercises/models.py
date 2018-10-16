@@ -45,7 +45,9 @@ class BaseExercise(TimeStampedModel):
 
     def submissions_by_submitter(self, user):
         if self.use_groups:
-            return self.submissions.filter(submitter_group=self.course.find_studentgroup_by_user(user))
+            group = self.course.find_studentgroup_by_user(user)
+            return self.submissions.exclude(submitter_group=None) \
+                                   .filter(submitter_group=group)
         return self.submissions.filter(submitter_user=user)
 
     def get_list_url(self):
