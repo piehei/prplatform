@@ -2,13 +2,14 @@ from django.test import RequestFactory, TestCase
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 
-from prplatform.users.models import User
+from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
-from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, ReviewSubmissionListView, ReviewSubmissionDetailView
+from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, \
+                                         ReviewSubmissionListView, ReviewSubmissionDetailView
 
 
 class SubmissionsTest(TestCase):
@@ -38,6 +39,95 @@ class SubmissionsTest(TestCase):
         self.assertEqual(response.context_data['object_list'].count(), 1)
         self.assertNotContains(response, "student2")  # hacky
         self.assertNotContains(response, "student3")
+
+        ######################
+        #
+        # same thing for group submissions
+        #
+
+        OriginalSubmission.objects.all().delete()
+
+        g1 = StudentGroup.objects.create(course=course, name='group1', student_usernames=['student1@prp.fi', 'student2@prp.fi'])
+        g2 = StudentGroup.objects.create(course=course, name='group2', student_usernames=['student3@prp.fi'])
+
+        exercise.use_groups = True
+        exercise.save()
+
+        OriginalSubmission(course=course, exercise=exercise, text='jada jada',
+                           submitter_user=User.objects.get(username='student1'),
+                           submitter_group=g1).save()
+        # both group members should see 1
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student1")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'].first().submitter_group, g1)
+        self.assertContains(response, 'group1')
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student2")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'].first().submitter_group, g1)
+        self.assertContains(response, 'group1')
+
+        # outsider should see nothing
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student3")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 0)
+        self.assertNotContains(response, 'group1')
+
+        OriginalSubmission(course=course, exercise=exercise, text='jada jada',
+                           submitter_user=User.objects.get(username='student2'),
+                           submitter_group=g1).save()
+
+        OriginalSubmission(course=course, exercise=exercise, text='jada jada',
+                           submitter_user=User.objects.get(username='student3'),
+                           submitter_group=g2).save()
+
+        # g1 nenbers should see two submissions
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student1")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 2)
+        self.assertEqual(response.context_data['object_list'].first().submitter_group, g1)
+        self.assertNotContains(response, 'group2')
+        self.assertContains(response, 'group1')
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student2")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 2)
+        self.assertEqual(response.context_data['object_list'].first().submitter_group, g1)
+        self.assertNotContains(response, 'group2')
+        self.assertContains(response, 'group1')
+
+        # g2 member should see one submission
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student3")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 1)
+        self.assertEqual(response.context_data['object_list'].first().submitter_group, g2)
+        self.assertNotContains(response, 'group1')
+        self.assertContains(response, 'group2')
+
+        # submissions not belonging to any group
+        # this could happen if the teacher changed use_groups later on
+        OriginalSubmission(course=course, exercise=exercise, text='jada jada',
+                           submitter_user=User.objects.get(username='student2'),
+                           ).save()
+        OriginalSubmission(course=course, exercise=exercise, text='jada jada',
+                           submitter_user=User.objects.get(username='student3'),
+                           ).save()
+        # student4 should see nothing since he's not in a group and has submitted
+        # nothing
+        request = self.factory.get('/courses/prog1/F2018/submissions/s/1/list/')
+        request.user = User.objects.get(username="student4")
+        response = OriginalSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 0)
+        self.assertNotContains(response, 'group1')
+        self.assertNotContains(response, 'group2')
 
     def test_teacherCanViewAllSubmissions(self):
 
@@ -132,7 +222,6 @@ class SubmissionsTest(TestCase):
             rs_objects.append(rs)
             Answer.objects.create(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1))
             Answer.objects.create(submission=rs, value_choice="1", question=Question.objects.get(pk=2))
-
 
         # teacher sees all reviews
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
