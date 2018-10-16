@@ -67,6 +67,10 @@ class Course(TimeStampedModel):
     class Meta:
         unique_together = (('base_course', 'code'))
 
+    @property
+    def name(self):
+        return self.base_course.name
+
     def get_absolute_url(self):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
                        'base_url_slug': self.base_course.url_slug})

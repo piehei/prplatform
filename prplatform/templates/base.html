@@ -41,26 +41,25 @@
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav mr-auto ml-4">
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'courses:list' %}">Courses</a>
-            </li>
             {% if request.user.is_authenticated %}
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username %}">{% trans "My Profile" %}</a>
+                <a class="nav-link" href="{% url 'users:detail' request.user.username %}">{{ request.user.username }} (My Profile)</a>
               </li>
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
+                <a class="nav-link" href="{% url 'account_logout' %}">Sign Out</a>
               </li>
             {% else %}
+              <!--
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
                 <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
               </li>
+              -->
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
+                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">Sign In</a>
               </li>
             {% endif %}
           </ul>
@@ -71,11 +70,6 @@
     <div class="row">
       <nav class="col-md-2 d-none d-md-block bg-light sidebar">
         <div class="sidebar-sticky">
-
-          {% if request.user.is_authenticated %}
-            <h4 class="m-4">{{ request.user.username }}</h4>
-            <hr>
-          {% endif %}
 
           {% if not course and request.user.base_courses.all %}
             <h5 class="m-4">Your courses:</h5>
@@ -88,19 +82,16 @@
             </h6>
           {% endif %}
 
-            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-              <span>{{ course.base_course.name }}<br>
-                    {{ course.base_course.code }}<br>
-                    {{ course.code }}</span>
-              <a class="d-flex align-items-center text-muted" href="#">
-                <span data-feather="plus-circle"></span>
-              </a>
-            </h6>
+            <h5 class="d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+              <a href="{{ course.get_absolute_url }}">
+                  {{ course.name }}<br>
+                  {{ course.code }}</a>
+            </h5>
+            <hr></hr>
             <ul class="nav flex-column">
               {% if course %}
                 <li class="nav-item">
                   <a class="nav-link font-weight-bold" href="{{ course.get_absolute_url }}">
-                    Course page
                   </a>
                 </li>
               {% endif %}
