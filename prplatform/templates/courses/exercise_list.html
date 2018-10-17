@@ -4,13 +4,13 @@
   <div class="col-sm-12 mt-4">
 
     <div class="list-group-item d-flex justify-content-between">
-      <div class="col-4" style="text-align:right;">
+      <div class="col-5">
         <h3>
         Submission exercises
         </h3>
         <span class="text-muted">where students submit an answer</span>
       </div>
-      <div class="col-4">
+      <div class="col-5">
         <h3>
         Peer-review exercises
         </h3>
@@ -22,7 +22,7 @@
 
       <div class="list-group-item d-flex justify-content-between">
 
-        <div class="col-3" style=" border-right:0px solid grey; text-align:right;">
+        <div class="col-5" style="border-right:0px solid grey;">
           {% if ex.visible_to_students or teacher %}
             <a href="{{ ex.get_absolute_url }}" style="font-weight: bold;">{{ ex.name }}</a>
             <br>
@@ -32,22 +32,20 @@
             <br>
             Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
           {% endif %}
+          <br>
+          {% if teacher %}
+            <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+               href="{{ ex.get_edit_url }}">
+              edit
+            </a>
+            <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+               href="{{ ex.get_list_url }}">
+              submissions
+            </a>
+          {% endif %}
         </div>
 
-        <div class="col-3" style="font-size: 0.8rem">
-        {% if teacher %}
-          <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-             href="{{ ex.get_edit_url }}">
-            edit
-          </a>
-          <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-             href="{{ ex.get_list_url }}">
-            submissions
-          </a>
-        {% endif %}
-        </div>
-
-        <div class="col-3" style=" border-left:0px solid grey; text-align:right;">
+        <div class="col-5" style=" border-left:0px solid grey;">
           {% if ex.review_exercise %}
             {% if ex.review_exercise.visible_to_students %}
               <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
@@ -58,17 +56,8 @@
               <br>
               Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
             {% endif %}
-          {% else %}
-            {% if teacher %}
-            <span style="font-weight: normal;">No peer-review exercise.</span>
-                <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
-                  Create?
-                </a>
-            {% endif %}
-          {% endif %}
-        </div>
+        <br>
 
-        <div class="col-3">
         {% if teacher and ex.review_exercise %}
           <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
              href="{{ ex.review_exercise.get_edit_url }}">
@@ -79,116 +68,38 @@
             submissions
           </a>
         {% endif %}
+
+          {% else %}
+            {% if teacher %}
+            <span style="font-weight: normal;">No peer-review exercise.</span>
+                <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
+                  Create?
+                </a>
+            {% endif %}
+          {% endif %}
         </div>
+
 
       </div>
     {% endfor %}
 
     {% if teacher %}
-    <div class="list-group-item d-flex justify-content-center">
-
+    <div class="list-group-item d-flex justify-content-between">
+      <div class="col-5">
       <a href="{% url 'courses:create-submission-exercise' object.base_course.url_slug object.url_slug %}">
-        <button class="btn btn-sm btn-primary mt-3 mr-4">
+        <button class="btn btn-sm btn-primary mt-3">
           Create new
         </button>
       </a>
+      </div>
+      <div class="col-5">
       <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
-        <button class="btn btn-sm btn-primary mt-3 ml-4">
+        <button class="btn btn-sm btn-primary mt-3">
           Create new
         </button>
       </a>
+      </div>
 
     {% endif %}
   </div>
-
-
-  {% if show_old_version %}
-  <div class="col-sm-12 mt-3">
-      <hr>
-      <h5>Submission exercises
-        <br>
-        <small class="text-muted">where students submit their answers</small>
-      </h5>
-
-        {% if teacher %}
-          <a href="{% url 'courses:create-submission-exercise' object.base_course.url_slug object.url_slug %}">
-            <button class="btn btn-sm btn-primary mb-3">
-              add new
-            </button>
-          </a>
-        {% endif %}
-
-      <div class="list-group ex-list">
-      {% for ex in submissionexercises %}
-        <div class="list-group-item d-flex justify-content-between">
-            <div class="p-2">
-              <a href="{{ ex.get_absolute_url }}">
-                {{ ex.name }}
-              </a>
-              {% if not ex.visible_to_students %}
-                [hidden]
-              {% endif %}
-            </div>
-
-            {% if teacher %}
-            <div class="p-2">
-              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-                 href="{% url 'courses:update-submission-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
-                edit
-              </a>
-              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-                 href="{% url 'courses:submissions:original-list' object.base_course.url_slug object.url_slug ex.pk %}">
-                submissions
-              </a>
-            </div>
-            {% endif %}
-
-        </div>
-      {% endfor %}
-      </div>
-    </div>
-
-    <div class="col-sm-12 mt-3">
-      <hr>
-      <h5>Peer-review exercises<br>
-        <small class="text-muted">where students peer-review {something}</small>
-      </h5>
-
-        {% if teacher %}
-          <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
-            <button class="btn btn-sm btn-primary mb-3">
-              add new
-            </button>
-          </a>
-        {% endif %}
-
-      <div class="list-group ex-list">
-      {% for ex in reviewexercises %}
-        <div class="list-group-item d-flex justify-content-between">
-            <div class="p-2">
-              <a href="{{ ex.get_absolute_url }}">
-                {{ ex.name }}
-              </a>
-              {% if not ex.visible_to_students %}
-                [hidden]
-              {% endif %}
-            </div>
-            {% if teacher %}
-            <div class="p-2">
-              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-                 href="{% url 'courses:update-review-exercise' object.base_course.url_slug object.url_slug ex.pk %}">
-                edit
-              </a>
-              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-                 href="{% url 'courses:submissions:review-list' object.base_course.url_slug object.url_slug ex.pk %}">
-                submissions
-              </a>
-            </div>
-            {% endif %}
-          </div>
-      {% endfor %}
-      </div>
-    </div>
-
-    {% endif %}
 
