@@ -32,7 +32,9 @@
             </a>
           </li>
         {% endif %}
-        {% if object.questions and enrolled or teacher %} {# if we're looking at a ReviewExercise, show tab #}
+
+        {# if we're looking at a ReviewExercise it has questions property #}
+        {% if object.questions and enrolled or object.questions and teacher %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions_me' %}active{% endif %}"
                href="{{ object.get_list_url }}?mode=my">
