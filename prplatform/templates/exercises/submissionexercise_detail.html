@@ -20,13 +20,14 @@
       <h2>{{ object.name }}</h2>
 
       {% if not object.is_open %}
-        <div class="alert alert-danger">
+        <div class="alert alert-danger d-md-inline-block">
           {% if object.opens_in_future %}
           This exercise will open on {{ object.opening_time }}
           {% else %}
           This exercise was closed on {{ object.closing_time }}
           {% endif %}
         </div>
+        <br>
       {% endif %}
 
       <div class="col-md-12">
@@ -36,9 +37,10 @@
 
       {% if my_submissions and disable_form %}
 
-        <div class="alert alert-danger font-italic">
+        <div class="alert alert-danger font-italic d-md-inline-block">
           <b>You have reached the maximum number of submissions</b>
         </div>
+        <br>
 
       {% endif %}
 
@@ -55,7 +57,7 @@
               {{ form | crispy }}
 
               {% if object.use_groups %}
-              <div class="alert alert-{% if my_group %}warning{% else %}danger{% endif %}">
+              <div class="alert alert-{% if my_group %}secondary{% else %}danger{% endif %} d-md-inline-block">
                   In this exercise you're submitting as a group.
                   <br>
                   {% if my_group %}
@@ -65,7 +67,8 @@
                   {% else %}
                     You have not been assigned to any group! Contact course personnel to make a submission.
                   {% endif %}
-                </div>
+              </div>
+              <br>
               {% endif %}
 
               <input type="submit" class="btn btn-primary" value="Submit"
