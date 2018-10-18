@@ -23,7 +23,7 @@
               <span class="ml-1 badge badge-primary badge-pill">{{ object.submissions.count }}</span>
             </a>
           </li>
-        {% else %}
+        {% elif enrolled %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
                href="{{ object.get_list_url }}">
@@ -32,7 +32,7 @@
             </a>
           </li>
         {% endif %}
-        {% if object.questions %} {# if we're looking at a ReviewExercise, show tab #}
+        {% if object.questions and enrolled or teacher %} {# if we're looking at a ReviewExercise, show tab #}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions_me' %}active{% endif %}"
                href="{{ object.get_list_url }}?mode=my">
