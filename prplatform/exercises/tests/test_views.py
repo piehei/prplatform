@@ -6,9 +6,10 @@ from django.test import RequestFactory, TestCase
 
 from prplatform.users.models import User
 from prplatform.courses.models import Course
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
 
-from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, ReviewExerciseDetailView
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
+from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, \
+                                       ReviewExerciseDetailView
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 
@@ -48,26 +49,6 @@ class ExerciseTest(TestCase):
             SubmissionExerciseCreateView.as_view()(request, **self.kwargs)
         except Exception:
             self.fail("Teacher should be allowed to access")
-
-    ###
-    #   SubmissionExerciseDetailView
-    #   uses isEnrolledMixin
-    #
-
-    def test_isEnrolled(self):
-
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        self.kwargs['pk'] = 1
-
-        request.user = AnonymousUser()
-        self.assertRaises(PermissionDenied,
-                          SubmissionExerciseDetailView.as_view(), request, **self.kwargs)
-
-        request.user = User.objects.get(username="student1")
-        try:
-            SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        except Exception:
-            self.fail("Student should be allowed to access")
 
     def test_exerciseOpen(self):
 

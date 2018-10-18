@@ -156,7 +156,7 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 # DETAIL VIEWS
 #
 
-class SubmissionExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, DetailView):
+class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     model = SubmissionExercise
 
@@ -169,14 +169,13 @@ class SubmissionExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMix
         user = self.request.user
         ctx = self.get_context_data(**kwargs)
 
-        if not ctx['teacher'] and not exercise.visible_to_students:
+        if not exercise.can_access(user):
             raise PermissionDenied
-
-        ctx['my_submissions'] = exercise.submissions_by_submitter(user)
 
         if not exercise.can_submit(user):
             ctx['disable_form'] = True
 
+        ctx['my_submissions'] = exercise.submissions_by_submitter(user)
         ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_file_types)
 
         return self.render_to_response(ctx)
