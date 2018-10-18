@@ -100,6 +100,8 @@ class Course(TimeStampedModel):
         new_enrollment.save()
 
     def find_studentgroup_by_user(self, user):
+        if user.is_anonymous:
+            return None
         return self.student_groups.filter(student_usernames__contains=[user.email]).first()
 
 

@@ -56,7 +56,7 @@
               {% csrf_token %}
               {{ form | crispy }}
 
-              {% if object.use_groups %}
+              {% if object.use_groups and enrolled %}
               <div class="alert alert-{% if my_group %}secondary{% else %}danger{% endif %} d-md-inline-block">
                   In this exercise you're submitting as a group.
                   <br>
@@ -71,6 +71,13 @@
               <br>
               {% endif %}
 
+              {% if not enrolled %}
+              <div class="alert alert-warning d-md-inline-block">
+                You have to enroll to the course in order to submit.<br>
+                You can enroll from the <a href="{{ course.get_absolute_url }}">course page</a>.
+              </div>
+              <br>
+              {% endif %}
               <input type="submit" class="btn btn-primary" value="Submit"
                      {% if disable_form or object.use_groups and not my_group %}disabled{% endif %}>
           </form>

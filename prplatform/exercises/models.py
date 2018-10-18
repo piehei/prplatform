@@ -40,10 +40,24 @@ class BaseExercise(TimeStampedModel):
     def opens_in_future(self):
         return self.opening_time > timezone.now()
 
+    def can_access(self, user):
+        if self.is_teacher(user):
+            return True
+
+        if not self.visible_to_students:
+            return False
+
+        # if visible, anyone can access
+        return True
+
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
 
     def submissions_by_submitter(self, user):
+
+        if user.is_anonymous or not self.course.is_enrolled(user):
+            return self.submissions.none()
+
         if self.use_groups:
             group = self.course.find_studentgroup_by_user(user)
             return self.submissions.exclude(submitter_group=None) \
@@ -120,6 +134,13 @@ class SubmissionExercise(BaseExercise):
     def can_submit(self, user):
         if self.is_teacher(user):
             return True
+
+        if user.is_anonymous:
+            return False
+
+        if not self.course.is_enrolled(user):
+            return False
+
         if not self.is_open():
             return False
 
