@@ -184,14 +184,11 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         """ TODO: error checking """
         self.object = self.get_object()
         ctx = self.get_context_data()
-
-        user = self.request.user
-        course = ctx['course']
         exercise = self.object
-        teacher = exercise.is_teacher(user)
+        user = self.request.user
 
         # TODO: teacher has to be able to override this!??!?!
-        if not teacher and exercise.closing_time < timezone.now():
+        if not ctx['teacher'] and exercise.closing_time < timezone.now():
             messages.error(self.request, 'Closing time for the exercise has passed. You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
@@ -213,11 +210,11 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
             # this initializes a new OriginalSubmission object object
             # --> after injecting the ForeignKey course it is safe to save
             sub = form.save(commit=False)
-            sub.course = course
+            sub.course = ctx['course']
             sub.exercise = exercise
             sub.submitter_user = user
             if exercise.use_groups:
-                sub.submitter_group = course.find_studentgroup_by_user(user)
+                sub.submitter_group = ctx['my_group']
             if exercise.use_states:
                 sub.state = OriginalSubmission.SUBMITTED
             sub.save()

@@ -144,6 +144,9 @@ class SubmissionExercise(BaseExercise):
         if not self.is_open():
             return False
 
+        if self.use_groups and not self.course.find_studentgroup_by_user(user):
+            return False
+
         submissions = self.submissions_by_submitter(user)
         latest_sub = submissions.first()
         if self.use_states and latest_sub:
