@@ -1,6 +1,5 @@
 
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
 
@@ -18,9 +17,13 @@
   <div class="row">
     <div class="col-md-12">
       <h2>{{ object.name }}
-        {% if teacher %}
-        {% endif %}
       </h2>
+      {% if teacher %}
+        <div class="alert alert-danger" role="alert">
+          <h4 class="alert-heading">Alert teacher!</h4>
+          This page is now in <strong>teacher</strong> mode. TODO
+        </div>
+      {% endif %}
 
       {% if not object.is_open %}
         <div class="alert alert-danger">
@@ -33,71 +36,43 @@
       {% endif %}
 
       <div class="col-md-12 mb-4">
-        <p>
-        <i>In this exercise you're peer-reviewing other students' submissions to the exercise
+        <p class="font-italic">In this exercise you're peer-reviewing other students' submissions to the exercise
           <a href="{{ object.reviewable_exercise.get_absolute_url }}">
             {{ object.reviewable_exercise.name }}
           </a>
-        </i>
         </p>
-
-      {% if teacher %}
-        <div class="alert alert-danger" role="alert">
-          <h4 class="alert-heading">Alert teacher!</h4>
-          This page is now in <strong>teacher</strong> mode. TODO
-        </div>
-      {% endif %}
 
         <h5>Description</h5>
         {% if not object.description %}
           No description available
         {% endif %}
-        {{ object.description | linebreaks }}
+          {{ object.description | linebreaks }}
       </div>
-
-
-      {% if object.is_open %}
 
       {% if chooceForm %}
-      <div class="card card-body mb-4">
-        Chooce the subject of your peer-review here:
-        <form class="form-horizontal" method="get"
-                                      action="{{ object.get_absolute_url }}?mode=chooce">
-          {{ chooceForm | crispy }}
-          <button type="submit" class="btn btn-sm btn-primary">Chooce</button>
-        </form>
-      </div>
+        {% include "./_chooce_form.html" %}
       {% endif %}
 
 
       {% if not my_submission and not teacher %}
-
         <div class="alert alert-warning">
           You cannot make peer-reviews before making your own original submission.
           Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
         </div>
-
       {% elif reviews_done and not teacher %}
-
         <div class="alert alert-warning font-italic">
           You have already submitted your peer-reviews to this exercise.
         </div>
-
       {% elif not reviewable and not chooceForm and not teacher %}
-
         <div class="alert alert-warning">
           Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
         </div>
-
         <br>
         {% if my_submission %}
           <a href="{{ my_submission.get_absolute_url }}">
               You can see your own original submission here.
           </a>
         {% endif %}
-
-      {% elif chooceForm and not reviewable %}
-        {# student has not yet chocen what to review #}
       {% else %}
 
         {% if object.type != 'CHOOCE' %}
@@ -117,50 +92,14 @@
         </p>
         {% endif %}
 
-        <div class="collapse" id="collapse-my-submission">
-          {% include "./my_submission.html" %}
-        </div>
+          {% include "./_my_submission.html" %}
+          {% include "./_reviewable.html" with chooceMode=chooceForm %}
+          {% include "./_model_answer.html" %}
 
-        <div class="collapse show" id="collapse-reviewable">
-          {% include "./reviewable.html" with chooceMode=chooceForm %}
-        </div>
-
-        <div class="collapse" id="collapse-model-answer">
-          {% include "./model_answer.html" %}
-        </div>
-
-
-        <!-- THIS IS THE PEER-REVIEW QUESTION FORM -->
-        <!-- TODO: move to external html -->
-
-        <div class="col-md-12 mt-4">
-        <h5>Questions</h5>
-        {% if not forms %}
-          The teacher has not configured any questions. You cannot make a submission.
-        {% else %}
-        <form class="form-horizontal" method="post"
-                                      action="{{ object.get_absolute_url }}">
-
-          {% csrf_token %}
-
-          {% for form in forms %}
-          <h6>Question #{{ forloop.counter }}</h6>
-            {{ form|crispy }}
-          {% endfor %}
-
-          <input type="hidden" name="reviewable_id" value="{{ reviewable.pk }}">
-
-          <div class="control-group">
-            <div class="controls">
-              <button type="submit" class="btn btn-success">Save answer</button>
-            </div>
-          </div>
-        </form>
-
-        {% endif %}
         </div>
       {% endif %}
-      {% endif %}
+
+      {% include "./_review_form.html" %}
     </div>
   </div>
 {% endblock content %}

@@ -1,18 +1,11 @@
-
-
-{% block content %}
-
+<div class="collapse" id="collapse-model-answer">
   <div style="background:lightgreen;"
        class="card card-body mb-4">
-
     <h5>Model answer:</h5>
 
     {% if not object.model_answer %}
-
       <p>No model answer available.</p>
-
     {% else %}
-
       {% load pygmentify %}
       {% pygment %}
 
@@ -22,9 +15,6 @@
         </pre>
 
       {% endpygment %}
-
     {% endif %}
-
   </div>
-
-{% endblock %}
+</div>

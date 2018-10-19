@@ -1,8 +1,5 @@
-
-
-{% block content %}
-
-  {% if teacher %}
+<div class="collapse show" id="collapse-reviewable">
+  {% if False %}
     <div class="alert alert-primary">
       <strong>Teacher:</strong> reviewable submission points to
       <a href="{{ reviewable.get_absolute_url }}">{{ reviewable }}</a>
@@ -11,10 +8,12 @@
 
   <div style="background:lightyellow;"
        class="card card-body mb-4">
+    <h5>To peer-review:</h5>
+      {% if chooceMode and not chooceMode.choice.value %}
 
-    <h5>To peer-review{% if chooceMode %}(submitted by: {{ reviewable.submitter }}){% endif %}:</h5>
+        Chooce what to peer-review above.
 
-      {% if not reviewable %}
+      {% elif not reviewable %}
 
         Not available for some reason. Something went wrong??
 
@@ -33,10 +32,9 @@
 
       {% else %}
         <a href="{{ reviewable.get_file_download_url }}">
-          Click here to download the file submitted by the other student(s)
+          Click here to download the file submitted by {{ reviewable.submitter }}
         </a>
       {% endif %}
-
   </div>
+</div>
 
-{% endblock %}

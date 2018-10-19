@@ -1,0 +1,28 @@
+{% load crispy_forms_tags %}
+
+<div class="col-md-12 mt-4">
+  <h5>Questions</h5>
+  {% if not forms %}
+    The teacher has not configured any questions. You cannot make a submission.
+  {% else %}
+  <form class="form-horizontal" method="post"
+                                action="{{ object.get_absolute_url }}">
+
+    {% csrf_token %}
+
+    {% for form in forms %}
+    <h6>Question #{{ forloop.counter }}</h6>
+      {{ form|crispy }}
+    {% endfor %}
+
+    <input type="hidden" name="reviewable_id" value="{{ reviewable.pk }}">
+
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-success">Save answer</button>
+      </div>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
