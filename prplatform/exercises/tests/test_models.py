@@ -44,17 +44,28 @@ class ReviewExerciseTestCase(TestCase):
 
     def test_last_submission_by_submitters(self):
 
-        last_subs = self.re.last_submission_by_submitters()
+        last_subs = self.se.last_submission_by_submitters()
         self.assertEqual(last_subs.count(), 2)
         self.assertNotEqual(last_subs[0].submitter_user, last_subs[1].submitter_user)
-        self.assertEqual(last_subs.filter(submitter_user=self.student3).first().reviewed_submission, self.sub2)
 
-        ReviewSubmission.objects.create(course=self.course,
-                                        exercise=self.re,
-                                        reviewed_submission=self.sub1,
-                                        submitter_user=self.student3)
-
-        self.assertEqual(last_subs.filter(submitter_user=self.student3).first().reviewed_submission, self.sub1)
+        sub12 = OriginalSubmission(course=self.course,
+                                   exercise=self.se,
+                                   text="jada jada",
+                                   submitter_user=self.student1)
+        sub12.save()
+        sub22 = OriginalSubmission(course=self.course,
+                                   exercise=self.se,
+                                   text="jada jada",
+                                   submitter_user=self.student2)
+        sub22.save()
+        last_subs_again = self.se.last_submission_by_submitters()
+        self.assertEqual(last_subs_again.count(), 2)
+        self.assertNotEqual(last_subs.filter(submitter_user=self.student1),
+                            last_subs_again.filter(submitter_user=self.student1))
+        self.assertNotEqual(last_subs.filter(submitter_user=self.student2),
+                            last_subs_again.filter(submitter_user=self.student2))
+        self.assertEqual(sub12 in last_subs_again, True)
+        self.assertEqual(sub22 in last_subs_again, True)
 
     def test_last_reviews_for(self):
         self.assertEqual(self.re.last_reviews_for(self.student1).count(), 2)
