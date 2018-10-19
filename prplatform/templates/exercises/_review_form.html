@@ -19,7 +19,7 @@
 
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn btn-success">Save answer</button>
+        <button type="submit" class="btn btn-success" {% if disable_form %}disabled{% endif %}>Save answer</button>
       </div>
     </div>
   </form>
