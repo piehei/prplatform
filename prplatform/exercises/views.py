@@ -257,6 +257,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
     def _get_random_ctx(self, ctx, my_submission_qs):
         user = self.request.user
         exercise = self.object
+
         if ctx['teacher']:
             return self._get_teacher_random(ctx, exercise)
 
@@ -295,28 +296,25 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
             cf = ChooceForm(self.request.GET, exercise=self.object, user=self.request.user)
             if not cf.is_valid():
                 raise PermissionDenied
-            ctx['reviewable'] = self.object.reviewable_exercise.submissions.get(id=sid)
+            ctx['reviewable'] = OriginalSubmission.objects.get(id=sid)
 
         ctx['chooceForm'] = cf if sid else ChooceForm(exercise=self.object, user=self.request.user)
         ctx['my_submission'] = my_submission_qs.first()
         return ctx
 
     def get(self, *args, **kwargs):
-
         self.object = self.get_object()
         exercise = self.object
         ctx = self.get_context_data(**kwargs)
-        is_teacher = ctx['teacher']
-        user = self.request.user
 
-        if not is_teacher and not exercise.visible_to_students:
+        if not ctx['teacher'] and not exercise.visible_to_students:
             raise PermissionDenied
 
         ctx['forms'] = self._get_answer_forms(exercise)
 
-        my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(user)
+        my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(self.request.user)
         my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
-        if not my_submission_qs and not is_teacher:
+        if not my_submission_qs and not ctx['teacher']:
             return self.render_to_response(ctx)
 
         if exercise.type == ReviewExercise.RANDOM:
@@ -324,6 +322,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         elif exercise.type == ReviewExercise.CHOOCE:
             ctx = self._get_chooce_ctx(ctx, my_submission_qs)
 
+        if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
+            ctx['disable_form'] = True
         return self.render_to_response(ctx)
 
     def _post_random(self, ctx):
