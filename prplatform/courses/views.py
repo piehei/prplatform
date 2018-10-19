@@ -30,6 +30,7 @@ class CourseContextMixin(object):
                                           base_course__url_slug=self.kwargs['base_url_slug'])
         ctx['teacher'] = ctx['course'].is_teacher(self.request.user)
         ctx['enrolled'] = ctx['course'].is_enrolled(self.request.user)
+        ctx['reviewable'] = None
         return ctx
 
 
