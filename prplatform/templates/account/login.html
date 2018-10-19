@@ -1,7 +1,5 @@
 {% extends "account/base.html" %}
 
-{% load i18n %}
-{% load account socialaccount %}
 {% load crispy_forms_tags %}
 
 {% block head_title %}Sign In{% endblock %}
@@ -9,8 +7,6 @@
 {% block inner %}
 
 <h1>Sign In</h1>
-
-{% get_providers as socialaccount_providers %}
 
 <a class="btn btn-primary mt-2 mb-4" href="/shibboleth-redirect/">Sign in with TTY credentials</a>
 
