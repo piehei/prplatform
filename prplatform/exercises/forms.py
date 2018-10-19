@@ -173,9 +173,8 @@ class ChooceForm(Form):
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
         # TODO: groups?
-        qs = exercise.reviewable_exercise.submissions \
-                     .order_by('submitter_user_id') \
-                     .distinct('submitter_user_id') \
+        qs = exercise.reviewable_exercise.last_submission_by_submitters() \
                      .exclude(
-                        id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id'))
+                        id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id')
+                     )
         self.fields['choice'].queryset = qs
