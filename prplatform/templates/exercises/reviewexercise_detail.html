@@ -54,12 +54,13 @@
       {% endif %}
 
 
-      {% if not my_submission and not teacher %}
+      {% if not my_submission and object.require_original_submission and not teacher %}
         <div class="alert alert-warning">
           You cannot make peer-reviews before making your own original submission.
           Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
         </div>
       {% elif reviews_done and not teacher %}
+        {# TODO: does this work actually? #}
         <div class="alert alert-warning font-italic">
           You have already submitted your peer-reviews to this exercise.
         </div>
@@ -73,6 +74,7 @@
               You can see your own original submission here.
           </a>
         {% endif %}
+
       {% else %}
 
         {% if object.type != 'CHOOCE' %}

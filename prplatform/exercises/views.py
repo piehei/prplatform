@@ -314,7 +314,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
 
         my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(self.request.user)
         my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
-        if not my_submission_qs and not ctx['teacher']:
+        if not my_submission_qs and exercise.require_original_submission and not ctx['teacher']:
+            ctx['disable_form'] = True
             return self.render_to_response(ctx)
 
         if exercise.type == ReviewExercise.RANDOM:
