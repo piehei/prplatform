@@ -56,28 +56,8 @@
               {% csrf_token %}
               {{ form | crispy }}
 
-              {% if object.use_groups and enrolled %}
-              <div class="alert alert-{% if my_group %}secondary{% else %}danger{% endif %} d-md-inline-block">
-                  In this exercise you're submitting as a group.
-                  <br>
-                  {% if my_group %}
-                    Members in your group: {{ my_group.student_usernames }}
-                  {% elif teacher %} <!-- TODO: how can the teacher override this and submit as a group???? -->
-                    You're a teacher. You don't belong to any group and cannot submit.
-                  {% else %}
-                    You have not been assigned to any group! Contact course personnel to make a submission.
-                  {% endif %}
-              </div>
-              <br>
-              {% endif %}
+              {% include "./_group_enroll_info_box.html" %}
 
-              {% if not enrolled %}
-              <div class="alert alert-warning d-md-inline-block">
-                You have to enroll to the course in order to submit.<br>
-                You can enroll from the <a href="{{ course.get_absolute_url }}">course page</a>.
-              </div>
-              <br>
-              {% endif %}
               <input type="submit" class="btn btn-primary" value="Submit"
                      {% if disable_form %}disabled{% endif %}>
           </form>

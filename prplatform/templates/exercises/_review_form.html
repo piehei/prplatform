@@ -17,6 +17,8 @@
 
     <input type="hidden" name="reviewable_id" value="{{ reviewable.pk }}">
 
+    {% include "./_group_enroll_info_box.html" %}
+
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn btn-success" {% if disable_form %}disabled{% endif %}>Save answer</button>
