@@ -117,6 +117,7 @@ class ReviewExerciseForm(ModelForm):
                   'type',
                   'max_reviews_per_student',
                   'max_reviews_per_submission',
+                  'require_original_submission',
                   'use_groups',
                   ]
         widgets = {
