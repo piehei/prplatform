@@ -225,7 +225,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         return self.render_to_response(ctx)
 
 
-class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
+class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
     PREFIX = "question-index-"
 
@@ -344,11 +344,21 @@ class ReviewExerciseDetailView(IsEnrolledMixin, CourseContextMixin, DetailView):
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
     def _post_chooce(self, ctx):
-        reviewed_submission = OriginalSubmission.objects.get(pk=self.request.POST.get('reviewable_id'))
-        new_review_submission = ReviewSubmission.objects.create(course=ctx['course'],
-                                                                submitter_user=self.request.user,  # TODO: groups?
-                                                                exercise=self.object,
-                                                                reviewed_submission=reviewed_submission)
+
+        cf = ChooceForm(self.request.POST, exercise=self.object, user=self.request.user)
+        if not cf.is_valid():
+            raise PermissionDenied('You cannot do that. If you believe this is an error, contact pietari.heino@tut.fi')
+
+        # if ChooceForm is valid, construct a new ReviewSubmission
+        reviewed_submission = OriginalSubmission.objects.get(pk=self.request.POST.get('choice'))
+        new_review_submission = ReviewSubmission(course=ctx['course'],
+                                                 submitter_user=self.request.user,
+                                                 exercise=self.object,
+                                                 reviewed_submission=reviewed_submission)
+        if self.object.use_groups:
+            new_review_submission.submitter_group = ctx['my_group']
+
+        new_review_submission.save()
         self._save_answers(ctx, new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 

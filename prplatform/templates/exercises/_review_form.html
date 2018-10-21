@@ -15,7 +15,7 @@
       {{ form|crispy }}
     {% endfor %}
 
-    <input type="hidden" name="reviewable_id" value="{{ reviewable.pk }}">
+    <input type="hidden" name="choice" value="{{ reviewable.pk }}">
 
     {% include "./_group_enroll_info_box.html" %}
 
