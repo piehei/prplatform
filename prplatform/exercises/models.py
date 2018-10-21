@@ -148,7 +148,7 @@ class SubmissionExercise(BaseExercise):
             })
 
     def __str__(self):
-        return f"Submission exercise: {self.name}"
+        return f"{self.name} [SE]"
 
     def can_submit(self, user):
         if self.is_teacher(user):
@@ -250,6 +250,6 @@ class ReviewExercise(BaseExercise):
             })
 
     def __str__(self):
-        return f"Review exercise: {self.name}"
+        return f"{self.name} [RE]"
 
 
