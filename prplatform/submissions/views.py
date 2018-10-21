@@ -133,7 +133,7 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         return self.render_to_response(ctx)
 
 
-class DownloadSubmissionView(LoginRequiredMixin, View):
+class DownloadSubmissionView(IsEnrolledMixin, View):
 
     def get(self, *args, **kwargs):
         user = self.request.user
@@ -143,10 +143,16 @@ class DownloadSubmissionView(LoginRequiredMixin, View):
         teacher = obj.course.is_teacher(user)
         owner = obj.is_owner(user)
 
+        enrolled_can_access = False
+        re = obj.exercise.review_exercise
+        if re and re.type == ReviewExercise.CHOOCE:
+            # anyone on the course can download anything
+            enrolled_can_access = True
+
         pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
         reviewer = kwargs['pk'] in pks_of_users_reviewables
 
-        if not teacher and not owner and not reviewer:
+        if not teacher and not owner and not reviewer and not enrolled_can_access:
             raise PermissionDenied
 
         filename = obj.file.name.split('/')[-1]
