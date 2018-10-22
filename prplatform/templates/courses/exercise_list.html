@@ -51,12 +51,12 @@
             {% if ex.review_exercise.visible_to_students %}
               <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
               <br>
-              Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+              Deadline: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
             {% elif teacher %}
               <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
               <span class="badge badge-pill badge-secondary">hidden</span>
               <br>
-              Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+              Deadline: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
             {% endif %}
         <br>
 
