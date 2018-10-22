@@ -26,6 +26,17 @@
           </tr>
         </thead>
         {% endif %}
+
+        {% if object_list %}
+        <div class="alert alert-warning d-md-inline-block">
+          {% if not teacher %}
+          The last submission will appear in peer-reviews.
+          {% else %}
+          If someone has made multiple submissions, the last one will appear in peer-reviews.
+          {% endif %}
+        </div>
+        {% endif %}
+
         <tbody>
           {% if not object_list %}
             No submissions yet
