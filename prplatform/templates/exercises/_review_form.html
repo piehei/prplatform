@@ -12,12 +12,15 @@
 
     {% csrf_token %}
 
+    <fieldset {% if disable_form %}disabled{% endif %}>
     {% for form in forms %}
     <h6>Question #{{ forloop.counter }}</h6>
       {{ form|crispy }}
     {% endfor %}
 
     <input type="hidden" name="choice" value="{{ reviewable.pk }}">
+
+    </fieldset>
 
     {% include "./_group_enroll_info_box.html" %}
 
