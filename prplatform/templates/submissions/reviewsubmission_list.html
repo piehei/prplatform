@@ -29,26 +29,38 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>#</th>
+            <th>Review</th>
             {% if teacher %}
-            <th>Submitter<br><input placeholder="not implemented"></th>
+            <th>Reviewer</th>
             {% endif %}
-            <th>Date{% if teacher %}<br><input placeholder="not implemented">{% endif %}</th>
+            {% if not my_mode %}
+            <th>Reviewed</th>
+            {% endif %}
+            <th>Date</th>
           </tr>
         </thead>
         <tbody>
             {% for origsub in object_list %}
               <tr scope="row">
-                <td> {{ forloop.counter }} </td>
+                <td>
+                  <a href="{{ origsub.get_absolute_url }}">
+                    {{ forloop.counter }}
+                  </a>
+                </td>
                 {% if teacher %}
                   <td>
                     {{ origsub.submitter }}
                   </td>
                 {% endif %}
+                {% if not my_mode %}
                 <td>
-                  <a href="{{ origsub.get_absolute_url }}">
-                    {{ origsub.created }}
-                  </a>
+                  {% if teacher %}<a href="{{ origsub.reviewed_submisison.get_absolute_url }}">{% endif %}
+                    {{ origsub.reviewed_submission }}
+                  {% if teacher %}</a>{% endif %}
+                </td>
+                {% endif %}
+                <td>
+                  {{ origsub.created }}
                 </td>
               </tr>
             {% endfor %}
