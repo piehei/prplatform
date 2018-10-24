@@ -23,26 +23,42 @@
     <div class="col-sm-12">
       <h4>Peer-review to exercise <a class="font-italic" href="{{ object.get_absolute_url }}">{{ object.exercise.name }}</a></h4>
 
-      {% if not receiver %}
-        Submitter: {{ object.submitter_user }}<br>
-      {% endif %}
 
-      {% if object.submitter_group %}
-        Group: {{ object.submitter_group }}
-      {% endif %}
+      <div class="shadow p-3 mb-5 bg-white rounded">
+        {% if not receiver %}
+        <strong>Submitter:</strong> {{ object.submitter_user }}<br>
+        {% endif %}
 
-      <p>Submission time: {{ object.created }}</p>
+        {% if object.submitter_group %}
+        <strong>Submitter group:</strong> {{ object.submitter_group }}<br>
+        {% endif %}
 
-      <ul>
-        {% for item in qa_list %}
-          <li>
-            Question: <b>{{ item.q }}</b>
-            <br>
-            A: <br>
-              {{ item.a | linebreaks }}
-          </li>
-        {% endfor %}
-      </ul>
+        <strong>Review time:</strong> {{ object.created }}<br>
+
+        <strong>Reviewed submission:</strong>
+        {% if teacher %}<a href="{{ object.reviewed_submission.get_absolute_url }}">{% endif %}
+          {{ object.reviewed_submission }}
+        {% if teacher %}</a>{% endif %}
+      </div>
+
+      <div class="shadow p-3 mb-5 bg-white rounded">
+        <h3>Peer-review content:</h3>
+        <ul>
+          {% for item in qa_list %}
+            <li class="mt-4">
+              Question:<br>
+              <div class="ml-4">
+                <b>{{ item.q }}</b>
+              </div>
+              <br>
+              Answer:<br>
+              <div class="ml-4">
+                {{ item.a | linebreaks }}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
     </div>
   </div>
 {% endblock content %}
