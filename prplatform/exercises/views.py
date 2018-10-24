@@ -281,7 +281,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             #       of the reviewlock?
             try:
                 rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
-            except EmptyResultSet: # nothing to review just yet
+            except EmptyResultSet:  # nothing to review just yet
                 rlock = None
 
         ctx['reviewable'] = rlock.original_submission if rlock else None
@@ -297,6 +297,10 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             if not cf.is_valid():
                 raise PermissionDenied
             ctx['reviewable'] = OriginalSubmission.objects.get(id=sid)
+
+            previous_reviews = self.object.submissions_by_submitter(self.request.user)
+            if previous_reviews.filter(reviewed_submission__pk=ctx['reviewable'].pk):
+                ctx['prev_review_exists'] = True
 
         ctx['chooceForm'] = cf if sid else ChooceForm(exercise=self.object, user=self.request.user)
         ctx['my_submission'] = my_submission_qs.first()

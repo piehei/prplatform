@@ -7,4 +7,11 @@
     {{ chooceForm | crispy }}
     <button type="submit" class="btn btn-sm btn-primary">Chooce</button>
   </form>
+
+  {% if prev_review_exists %}
+  <div class="alert alert-danger mt-4">
+    <strong>You have already done a review for this work!</strong><br>
+    Are you sure you want to peer-review the work again?
+  </div>
+  {% endif %}
 </div>
