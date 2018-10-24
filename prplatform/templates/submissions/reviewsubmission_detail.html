@@ -59,6 +59,22 @@
           {% endfor %}
         </ul>
       </div>
+
+      {% if teacher %}
+
+        <h3>Other peer-reviews of the same original submission:</h3>
+        <i>(Only teacher sees this)</i>
+        {% for re in object.reviewed_submission.reviews.all  %}
+          {% if re.pk != object.pk %}
+          <div class="list-group-item">
+            <a href="{{ re.get_absolute_url }}">{{ re  }}</a>
+          </div>
+          {% endif %}
+        {% endfor %}
+
+      {% endif %}
+
+
     </div>
   </div>
 {% endblock content %}
