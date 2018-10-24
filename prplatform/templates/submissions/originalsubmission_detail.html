@@ -20,18 +20,21 @@
   <div class="row">
     <div class="col-sm-12">
       <h4>Submission to exercise <a class="font-italic" href="{{ object.exercise.get_absolute_url }}">{{ object.exercise.name }}</a></h4>
-      <p>
-        <b>Submitter</b>: {{ object.submitter_user }}<br>
-        {% if object.submitter_group %}<b>Group</b>: {{ object.submitter_group }}<br>{% endif %}
-        <b>Submission time</b>: {{ object.created }}<br>
+      <div class="shadow p-3 mb-5 bg-white rounded">
+        <strong>Submitter</strong>: {{ object.submitter_user }}<br>
+        {% if object.submitter_group %}<strong>Submitter group</strong>: {{ object.submitter_group }}<br>{% endif %}
+        <strong>Submission time</strong>: {{ object.created }}<br>
         {% if object.exercise.use_states %}
-        <b>Submission state</b>: {{ object.state }}<br>
+        <strong>Submission state</strong>: {{ object.state }}<br>
         {% endif %}
-      </p>
+      </div>
+
+      <div class="shadow p-3 mb-5 bg-white rounded">
+        <h3>Submission content:</h3>
 
       {% if object.text %}
 
-        <p><b>Submission text:</b></p>
+        <p><strong>Submission text:</strong></p>
         <div class="col-sm-6 ml-4 mb-4">
           {{ object.text | linebreaks }}
         </div>
@@ -40,7 +43,7 @@
 
       {% if object.file %}
 
-      <p><b>Submitted file: (<a href="{{ object.get_file_download_url }}">download</a>)</b></p>
+      <p><strong>Submitted file: (<a href="{{ object.get_file_download_url }}">download</a>)</strong></p>
 
         {% if filecontents %}
           <div class="card card-body"
@@ -55,6 +58,7 @@
           </div>
         {% endif %}
       {% endif %}
+      </div>
 
       {% if object.exercise.use_states %}
 
