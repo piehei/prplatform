@@ -131,7 +131,7 @@ class ReviewSubmission(BaseSubmission):
         return sorted(self.answers.all(), key=lambda a: self.exercise.question_order.index(a.question.pk))
 
     def __str__(self):
-        return str(self.created) + ": " + str(self.submitter) + " " + str(self.exercise)
+        return f"{self.submitter} -> {self.reviewed_submission.submitter} | {self.exercise}"
 
     def get_absolute_url(self):
         return reverse('courses:submissions:review-detail', kwargs={
