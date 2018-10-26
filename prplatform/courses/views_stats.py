@@ -39,7 +39,6 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         ctx['orig_subs'] = re.reviewable_exercise.submissions.all().order_by('submitter_group', 'submitter_user')
 
         d = {}
-
         for index, orig_sub in enumerate(ctx['orig_subs']):
             print(index)
             key = orig_sub.pk
@@ -50,21 +49,26 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         # TODO:
         # this is for UI exploration. move as much as possible of the computation to SQL
         if numeric_questions:
-            nq = numeric_questions[0]
-            for os in ctx['orig_subs']:
-                total = 0
-                count = 0
-                for review_sub in os.reviews.all():
-                    d[os.pk]['reviews'].append(review_sub)
+            ctx['numeric_questions'] = []
+            for nq in numeric_questions:
+                ctx['numeric_questions'].append(nq)
+                avg_obj = {'q': nq, 'avg': None}
+                for os in ctx['orig_subs']:
+                    total = 0
+                    count = 0
+                    for review_sub in os.reviews.all():
+                        d[os.pk]['reviews'].append(review_sub)
 
-                    numeric_answer = review_sub.answers.filter(question=nq).first()
-                    if numeric_answer:
-                        total += int(numeric_answer.value_choice)
-                        count += 1
+                        numeric_answer = review_sub.answers.filter(question=nq).first()
+                        if numeric_answer:
+                            total += int(numeric_answer.value_choice)
+                            count += 1
 
-                if count != 0:
-                    d[os.pk]['avgs'].append(total/count)
+                    if count != 0:
+                        avg_obj['avg'] = total/count
+                        d[os.pk]['avgs'].append(avg_obj)
 
         ctx['stats'] = d
+        ctx['max_review_count'] = range(1, max([len(x['reviews']) for x in d.values()]) + 1)
         return self.render_to_response(ctx)
 
