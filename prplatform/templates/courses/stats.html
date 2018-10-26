@@ -18,7 +18,7 @@
         <tr>
           <th scope="col">Reviewed</th>
           {% for nq in numeric_questions %}
-            <th scope="col">{{ nq.text }}</th>
+            <th scope="col">Q: {{ nq.text }}</th>
           {% endfor %}
           {% for i in max_review_count %}
             <th scope="col">Reviewer {{ i }}</th>
@@ -27,8 +27,8 @@
         {% for row in stats.values %}
           <tr scope="row">
             <td><a href="{{ row.os.get_absolute_url }}">{{ row.os.submitter }}</a></td>
-            {% for avg_obj in row.avgs %}
-              <td>{{ avg_obj.avg | floatformat:2}}</d>
+            {% for avg in row.avgs %}
+              <td>{{ avg | floatformat:2}}</d>
             {% endfor %}
             {% for review in row.reviews %}
               <td>

@@ -52,7 +52,6 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
             ctx['numeric_questions'] = []
             for nq in numeric_questions:
                 ctx['numeric_questions'].append(nq)
-                avg_obj = {'q': nq, 'avg': None}
                 for os in ctx['orig_subs']:
                     total = 0
                     count = 0
@@ -65,8 +64,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                             count += 1
 
                     if count != 0:
-                        avg_obj['avg'] = total/count
-                        d[os.pk]['avgs'].append(avg_obj)
+                        d[os.pk]['avgs'].append(total/count)
 
         ctx['stats'] = d
         ctx['max_review_count'] = range(1, max([len(x['reviews']) for x in d.values()]) + 1)
