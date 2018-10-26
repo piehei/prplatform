@@ -1,0 +1,42 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Stats{% endblock %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Statistics</h1>
+
+      {% include "./_stats_form.html" %}
+      <hr></hr>
+
+      <table class="table">
+
+        {% for row in stats.values %}
+          <tr scope="row">
+            <td>{{ row.os.submitter }}</td>
+            {% for avg in row.avgs %}
+              <td>{{ avg | floatformat:2}}</d>
+            {% endfor %}
+            {% for review in row.reviews %}
+              <td>
+                <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+
+      </table>
+    </div>
+
+
+
+
+
+  </div>
+
+{% endblock %}

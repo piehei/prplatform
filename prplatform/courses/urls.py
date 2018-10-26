@@ -2,6 +2,7 @@ from django.urls import path
 from django.conf.urls import include, url
 
 from . import views
+from . import views_stats
 from prplatform.exercises.views import (SubmissionExerciseCreateView, SubmissionExerciseUpdateView,
                                         ReviewExerciseCreateView, ReviewExerciseUpdateView,
                                         SubmissionExerciseDeleteView, ReviewExerciseDeleteView,)
@@ -16,6 +17,7 @@ urlpatterns = [
     path('<slug:base_url_slug>/<slug:url_slug>/exercises/', include('prplatform.exercises.urls', namespace="exercises")),
     path('<slug:base_url_slug>/<slug:url_slug>/submissions/', include('prplatform.submissions.urls', namespace="submissions")),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher', view=views.CourseTeacherView.as_view(), name="teacher"),
+    path('<slug:base_url_slug>/<slug:url_slug>/teacher/stats', view=views_stats.CourseStatsView.as_view(), name="stats"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/groups', view=views.CourseGroupView.as_view(), name="groups"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/dealings', view=views.CourseReviewDealingView.as_view(), name="dealings"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/update', view=views.CourseUpdateView.as_view(), name="update"),
