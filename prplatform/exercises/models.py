@@ -255,4 +255,11 @@ class ReviewExercise(BaseExercise):
     def __str__(self):
         return f"{self.name}"
 
+    def get_stats_url(self):
+        base_course = self.course.base_course
+        base = reverse('courses:stats', kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            })
+        return f"{base}?choice={self.pk}"
 
