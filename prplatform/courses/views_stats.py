@@ -58,8 +58,9 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                     d[os.pk]['reviews'].append(review_sub)
 
                     numeric_answer = review_sub.answers.filter(question=nq).first()
-                    total += int(numeric_answer.value_choice)
-                    count += 1
+                    if numeric_answer:
+                        total += int(numeric_answer.value_choice)
+                        count += 1
 
                 if count != 0:
                     d[os.pk]['avgs'].append(total/count)
