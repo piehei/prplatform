@@ -11,6 +11,11 @@
     {% breadcrumb "Statistics" "" %}
 {% endblock %}
 
+{% block css %}
+  {{ block.super }}
+  <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock css %}
+
 {% block content %}
 
   <div class="row">
@@ -19,32 +24,55 @@
 
       {# include "./_stats_form.html" #}
 
-      <table class="table">
-        <tr>
-          <th scope="col">Reviewed</th>
-          {% for nq in numeric_questions %}
-            <th scope="col">Q: {{ nq.text }}</th>
-          {% endfor %}
-          {% for i in max_review_count %}
-            <th scope="col">Reviewer {{ i }}</th>
-          {% endfor %}
-        </tr>
+      <table id="stats-table" class="table table-sm table-hover table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Reviewed</th>
+            {% for nq in numeric_questions %}
+              <th scope="col">Q: {{ nq.text }}</th>
+            {% endfor %}
+            {% for i in max_review_range %}
+              <th scope="col">Reviewer {{ i }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
         {% for row in stats.values %}
           <tr scope="row">
             <td><a href="{{ row.os.get_absolute_url }}">{{ row.os.submitter }}</a></td>
             {% for avg in row.avgs %}
-              <td>{{ avg | floatformat:2}}</d>
+              <td>{{ avg | floatformat:2 }}</td>
             {% endfor %}
             {% for review in row.reviews %}
               <td>
-                <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>
+                {% if review %}
+                  <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>
+                {% endif %}
               </td>
             {% endfor %}
           </tr>
         {% endfor %}
-
+        </tbody>
       </table>
     </div>
   </div>
 
+
+  <script>
+    window.addEventListener('load', function() {
+      $('#stats-table').DataTable({
+        "paging": false
+      });
+    });
+  </script>
+
 {% endblock %}
+
+{% block }
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+{% endblock javascript %}
+

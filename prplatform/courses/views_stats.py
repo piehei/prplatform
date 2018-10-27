@@ -34,7 +34,6 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
         re = ReviewExercise.objects.get(pk=sid)
         ctx['re'] = re
-        print(re)
 
         ctx['orig_subs'] = re.reviewable_exercise.submissions.all().order_by('submitter_group', 'submitter_user')
 
@@ -66,7 +65,20 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                     if count != 0:
                         d[os.pk]['avgs'].append(total/count)
 
+        max_review_range = range(1, max([len(x['reviews']) for x in d.values()]) + 1)
+
+        ctx['max_review_range'] = max_review_range
+
+        for row in d:
+
+            difference = len(numeric_questions) - len(d[row]['avgs'])
+            if difference != 0:
+                d[row]['avgs'] += difference * [None]
+
+            difference = len(max_review_range) - len(d[row]['reviews'])
+            if difference != 0:
+                d[row]['reviews'] += difference * [None]
+
         ctx['stats'] = d
-        ctx['max_review_count'] = range(1, max([len(x['reviews']) for x in d.values()]) + 1)
         return self.render_to_response(ctx)
 
