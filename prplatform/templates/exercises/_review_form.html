@@ -1,26 +1,43 @@
 {% load crispy_forms_tags %}
 
-
 <div class="col-md-12 mt-4">
   <h3>Questions</h3>
   <hr></hr>
+
   {% if not forms %}
     The teacher has not configured any questions. You cannot make a submission.
   {% else %}
-  <form class="form-horizontal" method="post"
-                                action="{{ object.get_absolute_url }}">
+
+  <form class="form-horizontal needs-validation"
+        method="post"
+        action="{{ object.get_absolute_url }}{% if chooceForm %}?choice={{reviewable.pk}}{% endif %}">
 
     {% csrf_token %}
 
     <fieldset {% if disable_form %}disabled{% endif %}>
-    {% for form in forms %}
-    <h6>Question #{{ forloop.counter }}</h6>
-      {{ form|crispy }}
-    {% endfor %}
-
     <input type="hidden" name="choice" value="{{ reviewable.pk }}">
 
+    {% for form in forms %}
+      {{ form | crispy }}
+
+      {% if form.errors %}
+        <div class="alert alert-danger">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li>
+                  {% if field != '__all__' %}
+                    <strong>{{ field.label }}:</strong>
+                  {% endif %}
+                  {{ error }}
+                </li>
+            {% endfor %}
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endfor %}
+
     </fieldset>
+
 
     {% include "./_group_enroll_info_box.html" %}
 
@@ -30,6 +47,7 @@
       </div>
     </div>
   </form>
+
   {% endif %}
 </div>
 
