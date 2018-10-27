@@ -1,7 +1,8 @@
-from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput, RadioSelect
+from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput, RadioSelect, BaseFormSet, formset_factory
 from .models import OriginalSubmission, Answer
 from prplatform.exercises.models import SubmissionExercise
 from django import forms
+
 
 class OriginalSubmissionForm(ModelForm):
 
@@ -46,7 +47,6 @@ class OriginalSubmissionForm(ModelForm):
                                       'Accepted file types are: ' + self.accepted_file_types)
 
 
-
 class OriginalSubmissionStateForm(ModelForm):
 
     class Meta:
@@ -54,31 +54,87 @@ class OriginalSubmissionStateForm(ModelForm):
         fields = ['state']
 
 
-class AnswerForm(ModelForm):
+# TODO: currently UNUSED
+class CompleteAnswerForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        question_list = kwargs.pop('question_list')
+        super().__init__(*args, **kwargs)
+
+        for q in question_list:
+            if q.choices:
+                fname = f"{q.pk}-choices"
+                self.fields[fname] = forms.ChoiceField()
+                self.fields[fname].choices = sorted(q.choices, key=lambda c: c[0])
+                self.fields[fname].widget = RadioSelect()
+                self.fields[fname].label = q.text
+                self.fields[fname].required = True if q.required else False
+            else:
+                fname = f"{q.pk}-text"
+                self.fields[fname] = forms.CharField()
+                self.fields[fname].widget = forms.Textarea(attrs={'cols': 80, 'rows': 5})
+                self.fields[fname].label = q.text
+                self.fields[fname].required = True if q.required else False
+
+
+# TODO: currently UNUSED
+class AnswerForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        q = kwargs.pop('question')
+        super().__init__(*args, **kwargs)
+
+        if q.choices:
+            fname = f"{q.pk}-choices"
+            self.fields[fname] = forms.ChoiceField()
+            self.fields[fname].choices = sorted(q.choices, key=lambda c: c[0])
+            self.fields[fname].widget = RadioSelect()
+            self.fields[fname].label = q.text
+            self.fields[fname].required = True if q.required else False
+        else:
+            fname = f"{q.pk}-text"
+            self.fields[fname] = forms.CharField()
+            self.fields[fname].widget = forms.Textarea(attrs={'cols': 80, 'rows': 5})
+            self.fields[fname].label = q.text
+            self.fields[fname].required = True if q.required else False
+
+
+class AnswerModelForm(ModelForm):
 
     class Meta:
         model = Answer
-        fields = ['value_text', 'value_choice']  # one of these is removed below
+        fields = ['question', 'value_text', 'value_choice']  # one of these is removed below
         widgets = {
             'value_text': Textarea(attrs={'cols': 80, 'rows': 3}),
             'value_choice': RadioSelect(),
         }
 
     def __init__(self, *args, **kwargs):
-        question_text = kwargs.pop('question_text')
-        choices = kwargs.pop('question_choices')
+        question = kwargs.pop('question')
+        question_text = question.text
+        choices = question.choices
+        required = question.required
+
+        # this is required to retrieve separate answers from the POST
+        self.prefix = f"Q-PREFIX-{question.pk}-"
+
         super().__init__(*args, **kwargs)
+
+        from django.forms.widgets import HiddenInput
+        self.initial = {'question': question}
+        self.fields['question'].widget = HiddenInput()
 
         # if this is a question with choices, remove free text field
         # and limit the choices to the teacher chosen choices
         # (by default the QS is all Choice model objects)
         if choices:
-            print(choices)
             self.fields['value_choice'].label = question_text
             self.fields['value_choice'].choices = sorted(choices, key=lambda c: c[0])
+            if required:
+                self.fields['value_choice'].required = True
             self.fields.pop('value_text')
         else:
             self.fields['value_text'].label = question_text
             self.fields['value_text'].help_text = '<b>You can make this text area bigger from the bottom-right corner!</b>'
+            if required:
+                self.fields['value_text'].required = True
             self.fields.pop('value_choice')
-

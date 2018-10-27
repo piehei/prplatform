@@ -6,6 +6,7 @@ from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.core.exceptions import EmptyResultSet, PermissionDenied
 from django.contrib import messages
+from django.forms import formset_factory
 
 import re
 
@@ -14,7 +15,7 @@ from .question_models import Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet, ChooceForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
-from prplatform.submissions.forms import OriginalSubmissionForm, AnswerForm
+from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 
 
@@ -227,18 +228,14 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
 class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
-    PREFIX = "question-index-"
 
-    def _get_answer_forms(self, exercise):
+    def _get_answer_modelforms(self, exercise):
         # this gathers all the teacher-chosen questions that
         # the peer-reviewing student will answer
         forms = []
         sorted_questions = exercise.question_list_in_order()
         for index, q in enumerate(sorted_questions):
-            forms.append(AnswerForm(prefix=self.PREFIX + str(index),
-                                    question_text=q.text,
-                                    question_choices=q.choices))
-
+            forms.append(AnswerModelForm(question=q))
         return forms
 
     def _get_teacher_random(self, ctx, exercise):
@@ -254,15 +251,15 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
 
         return ctx
 
-    def _get_random_ctx(self, ctx, my_submission_qs):
+    def _get_random_ctx(self, ctx):
         user = self.request.user
         exercise = self.object
 
         if ctx['teacher']:
             return self._get_teacher_random(ctx, exercise)
 
-        ctx['my_submission'] = my_submission_qs.first()
-        ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
+        if ctx['my_submission']:
+            ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
 
         rlock = None
         rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
@@ -289,7 +286,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
-    def _get_chooce_ctx(self, ctx, my_submission_qs):
+    def _get_chooce_ctx(self, ctx):
 
         sid = self.request.GET.get('choice')
         if sid:
@@ -303,36 +300,36 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
                 ctx['prev_review_exists'] = True
 
         ctx['chooceForm'] = cf if sid else ChooceForm(exercise=self.object, user=self.request.user)
-        ctx['my_submission'] = my_submission_qs.first()
         return ctx
 
-    def get(self, *args, **kwargs):
+    def get_context_data(self, *args, **kwargs):
         self.object = self.get_object()
         exercise = self.object
-        ctx = self.get_context_data(**kwargs)
+        ctx = super().get_context_data(**kwargs)
 
         if not ctx['teacher'] and not exercise.visible_to_students:
             raise PermissionDenied
 
-        ctx['forms'] = self._get_answer_forms(exercise)
+        ctx['forms'] = self._get_answer_modelforms(exercise)
 
         if exercise.use_groups and not ctx['my_group']:
             ctx['disable_form'] = True
 
         my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(self.request.user)
         my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
+        ctx['my_submission'] = my_submission_qs.first()
         if not my_submission_qs and exercise.require_original_submission and not ctx['teacher']:
             ctx['disable_form'] = True
-            return self.render_to_response(ctx)
 
         if exercise.type == ReviewExercise.RANDOM:
-            ctx = self._get_random_ctx(ctx, my_submission_qs)
+            ctx = self._get_random_ctx(ctx)
         elif exercise.type == ReviewExercise.CHOOCE:
-            ctx = self._get_chooce_ctx(ctx, my_submission_qs)
+            ctx = self._get_chooce_ctx(ctx)
 
         if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
             ctx['disable_form'] = True
-        return self.render_to_response(ctx)
+
+        return ctx
 
     def _post_random(self, ctx):
         # TODO: should it be possible to update the previous review submission?
@@ -348,7 +345,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         rlock.review_submission = new_review_submission
         rlock.save()
 
-        self._save_answers(ctx, new_review_submission)
+        self._save_modelform_answers(new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
     def _post_chooce(self, ctx):
@@ -367,36 +364,42 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             new_review_submission.submitter_group = ctx['my_group']
 
         new_review_submission.save()
-        self._save_answers(ctx, new_review_submission)
+        self._save_modelform_answers(new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
-    def _save_answers(self, ctx, review_submission):
-        # TODO: modelformset *MUST* be used here, THIS IS AWFUL SHIT
-        questions = self.object.question_list_in_order()
-        for key in self.request.POST:
-            if self.PREFIX not in key or not self.request.POST[key]:
-                continue
-            indx = int(re.match(r".*(\d).*", key).groups()[0])
-            q_now = questions[indx]
-
-            answer_value = self.request.POST[key]
-            answer = Answer(submission=review_submission, question=q_now)
-            if "value_text" in key:
-                answer.value_text = answer_value
-            else:
-                answer.value_choice = answer_value
+    def _save_modelform_answers(self, review_submission):
+        for form in self.forms:
+            answer = form.save(commit=False)
+            answer.submission = review_submission
             answer.save()
+
+    def _validate_forms(self):
+        qlist = self.object.question_list_in_order()
+
+        forms = []
+        valid = True
+        for q in qlist:
+            af = AnswerModelForm(self.request.POST, question=q)
+            forms.append(af)
+            if not af.is_valid():
+                valid = False
+        return valid, forms
 
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
-        exercise = self.object
 
-        if exercise.type == ReviewExercise.RANDOM:
+        valid, self.forms = self._validate_forms()
+
+        if not valid:
+            ctx['forms'] = self.forms
+            return self.render_to_response(ctx)
+
+        if self.object.type == ReviewExercise.RANDOM:
             return self._post_random(ctx)
 
-        elif exercise.type == ReviewExercise.CHOOCE:
+        elif self.object.type == ReviewExercise.CHOOCE:
             return self._post_chooce(ctx)
 
 
