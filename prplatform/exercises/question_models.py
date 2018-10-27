@@ -16,6 +16,7 @@ class Choice(models.Model):
 
 class Question(models.Model):
     course = models.ForeignKey(Course, related_name="questions", on_delete=models.CASCADE)
+    required = models.BooleanField(default=True)
     text = models.CharField(max_length=200)
     hide_from_receiver = models.BooleanField(default=False)
     choices = ArrayField(
