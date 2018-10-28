@@ -41,7 +41,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         for index, orig_sub in enumerate(ctx['orig_subs']):
             print(index)
             key = orig_sub.pk
-            d[key] = {'os': orig_sub, 'avgs': [], 'reviews': []}
+            d[key] = {'os': orig_sub, 'avgs': [], 'reviews': [], 'reviews_by': []}
 
         numeric_questions = re.questions.exclude(choices__len=0)
 
@@ -70,6 +70,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         ctx['max_review_range'] = max_review_range
 
         for row in d:
+            d[row]['reviews_by'] = re.submissions_by_submitter(d[row]['os'].submitter_user)
 
             difference = len(numeric_questions) - len(d[row]['avgs'])
             if difference != 0:
