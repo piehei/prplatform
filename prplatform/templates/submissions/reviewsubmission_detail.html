@@ -25,20 +25,22 @@
 
 
       <div class="shadow p-3 mb-5 bg-white rounded">
+
         {% if not receiver %}
         <strong>Submitter:</strong> {{ object.submitter_user }}<br>
-        {% endif %}
 
-        {% if object.submitter_group %}
-        <strong>Submitter group:</strong> {{ object.submitter_group }}<br>
+          {% if object.submitter_group %}
+          <strong>Submitter group:</strong> {{ object.submitter_group }}<br>
+          {% endif %}
+
         {% endif %}
 
         <strong>Review time:</strong> {{ object.created }}<br>
 
         <strong>Reviewed submission:</strong>
-        {% if teacher %}<a href="{{ object.reviewed_submission.get_absolute_url }}">{% endif %}
+        {% if teacher or receiver %}<a href="{{ object.reviewed_submission.get_absolute_url }}">{% endif %}
           {{ object.reviewed_submission }}
-        {% if teacher %}</a>{% endif %}
+        {% if teacher or receiver %}</a>{% endif %}
       </div>
 
       <div class="shadow p-3 mb-5 bg-white rounded">
