@@ -35,11 +35,12 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         re = ReviewExercise.objects.get(pk=sid)
         ctx['re'] = re
 
-        ctx['orig_subs'] = re.reviewable_exercise.submissions.all().order_by('submitter_group', 'submitter_user')
+        ctx['orig_subs'] = re.reviewable_exercise \
+                             .last_submission_by_submitters() \
+                             .order_by('submitter_group', 'submitter_user')
 
         d = {}
         for index, orig_sub in enumerate(ctx['orig_subs']):
-            print(index)
             key = orig_sub.pk
             d[key] = {'os': orig_sub, 'avgs': [], 'reviews': [], 'reviews_by': []}
 
