@@ -72,13 +72,13 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         for row in d:
             d[row]['reviews_by'] = re.submissions_by_submitter(d[row]['os'].submitter_user)
 
-            difference = len(numeric_questions) - len(d[row]['avgs'])
-            if difference != 0:
-                d[row]['avgs'] += difference * [None]
+            # difference = len(numeric_questions) - len(d[row]['avgs'])
+            # if difference != 0:
+            #     d[row]['avgs'] += difference * [None]
 
-            difference = len(max_review_range) - len(d[row]['reviews'])
-            if difference != 0:
-                d[row]['reviews'] += difference * [None]
+            # difference = len(max_review_range) - len(d[row]['reviews'])
+            # if difference != 0:
+            #     d[row]['reviews'] += difference * [None]
 
         ctx['stats'] = d
         return self.render_to_response(ctx)

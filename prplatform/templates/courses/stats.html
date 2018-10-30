@@ -32,13 +32,11 @@
         <thead>
           <tr>
             <th scope="col">Submitter</th>
-            <th scope="col">Reviews by</th>
+            <th scope="col">Reviews by submitter</th>
             {% for nq in numeric_questions %}
               <th scope="col">Q: {{ nq.text }}</th>
             {% endfor %}
-            {% for i in max_review_range %}
-              <th scope="col">Reviewer {{ i }}</th>
-            {% endfor %}
+            <th scope="col">Reviews for submitter</th>
           </tr>
         </thead>
         <tbody>
@@ -47,22 +45,21 @@
             <td><a href="{{ row.os.get_absolute_url }}">{{ row.os.submitter }}</a></td>
 
             <td> {% for r in row.reviews_by %}
-              <a href="{{ r.reviewed_submission.get_absolute_url }}">
-                   {{ r.reviewed_submission.submitter }}
-              </a>
+              <a href="{{ r.reviewed_submission.get_absolute_url }}">{{ r.reviewed_submission.submitter }}</a>{% if not forloop.last %}, {% endif %}
+
                  {% endfor %}
             </td>
-
+            {% if not row.avgs|length %}
+              <td></td>
+            {% endif %}
             {% for avg in row.avgs %}
               <td>{{ avg | floatformat:2 }}</td>
             {% endfor %}
+            <td>
             {% for review in row.reviews %}
-              <td>
-                {% if review %}
-                  <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>
-                {% endif %}
-              </td>
+              <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>{% if not forloop.last %}, {% endif %}
             {% endfor %}
+            </td>
           </tr>
         {% endfor %}
         </tbody>
