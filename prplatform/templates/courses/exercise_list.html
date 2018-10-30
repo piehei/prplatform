@@ -47,41 +47,43 @@
         </div>
 
         <div class="col-5" style=" border-left:0px solid grey;">
-          {% if ex.review_exercise %}
-            {% if ex.review_exercise.visible_to_students %}
-              <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
+          {% with rexer=ex.review_exercise %}
+          {% if rexer %}
+            {% if rexer.visible_to_students %}
+              <a href="{{ rexer.get_absolute_url }}" style="font-weight: bold;">{{ rexer.name }}</a>
               <br>
-              Deadline: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
-              {% if ex.review_exercise.show_reviews_after_date %}
+              Deadline: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+              {% if rexer.show_reviews_after_date %}
                 <br>
-                Feedback available: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+                Feedback available: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
               {% endif %}
             {% elif teacher %}
-              <a href="{{ ex.review_exercise.get_absolute_url }}" style="font-weight: bold;">{{ ex.review_exercise.name }}</a>
+              <a href="{{ rexer.get_absolute_url }}" style="font-weight: bold;">{{ rexer.name }}</a>
               <span class="badge badge-pill badge-secondary">hidden</span>
               <br>
-              Deadline: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
-              {% if ex.review_exercise.show_reviews_after_date %}
+              Deadline: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+              {% if rexer.show_reviews_after_date %}
                 <br>
-                Feedback available: {{ ex.review_exercise.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+                Feedback available: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
               {% endif %}
             {% endif %}
-        <br>
 
-        {% if teacher and ex.review_exercise %}
-          <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-             href="{{ ex.review_exercise.get_edit_url }}">
-            edit
-          </a>
-          <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-             href="{{ ex.review_exercise.get_list_url }}">
-            submissions
-          </a>
-          <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
-             href="{{ ex.review_exercise.get_stats_url }}">
-            statistics
-          </a>
-        {% endif %}
+          <br>
+
+            {% if teacher and rexer %}
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{{ rexer.get_edit_url }}">
+                edit
+              </a>
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{{ rexer.get_list_url }}">
+                submissions
+              </a>
+              <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
+                 href="{{ rexer.get_stats_url }}">
+                statistics
+              </a>
+            {% endif %}
 
           {% else %}
             {% if teacher %}
@@ -91,6 +93,7 @@
                 </a>
             {% endif %}
           {% endif %}
+          {% endwith %}
         </div>
 
 
