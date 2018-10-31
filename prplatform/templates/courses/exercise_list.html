@@ -55,7 +55,7 @@
               Deadline: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
               {% if rexer.show_reviews_after_date %}
                 <br>
-                Feedback available: {{ rexer.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+                Feedback available: {{ rexer.show_reviews_after_date | date:"SHORT_DATETIME_FORMAT" }}
               {% endif %}
             {% elif teacher %}
               <a href="{{ rexer.get_absolute_url }}" style="font-weight: bold;">{{ rexer.name }}</a>
