@@ -2,6 +2,7 @@ from django.contrib import messages
 import re
 
 from prplatform.users.models import StudentGroup
+from prplatform.submissions.models import Answer
 
 
 def handle_group_file(request, ctx, form):
@@ -113,15 +114,16 @@ def handle_group_file(request, ctx, form):
 
 def create_stats(ctx, include_textual_answers=False, pad=False):
     re = ctx['re']
-
+    print("CREATE STATS FOR:",re)
     d = {}
 
     HEADERS = []
 
+    # for index, orig_sub in enumerate(ctx['orig_subs']):
     for index, orig_sub in enumerate(ctx['orig_subs']):
         key = orig_sub.pk
         d[key] = {'orig_sub': orig_sub, 'numerical_avgs': [], 'reviews_for': [], 'reviews_by': [], 'textual_answers': []}
-        d[key]['reviews_by'] = re.submissions_by_submitter(d[key]['orig_sub'].submitter_user)
+        d[key]['reviews_by'] = re.last_reviews_by(orig_sub.submitter_user)
         d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user)
 
     HEADERS.append('Submitter')
@@ -134,20 +136,23 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
     if numeric_questions:
         for nq in numeric_questions:
 
+            print("\nnq:", nq)
             HEADERS.append(f"Q: {nq.text}")
 
-            for os in ctx['orig_subs']:
-                total = 0
-                count = 0
-                for review_sub in os.reviews.all():
+            for row in d:
+                review_pks = d[row]['reviews_for'].values_list('pk', flat=True)
+                print("answer_pks:", review_pks)
 
-                    numeric_answer = review_sub.answers.filter(question=nq).first()
-                    if numeric_answer:
-                        total += int(numeric_answer.value_choice)
-                        count += 1
+                answer_values = Answer.objects.filter(question=nq,
+                                                      submission__pk__in=review_pks) \
+                                              .values_list('value_choice', flat=True)
 
-                if count != 0:
-                    d[os.pk]['numerical_avgs'].append(total/count)
+                print("answer_values:", answer_values)
+
+                if answer_values:
+                    avg = sum([int(a) for a in answer_values])/len(answer_values)
+                    print("avg is:", avg)
+                    d[row]['numerical_avgs'].append(avg)
 
     # collect whatever textual questions available
     # collect answers to them
@@ -186,11 +191,11 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
             if difference != 0:
                 d[row]['textual_answers'] += difference * [None]
 
-    for row in d:
-        print(d[row])
-    for row in d:
-        print(len(d[row]['textual_answers']), len(d[row]['numerical_avgs']))
+    # for row in d:
+    #     print(d[row])
+    # for row in d:
+    #     print(len(d[row]['textual_answers']), len(d[row]['numerical_avgs']))
+    # print("HEADERS ARE:")
+    # print(HEADERS)
     d['headers'] = HEADERS
-    print("HEADERS ARE:")
-    print(HEADERS)
     return d
