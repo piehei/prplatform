@@ -23,6 +23,7 @@
     {% include "../tabs.html" with tab="statistics" object=re %}
 
       {# include "./_stats_form.html" #}
+      <a class="btn btn-sm btn-success" href="?format=csv">Download CSV</a>
       <div class="alert alert-primary">
         First column points to an original submission. Second column shows reviews made by that submitter.
         After the second columns comes all averages calculated to numerical questions. Last columns 1 to N show
@@ -31,35 +32,35 @@
       <table id="stats-table" class="table table-sm table-hover table-bordered">
         <thead>
           <tr>
-            <th scope="col">Submitter</th>
-            <th scope="col">Reviews by submitter</th>
-            {% for nq in numeric_questions %}
-              <th scope="col">Q: {{ nq.text }}</th>
+            {% for header in stats.headers %}
+            <th scope="col">{{ header }}</th>
             {% endfor %}
-            <th scope="col">Reviews for submitter</th>
           </tr>
         </thead>
         <tbody>
         {% for row in stats.values %}
           <tr scope="row">
-            <td><a href="{{ row.os.get_absolute_url }}">{{ row.os.submitter }}</a></td>
+            <td><a href="{{ row.orig_sub.get_absolute_url }}">{{ row.orig_sub.submitter }}</a></td>
 
-            <td> {% for r in row.reviews_by %}
-              <a href="{{ r.reviewed_submission.get_absolute_url }}">{{ r.reviewed_submission.submitter }}</a>{% if not forloop.last %}, {% endif %}
-
-                 {% endfor %}
-            </td>
-            {% if not row.avgs|length %}
-              <td></td>
-            {% endif %}
-            {% for avg in row.avgs %}
-              <td>{{ avg | floatformat:2 }}</td>
-            {% endfor %}
             <td>
-            {% for review in row.reviews %}
+              {% for rev_sub in row.reviews_by %}
+                <a href="{{ rev_sub.get_absolute_url }}">{{ rev_sub.reviewed_submission.submitter }}</a>{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            </td>
+
+            <td>
+            {% for review in row.reviews_for %}
               <a href="{{ review.get_absolute_url }}">{{ review.submitter }}</a>{% if not forloop.last %}, {% endif %}
             {% endfor %}
             </td>
+
+            {% if not row.numerical_avgs|length %}
+              <td></td>
+            {% endif %}
+            {% for avg in row.numerical_avgs %}
+              <td>{{ avg | floatformat:2 }}</td>
+            {% endfor %}
+
           </tr>
         {% endfor %}
         </tbody>

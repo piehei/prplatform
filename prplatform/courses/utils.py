@@ -109,3 +109,88 @@ def handle_group_file(request, ctx, form):
                 messages.success(request, f'Created group: "{new_group.name}" with students: {new_group.student_usernames}')
     else:
         messages.error(request, "Group file was not valid. Cannot do anything.")
+
+
+def create_stats(ctx, include_textual_answers=False, pad=False):
+    re = ctx['re']
+
+    d = {}
+
+    HEADERS = []
+
+    for index, orig_sub in enumerate(ctx['orig_subs']):
+        key = orig_sub.pk
+        d[key] = {'orig_sub': orig_sub, 'numerical_avgs': [], 'reviews_for': [], 'reviews_by': [], 'textual_answers': []}
+        d[key]['reviews_by'] = re.submissions_by_submitter(d[key]['orig_sub'].submitter_user)
+        d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user)
+
+    HEADERS.append('Submitter')
+    HEADERS.append('Reviews by submitter')
+    HEADERS.append('Reviews for submitter')
+
+    numeric_questions = re.questions.exclude(choices__len=0)
+
+    # TODO: calculate on the DBMS
+    if numeric_questions:
+        for nq in numeric_questions:
+
+            HEADERS.append(f"Q: {nq.text}")
+
+            for os in ctx['orig_subs']:
+                total = 0
+                count = 0
+                for review_sub in os.reviews.all():
+
+                    numeric_answer = review_sub.answers.filter(question=nq).first()
+                    if numeric_answer:
+                        total += int(numeric_answer.value_choice)
+                        count += 1
+
+                if count != 0:
+                    d[os.pk]['numerical_avgs'].append(total/count)
+
+    # collect whatever textual questions available
+    # collect answers to them
+    # append answer texts into 'textual_answers' for each submitter
+    if include_textual_answers:
+        textual_questions = re.questions.filter(choices__len=0)
+        if textual_questions:
+            for (index, tq) in enumerate(textual_questions):
+                for os in ctx['orig_subs']:
+                    for review_sub in os.reviews.all():
+                        textual_answer = review_sub.answers.filter(question=tq).first()
+                        if textual_answer:
+                            d[os.pk]['textual_answers'].append(f"{review_sub.submitter}: {textual_answer.value_text}")
+
+                max_answer_count = max([len(x['textual_answers']) for x in d.values()])
+                print('max answer count is: ', max_answer_count)
+                HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count + 1)]
+
+    max_review_range = range(1, max([len(x['reviews_for']) for x in d.values()]) + 1)
+
+    ctx['max_review_range'] = max_review_range
+
+    if pad:
+        max_textual_answer_count = max([len(x['textual_answers']) for x in d.values()])
+        for row in d:
+
+            difference = len(numeric_questions) - len(d[row]['numerical_avgs'])
+            if difference != 0:
+                d[row]['numerical_avgs'] += difference * [None]
+
+            # difference = len(max_review_range) - len(d[row]['reviews_for'])
+            # if difference != 0:
+                # d[row]['reviews_for'] += difference * [None]
+
+            difference = max_textual_answer_count - len(d[row]['textual_answers'])
+            if difference != 0:
+                d[row]['textual_answers'] += difference * [None]
+
+    for row in d:
+        print(d[row])
+    for row in d:
+        print(len(d[row]['textual_answers']), len(d[row]['numerical_avgs']))
+    d['headers'] = HEADERS
+    print("HEADERS ARE:")
+    print(HEADERS)
+    return d

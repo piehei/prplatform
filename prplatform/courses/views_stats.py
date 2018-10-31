@@ -1,6 +1,10 @@
 from django.forms import Form, ModelForm, Textarea, inlineformset_factory, modelformset_factory, ValidationError, ModelChoiceField
 from django.views.generic import TemplateView
+from django.http import HttpResponse
 
+import csv
+
+from .utils import create_stats
 from .views import CourseContextMixin, IsTeacherMixin
 from prplatform.exercises.models import ReviewExercise
 
@@ -22,65 +26,45 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
         ctx = self.get_context_data(**kwargs)
         ctx['form'] = StatsForm(course=ctx['course'])
 
-        sid = self.request.GET.get('choice')
-        if not sid:
-            ctx['form'] = StatsForm(course=ctx['course'])
-            return self.render_to_response(ctx)
-
-        sform = StatsForm(self.request.GET, course=ctx['course'])
-        ctx['form'] = sform
-        if not sform.is_valid():
-            return self.render_to_response(ctx)
-
-        re = ReviewExercise.objects.get(pk=sid)
+        re = ReviewExercise.objects.get(pk=kwargs['pk'])
         ctx['re'] = re
 
         ctx['orig_subs'] = re.reviewable_exercise \
                              .last_submission_by_submitters() \
                              .order_by('submitter_group', 'submitter_user')
 
-        d = {}
-        for index, orig_sub in enumerate(ctx['orig_subs']):
-            key = orig_sub.pk
-            d[key] = {'os': orig_sub, 'avgs': [], 'reviews': [], 'reviews_by': []}
+        if not self.request.GET.get('format'):
+            stats = create_stats(ctx)
+            ctx['stats'] = stats
+            return self.render_to_response(ctx)
 
-        numeric_questions = re.questions.exclude(choices__len=0)
+        else:
 
-        # TODO:
-        # this is for UI exploration. move as much as possible of the computation to SQL
-        if numeric_questions:
-            ctx['numeric_questions'] = []
-            for nq in numeric_questions:
-                ctx['numeric_questions'].append(nq)
-                for os in ctx['orig_subs']:
-                    total = 0
-                    count = 0
-                    for review_sub in os.reviews.all():
-                        d[os.pk]['reviews'].append(review_sub)
+            stats = create_stats(ctx, include_textual_answers=True, pad=True)
 
-                        numeric_answer = review_sub.answers.filter(question=nq).first()
-                        if numeric_answer:
-                            total += int(numeric_answer.value_choice)
-                            count += 1
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="statistics.csv"'
 
-                    if count != 0:
-                        d[os.pk]['avgs'].append(total/count)
+            writer = csv.writer(response, delimiter=";")
+            writer.writerow(stats['headers'])
+            for submitter_pk in stats:
+                if submitter_pk == 'headers':
+                    continue
 
-        max_review_range = range(1, max([len(x['reviews']) for x in d.values()]) + 1)
+                osr = stats[submitter_pk]
 
-        ctx['max_review_range'] = max_review_range
+                row = []
 
-        for row in d:
-            d[row]['reviews_by'] = re.submissions_by_submitter(d[row]['os'].submitter_user)
+                row += [osr['orig_sub'].submitter]
 
-            # difference = len(numeric_questions) - len(d[row]['avgs'])
-            # if difference != 0:
-            #     d[row]['avgs'] += difference * [None]
+                row += [",".join([x.reviewed_submission.submitter for x in osr['reviews_by'] if x])]
 
-            # difference = len(max_review_range) - len(d[row]['reviews'])
-            # if difference != 0:
-            #     d[row]['reviews'] += difference * [None]
+                row += [",".join([x.submitter for x in osr['reviews_for'] if x])]
 
-        ctx['stats'] = d
-        return self.render_to_response(ctx)
+                row += osr['numerical_avgs']
 
+                row += osr['textual_answers']
+
+                writer.writerow(row)
+
+            return response
