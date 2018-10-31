@@ -114,7 +114,6 @@ def handle_group_file(request, ctx, form):
 
 def create_stats(ctx, include_textual_answers=False, pad=False):
     re = ctx['re']
-    print("CREATE STATS FOR:",re)
     d = {}
 
     HEADERS = []
@@ -164,24 +163,22 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
         textual_questions = re.questions.filter(choices__len=0)
         if textual_questions:
             for (index, tq) in enumerate(textual_questions):
-                print("tq is now:", tq)
                 for subd in d.values():
 
                     textual_answers = Answer.objects.filter(question=tq,
                                                             submission__pk__in=subd['reviews_for_pks']) \
+                                                    .order_by(
+                                                            'submission__submitter_group',
+                                                            'submission__submitter_user'
+                                                            ) \
                                                     .select_related('submission')
-                    print("textual_answers")
-                    print(textual_answers)
                     if textual_answers:
-                        print(textual_answers)
                         answer_strings = [f"{a.submission.submitter}: {a.value_text}" for a in textual_answers]
-                        print(answer_strings)
                         subd['text_answer_lists'].append(answer_strings)
 
                 max_answer_count_for_tq = max([len(x['text_answer_lists'][-1]) for x in d.values()])
                 max_textual_answer_counts.append(max_answer_count_for_tq)
 
-                print('max answer count is: ', max_answer_count_for_tq)
                 HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count_for_tq + 1)]
 
     max_review_range = range(1, max([len(x['reviews_for']) for x in d.values()]) + 1)
@@ -196,10 +193,6 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
             if difference != 0:
                 subd['numerical_avgs'] += difference * [None]
 
-            # difference = len(max_review_range) - len(d[row]['reviews_for'])
-            # if difference != 0:
-                # d[row]['reviews_for'] += difference * [None]
-
             for (index, count) in enumerate(max_textual_answer_counts):
 
                 if len(subd['text_answer_lists']) < len(max_textual_answer_counts):
@@ -210,10 +203,4 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
                 if difference != 0:
                     subd['text_answer_lists'][index] += difference * [None]
 
-    # for row in d:
-    #     print(d[row])
-    # for row in d:
-    #     print(len(d[row]['text_answer_lists']), len(d[row]['numerical_avgs']))
-    # print("HEADERS ARE:")
-    # print(HEADERS)
     return d, HEADERS

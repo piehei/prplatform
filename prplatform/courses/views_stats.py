@@ -60,7 +60,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
                 row += [",".join([x.submitter for x in osr['reviews_for'] if x])]
 
-                row += osr['numerical_avgs']
+                row += [round(avg, 2) for avg in osr['numerical_avgs']]
 
                 # 'text_answer_lists' is a list of padded lists
                 # -> flatten
