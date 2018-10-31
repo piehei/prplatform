@@ -236,6 +236,19 @@ class ReviewExercise(BaseExercise):
                                           .distinct('submitter_user_id')
         return all_reviews
 
+    def last_reviews_by(self, user):
+
+        all_reviews = None
+        if self.use_groups:
+            all_reviews = self.submissions.filter(submitter_group=self.course.find_studentgroup_by_user(user)) \
+                                          .order_by('reviewed_submission__submitter_group_id', '-created') \
+                                          .distinct('reviewed_submission__submitter_group_id')
+        else:
+            all_reviews = self.submissions.filter(reviewed_submission__submitter_user=user) \
+                                          .order_by('reviewed_submission__submitter_user_id', '-created') \
+                                          .distinct('reviewed_submission__submitter_user_id')
+        return all_reviews
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={
