@@ -122,9 +122,15 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
     # for index, orig_sub in enumerate(ctx['orig_subs']):
     for index, orig_sub in enumerate(ctx['orig_subs']):
         key = orig_sub.pk
-        d[key] = {'orig_sub': orig_sub, 'numerical_avgs': [], 'reviews_for': [], 'reviews_by': [], 'textual_answers': []}
+        d[key] = {'orig_sub': orig_sub,
+                  'numerical_avgs': [],
+                  'reviews_for': [],
+                  'reviews_by': [],
+                  'text_answer_lists': []
+                  }
         d[key]['reviews_by'] = re.last_reviews_by(orig_sub.submitter_user)
         d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user)
+        d[key]['reviews_for_pks'] = d[key]['reviews_for'].values_list('pk', flat=True)
 
     HEADERS.append('Submitter')
     HEADERS.append('Reviews by submitter')
@@ -136,66 +142,78 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
     if numeric_questions:
         for nq in numeric_questions:
 
-            print("\nnq:", nq)
             HEADERS.append(f"Q: {nq.text}")
 
-            for row in d:
-                review_pks = d[row]['reviews_for'].values_list('pk', flat=True)
-                print("answer_pks:", review_pks)
+            for subd in d.values():
 
                 answer_values = Answer.objects.filter(question=nq,
-                                                      submission__pk__in=review_pks) \
+                                                      submission__pk__in=subd['reviews_for_pks']) \
                                               .values_list('value_choice', flat=True)
-
-                print("answer_values:", answer_values)
 
                 if answer_values:
                     avg = sum([int(a) for a in answer_values])/len(answer_values)
-                    print("avg is:", avg)
-                    d[row]['numerical_avgs'].append(avg)
+                    subd['numerical_avgs'].append(avg)
 
     # collect whatever textual questions available
-    # collect answers to them
-    # append answer texts into 'textual_answers' for each submitter
+    # collect answers to them and put them into lists
+    # put lists into 'text_answer_lists'
+    # -> text_answer_lists is a list of lists
+
+    max_textual_answer_counts = []
     if include_textual_answers:
         textual_questions = re.questions.filter(choices__len=0)
         if textual_questions:
             for (index, tq) in enumerate(textual_questions):
-                for os in ctx['orig_subs']:
-                    for review_sub in os.reviews.all():
-                        textual_answer = review_sub.answers.filter(question=tq).first()
-                        if textual_answer:
-                            d[os.pk]['textual_answers'].append(f"{review_sub.submitter}: {textual_answer.value_text}")
+                print("tq is now:", tq)
+                for subd in d.values():
 
-                max_answer_count = max([len(x['textual_answers']) for x in d.values()])
-                print('max answer count is: ', max_answer_count)
-                HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count + 1)]
+                    textual_answers = Answer.objects.filter(question=tq,
+                                                            submission__pk__in=subd['reviews_for_pks']) \
+                                                    .select_related('submission')
+                    print("textual_answers")
+                    print(textual_answers)
+                    if textual_answers:
+                        print(textual_answers)
+                        answer_strings = [f"{a.submission.submitter}: {a.value_text}" for a in textual_answers]
+                        print(answer_strings)
+                        subd['text_answer_lists'].append(answer_strings)
+
+                max_answer_count_for_tq = max([len(x['text_answer_lists'][-1]) for x in d.values()])
+                max_textual_answer_counts.append(max_answer_count_for_tq)
+
+                print('max answer count is: ', max_answer_count_for_tq)
+                HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count_for_tq + 1)]
 
     max_review_range = range(1, max([len(x['reviews_for']) for x in d.values()]) + 1)
 
     ctx['max_review_range'] = max_review_range
 
     if pad:
-        max_textual_answer_count = max([len(x['textual_answers']) for x in d.values()])
-        for row in d:
 
-            difference = len(numeric_questions) - len(d[row]['numerical_avgs'])
+        for subd in d.values():
+
+            difference = len(numeric_questions) - len(subd['numerical_avgs'])
             if difference != 0:
-                d[row]['numerical_avgs'] += difference * [None]
+                subd['numerical_avgs'] += difference * [None]
 
             # difference = len(max_review_range) - len(d[row]['reviews_for'])
             # if difference != 0:
                 # d[row]['reviews_for'] += difference * [None]
 
-            difference = max_textual_answer_count - len(d[row]['textual_answers'])
-            if difference != 0:
-                d[row]['textual_answers'] += difference * [None]
+            for (index, count) in enumerate(max_textual_answer_counts):
+
+                if len(subd['text_answer_lists']) < len(max_textual_answer_counts):
+                    subd['text_answer_lists'].append(count * [None])
+                    continue
+
+                difference = count - len(subd['text_answer_lists'][index])
+                if difference != 0:
+                    subd['text_answer_lists'][index] += difference * [None]
 
     # for row in d:
     #     print(d[row])
     # for row in d:
-    #     print(len(d[row]['textual_answers']), len(d[row]['numerical_avgs']))
+    #     print(len(d[row]['text_answer_lists']), len(d[row]['numerical_avgs']))
     # print("HEADERS ARE:")
     # print(HEADERS)
-    d['headers'] = HEADERS
-    return d
+    return d, HEADERS

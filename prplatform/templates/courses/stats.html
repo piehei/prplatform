@@ -23,16 +23,11 @@
     {% include "../tabs.html" with tab="statistics" object=re %}
 
       {# include "./_stats_form.html" #}
-      <a class="btn btn-sm btn-success" href="?format=csv">Download CSV</a>
-      <div class="alert alert-primary">
-        First column points to an original submission. Second column shows reviews made by that submitter.
-        After the second columns comes all averages calculated to numerical questions. Last columns 1 to N show
-        reviews made for the original submission in the first column.
-      </div>
+      <a class="btn btn-sm btn-success mt-2" href="?format=csv">Download CSV</a>
       <table id="stats-table" class="table table-sm table-hover table-bordered">
         <thead>
           <tr>
-            {% for header in stats.headers %}
+            {% for header in stats_headers %}
             <th scope="col">{{ header }}</th>
             {% endfor %}
           </tr>

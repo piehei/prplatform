@@ -34,22 +34,21 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                              .order_by('submitter_group', 'submitter_user')
 
         if not self.request.GET.get('format'):
-            stats = create_stats(ctx)
+            stats, headers = create_stats(ctx)
             ctx['stats'] = stats
+            ctx['stats_headers'] = headers
             return self.render_to_response(ctx)
 
         else:
 
-            stats = create_stats(ctx, include_textual_answers=True, pad=True)
+            stats, headers = create_stats(ctx, include_textual_answers=True, pad=True)
 
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="statistics.csv"'
 
             writer = csv.writer(response, delimiter=";")
-            writer.writerow(stats['headers'])
+            writer.writerow(headers)
             for submitter_pk in stats:
-                if submitter_pk == 'headers':
-                    continue
 
                 osr = stats[submitter_pk]
 
@@ -63,7 +62,9 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
                 row += osr['numerical_avgs']
 
-                row += osr['textual_answers']
+                # 'text_answer_lists' is a list of padded lists
+                # -> flatten
+                row += [a for alist in osr['text_answer_lists'] for a in alist]
 
                 writer.writerow(row)
 
