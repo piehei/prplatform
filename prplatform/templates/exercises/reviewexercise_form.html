@@ -39,34 +39,7 @@
       <form class="form-horizontal" method="post" action="{% url 'courses:update-review-exercise' course.base_course.url_slug course.url_slug object.pk %}">
         {% csrf_token %}
 
-        {{ form | crispy }}
-
-        <hr></hr>
-
-        <h2>Questions in the exercise</h2>
-
-        <div class="alert alert-danger">
-          You can add questions <strong>only after</strong> creating the exercise.
-        </div>
-
-        {% if False %}
-        {{ formset.management_form }}
-
-
-        {% for form in formset %}
-          <div class="multiField question-form">
-            <h5>Q: {{ forloop.counter }}</h5>
-            {{ form | crispy }}
-          </div>
-        {% endfor %}
-
-
-        <div class="control-group">
-          <div class="controls">
-            <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
-          </div>
-        </div>
-        {% endif %}
+        {{ form|crispy }}
 
         <div class="control-group mt-4">
           <div class="controls">
