@@ -110,47 +110,6 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
-    def get_context_data(self, *args, **kwargs):
-        self.object = self.get_object()
-        ctx = super().get_context_data(**kwargs)
-        ctx['form'] = ReviewExerciseForm(course=ctx['course'], instance=self.object)
-        return ctx
-
-    def post(self, *args, **kwargs):
-        """ TODO: error checking """
-        self.object = self.get_object()
-
-        r_exercise_form = self.get_form()  # returns the bound form instance with updated fields
-
-        if r_exercise_form.is_valid():
-            r_exercise = r_exercise_form.save()
-            # question_formset = QuestionModelFormSet(self.request.POST)
-
-            # TODO:
-            # järjestyksen näyttäminen onnistuu nyt
-            # mutta tallennuksessa ei ole validointia
-            # overridaa valid, jotta virhe voidaan näyttää
-            # lue ero modelformset ja inline_formset jne.
-
-            # if question_formset.is_valid():
-            #     question_formset.save(commit=False)
-            #     # update the order values of the question objects
-            #     # and make sure they reference the correct exercise object
-            #     for q_form in question_formset.ordered_forms:
-            #         q_form.instance.course = self.object.course
-            #         # q_form.instance.exercise.add(r_exercise)
-            #         q_form.instance.order = q_form.cleaned_data['ORDER']
-
-            #     # this saves the Question model objects created and/or modified by
-            #     # the POSTed formset
-            #     # this takes care of deletion and not saving empty Question forms
-
-            #     for saved_q in question_formset.save():
-            #         print(saved_q)
-            #         print(saved_q.course)
-            #         r_exercise.questions.add(saved_q)
-            return HttpResponseRedirect(reverse('courses:exercises:review-detail', kwargs=kwargs))
-
 
 ###
 #
