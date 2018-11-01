@@ -1,11 +1,11 @@
 {% load crispy_forms_tags %}
 
 <div class="card card-body mb-4">
-  Chooce the subject of your peer-review here:
+  Choose the subject of your peer-review here:
   <form class="form-horizontal" method="get"
-                                action="{{ object.get_absolute_url }}?mode=chooce">
-    {{ chooceForm | crispy }}
-    <button type="submit" class="btn btn-sm btn-primary">Chooce</button>
+                                action="{{ object.get_absolute_url }}?mode=choose">
+    {{ chooseForm | crispy }}
+    <button type="submit" class="btn btn-sm btn-primary">Choose</button>
   </form>
 
   {% if prev_review_exists %}

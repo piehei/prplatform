@@ -10,7 +10,7 @@
 
   <form class="form-horizontal needs-validation"
         method="post"
-        action="{{ object.get_absolute_url }}{% if chooceForm %}?choice={{reviewable.pk}}{% endif %}">
+        action="{{ object.get_absolute_url }}{% if chooseForm %}?choice={{reviewable.pk}}{% endif %}">
 
     {% csrf_token %}
 

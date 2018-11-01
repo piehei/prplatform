@@ -145,7 +145,7 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
 
         enrolled_can_access = False
         re = obj.exercise.review_exercise
-        if re and re.type == ReviewExercise.CHOOCE:
+        if re and re.type == ReviewExercise.CHOOSE:
             # anyone on the course can download anything
             enrolled_can_access = True
 

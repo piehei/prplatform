@@ -12,7 +12,7 @@ import re
 
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
-from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet, ChooceForm
+from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet, ChooseForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
@@ -245,11 +245,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
-    def _get_chooce_ctx(self, ctx):
+    def _get_choose_ctx(self, ctx):
 
         sid = self.request.GET.get('choice')
         if sid:
-            cf = ChooceForm(self.request.GET, exercise=self.object, user=self.request.user)
+            cf = ChooseForm(self.request.GET, exercise=self.object, user=self.request.user)
             if not cf.is_valid():
                 raise PermissionDenied
             ctx['reviewable'] = OriginalSubmission.objects.get(id=sid)
@@ -258,7 +258,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             if previous_reviews.filter(reviewed_submission__pk=ctx['reviewable'].pk):
                 ctx['prev_review_exists'] = True
 
-        ctx['chooceForm'] = cf if sid else ChooceForm(exercise=self.object, user=self.request.user)
+        ctx['chooseForm'] = cf if sid else ChooseForm(exercise=self.object, user=self.request.user)
         return ctx
 
     def get_context_data(self, *args, **kwargs):
@@ -282,8 +282,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
 
         if exercise.type == ReviewExercise.RANDOM:
             ctx = self._get_random_ctx(ctx)
-        elif exercise.type == ReviewExercise.CHOOCE:
-            ctx = self._get_chooce_ctx(ctx)
+        elif exercise.type == ReviewExercise.CHOOSE:
+            ctx = self._get_choose_ctx(ctx)
 
         if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
             ctx['disable_form'] = True
@@ -307,13 +307,13 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         self._save_modelform_answers(new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
-    def _post_chooce(self, ctx):
+    def _post_choose(self, ctx):
 
-        cf = ChooceForm(self.request.POST, exercise=self.object, user=self.request.user)
+        cf = ChooseForm(self.request.POST, exercise=self.object, user=self.request.user)
         if not cf.is_valid():
             raise PermissionDenied('You cannot do that. If you believe this is an error, contact pietari.heino@tut.fi')
 
-        # if ChooceForm is valid, construct a new ReviewSubmission
+        # if ChooseForm is valid, construct a new ReviewSubmission
         reviewed_submission = OriginalSubmission.objects.get(pk=self.request.POST.get('choice'))
         new_review_submission = ReviewSubmission(course=ctx['course'],
                                                  submitter_user=self.request.user,
@@ -358,8 +358,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         if self.object.type == ReviewExercise.RANDOM:
             return self._post_random(ctx)
 
-        elif self.object.type == ReviewExercise.CHOOCE:
-            return self._post_chooce(ctx)
+        elif self.object.type == ReviewExercise.CHOOSE:
+            return self._post_choose(ctx)
 
 
 ###

@@ -195,10 +195,10 @@ class ReviewExercise(BaseExercise):
                                                    blank=True, null=True)
 
     RANDOM = 'RANDOM'
-    CHOOCE = 'CHOOCE'
+    CHOOSE = 'CHOOSE'
     REVIEW_EXERCISE_TYPE_CHOICES = (
             (RANDOM, 'Random by other user'),
-            (CHOOCE, 'Student chooces'),
+            (CHOOSE, 'Student chooses'),
         )
 
     type = models.CharField(

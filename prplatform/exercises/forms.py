@@ -135,7 +135,7 @@ class ReviewExerciseForm(ModelForm):
                 'show_reviews_after_date': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
-                'can_review_own_submission': 'This is available ONLY for the type "Student chooces"',
+                'can_review_own_submission': 'This is available ONLY for the type "Student chooses"',
                 }
 
     def __init__(self, *args, **kwargs):
@@ -150,12 +150,12 @@ class ReviewExerciseForm(ModelForm):
         exer_type = cd.get('type')
         can_review_own_submission = cd.get('can_review_own_submission', None)
 
-        if can_review_own_submission and not exer_type == ReviewExercise.CHOOCE:
+        if can_review_own_submission and not exer_type == ReviewExercise.CHOOSE:
 
             # TODO:
             # due to a django-crispy-forms and bs4 bug we'll give a general error
             raise ValidationError(
-                "There was a problem. 'Can review own submission' can *ONLY* be used with the type 'Student chooces'"
+                "There was a problem. 'Can review own submission' can *ONLY* be used with the type 'Student chooses'"
             )
 
 
@@ -181,11 +181,11 @@ QuestionModelFormSet = modelformset_factory(Question,
                                         # max_num=10, extra=10)
 
 
-class ChooceForm(Form):
+class ChooseForm(Form):
     """
-    If CHOOCE type is used in ReviewExercise, then this form is used
+    If choose type is used in ReviewExercise, then this form is used
     to offer the student the choices. This form shows student all the
-    other students' submissions so the student can chooce who to review.
+    other students' submissions so the student can choose who to review.
     """
     choice = ModelChoiceField(queryset=None, label='')
 
@@ -193,7 +193,6 @@ class ChooceForm(Form):
         exercise = kwargs.pop('exercise')
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-
         qs = exercise.reviewable_exercise.last_submission_by_submitters()
 
         if not exercise.can_review_own_submission:
