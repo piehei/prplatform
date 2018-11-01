@@ -210,6 +210,8 @@ class ReviewExercise(BaseExercise):
     require_original_submission = models.BooleanField(
             "Student cannot peer-review others if she has not made the original submission", default=True)
 
+    can_review_own_submission = models.BooleanField("Students can peer-review their own submissions", default=False)
+
     max_reviews_per_student = models.IntegerField("How many peer-reviews one student can do", default=1)
     max_reviews_per_submission = models.IntegerField("How many peer-reviews one submission can receive", default=1)
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",

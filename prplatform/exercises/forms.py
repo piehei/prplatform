@@ -1,4 +1,5 @@
-from django.forms import Form, ModelForm, Textarea, inlineformset_factory, modelformset_factory, ValidationError, ModelChoiceField
+from django.forms import (BooleanField, Form, ModelForm, Textarea, inlineformset_factory, modelformset_factory,
+                         ValidationError, ModelChoiceField,)
 
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
@@ -104,6 +105,9 @@ class SubmissionExerciseForm(ModelForm):
 
 
 class ReviewExerciseForm(ModelForm):
+
+    can_review_own_submission = BooleanField(required=False)
+
     class Meta:
         model = ReviewExercise
         fields = ['name',
@@ -115,6 +119,7 @@ class ReviewExerciseForm(ModelForm):
                   'model_answer',
                   'reviewable_exercise',
                   'type',
+                  'can_review_own_submission',
                   'max_reviews_per_student',
                   'max_reviews_per_submission',
                   'require_original_submission',
@@ -130,6 +135,7 @@ class ReviewExerciseForm(ModelForm):
                 'show_reviews_after_date': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
+                'can_review_own_submission': 'This is available ONLY for the type "Student chooces"',
                 }
 
     def __init__(self, *args, **kwargs):
@@ -137,6 +143,20 @@ class ReviewExerciseForm(ModelForm):
         super().__init__(*args, **kwargs)
         if course:
             self.fields['reviewable_exercise'].queryset = SubmissionExercise.objects.filter(course=course)
+
+    def clean(self):
+        cd = super().clean()
+
+        exer_type = cd.get('type')
+        can_review_own_submission = cd.get('can_review_own_submission', None)
+
+        if can_review_own_submission and not exer_type == ReviewExercise.CHOOCE:
+
+            # TODO:
+            # due to a django-crispy-forms and bs4 bug we'll give a general error
+            raise ValidationError(
+                "There was a problem. 'Can review own submission' can *ONLY* be used with the type 'Student chooces'"
+            )
 
 
 class QuestionForm(ModelForm):
