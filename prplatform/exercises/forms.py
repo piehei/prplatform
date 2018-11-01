@@ -193,11 +193,13 @@ class ChooceForm(Form):
         exercise = kwargs.pop('exercise')
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-        # TODO: groups?
-        qs = exercise.reviewable_exercise.last_submission_by_submitters() \
-                     .exclude(
-                        id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id')
-                     )
+
+        qs = exercise.reviewable_exercise.last_submission_by_submitters()
+
+        if not exercise.can_review_own_submission:
+            qs = qs.exclude(
+                    id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id')
+                    )
 
         if exercise.reviewable_exercise.use_groups:
             qs = qs.order_by('submitter_group__name')
