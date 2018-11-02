@@ -37,10 +37,13 @@
 
         <strong>Review time:</strong> {{ object.created }}<br>
 
-        <strong>Reviewed submission:</strong>
-        {% if teacher or receiver %}<a href="{{ object.reviewed_submission.get_absolute_url }}">{% endif %}
-          {{ object.reviewed_submission }}
-        {% if teacher or receiver %}</a>{% endif %}
+        {% if teacher or receiver %}
+          <strong>Reviewed submission:</strong>
+          <a href="{{ object.reviewed_submission.get_absolute_url }}">
+            {{ object.reviewed_submission }}
+          </a>
+        {% endif %}
+
       </div>
 
       <div class="shadow p-3 mb-5 bg-white rounded">
