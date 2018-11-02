@@ -38,7 +38,7 @@
             {% if teacher %}
             <th>Reviewer</th>
             {% endif %}
-            {% if object.type == 'CHOOSE' and not my_mode %}
+            {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
             <th>Reviewed</th>
             {% endif %}
             <th>Date</th>
@@ -57,7 +57,7 @@
                   {{ origsub.submitter }}
                 </td>
                 {% endif %}
-                {% if object.type == 'CHOOCE' and not my_mode %}
+                {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
                 <td>
                     {{ origsub.reviewed_submission }}
                 </td>
