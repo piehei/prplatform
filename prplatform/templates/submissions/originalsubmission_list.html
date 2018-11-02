@@ -10,22 +10,25 @@
 {% endblock %}
 {% block title %}Submissions{% endblock %}
 
+{% block css %}
+  {{ block.super }}
+  <link href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock css %}
+
 {% block content %}
 
   {% include "../tabs.html" with tab="submissions" type="original" object=exercise %}
 
   <div class="row">
     <div class="col-md-12">
-      <table class="table table-striped">
-        {% if teacher %}
+      <table id="originalsubmissionlist-table" class="table table-striped">
         <thead>
           <tr>
-            <th>Submitter<br><input placeholder="not implemented"></th>
-            <th>Date<br><input placeholder="not implemented"></th>
-            <th>Status<br><input placeholder="not implemented"></th>
+            <th>Submitter</th>
+            <th>Date</th>
+            <th>Status</th>
           </tr>
         </thead>
-        {% endif %}
 
         {% if object_list %}
         <div class="alert alert-warning d-md-inline-block">
@@ -38,25 +41,21 @@
         {% endif %}
 
         <tbody>
-          {% if not object_list %}
-            No submissions yet
-          {% else %}
-            {% for origsub in object_list %}
-              <tr scope="row">
-                <td>
-                  {{ origsub.submitter }}
-                </td>
-                <td>
-                  <a href="{{ origsub.get_absolute_url }}">
-                    {{ origsub.created }}
-                  </a>
-                </td>
-                <td>
-                  {{ origsub.state }}
-                </td>
-              </tr>
-            {% endfor %}
-          {% endif %}
+          {% for origsub in object_list %}
+            <tr scope="row">
+              <td>
+                {{ origsub.submitter }}
+              </td>
+              <td>
+                <a href="{{ origsub.get_absolute_url }}">
+                  {{ origsub.created | date:"SHORT_DATETIME_FORMAT" }}
+                </a>
+              </td>
+              <td>
+                {{ origsub.state }}
+              </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
 
@@ -64,3 +63,18 @@
   </div>
 
 {% endblock content %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+  <script>
+    window.addEventListener('load', function() {
+      var table = $('#originalsubmissionlist-table').DataTable({
+        "paging": false
+      });
+    });
+  </script>
+{% endblock javascript %}
+
+
