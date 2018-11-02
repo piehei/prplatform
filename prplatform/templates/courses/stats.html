@@ -64,6 +64,14 @@
   </div>
 
 
+
+{% endblock %}
+
+{% block javascript %}
+  {{ block.super }}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+
   <script>
     window.addEventListener('load', function() {
       var table = $('#stats-table').DataTable({
@@ -81,14 +89,5 @@
       });
     });
   </script>
-
-{% endblock %}
-
-{% block }
-
-{% block javascript %}
-  {{ block.super }}
-  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
 {% endblock javascript %}
 
