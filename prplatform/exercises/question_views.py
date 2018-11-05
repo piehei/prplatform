@@ -29,6 +29,11 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     fields = ('text', 'choices')
     template_name = "exercises/question_create.html"
 
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data()
+        ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['rpk'])
+        return ctx
+
     def get_form(self, *args, **kwargs):
         return QuestionModelForm()
 
@@ -40,7 +45,7 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
             q = form.save(commit=False)
             q.course = course
             q.save()
-            exercise = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+            exercise = ReviewExercise.objects.get(pk=self.kwargs['rpk'])
             exercise.questions.add(q)
             exercise.question_order += [q.pk]
             exercise.save()

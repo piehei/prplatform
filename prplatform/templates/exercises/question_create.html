@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Peer-review exercise" ""%}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb "Questions" ""%}
+    {% breadcrumb "Create" "" %}
+{% endblock %}
 
 {% block title %}Question create{% endblock %}
 
@@ -10,8 +20,9 @@
     {% csrf_token %}
     {{ form|crispy }}
     <div class="control-group">
-      <div class="controls">
-        <button type="submit" class="btn">Update</button>
+      <div class="controls d-flex justify-content-between">
+        <a class="btn btn-warning mr-4" href="{{ exercise.get_question_url }}">Cancel</a>
+        <button type="submit" class="btn btn-success">Create</button>
       </div>
     </div>
   </form>
