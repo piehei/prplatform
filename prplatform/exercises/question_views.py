@@ -99,6 +99,41 @@ class QuestionListView(IsTeacherMixin, CourseContextMixin, ListView):
     def get_context_data(self, *, object_list=None, **kwargs):
         ctx = super().get_context_data()
         ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
-        ctx['object_list'] = ctx['exercise'].questions.all()
+        ctx['object_list'] = ctx['exercise'].question_list_in_order()
 
         return ctx
+
+    def post(self, *args, **kwargs):
+        """
+            This is used to order questions in use in a ReviewExercise.
+            The question, identified by pk, can be moved up or down.
+            Up from top goes to bottom, down from bottom goes to up.
+        """
+        self.object_list = None
+
+        direction = self.request.POST.get('dir')
+        question_pk = int(self.request.POST.get('question'))
+        exer = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+
+        if question_pk in exer.question_order and len(exer.question_order) > 1:
+
+            qorder = exer.question_order
+            curr_indx = qorder.index(question_pk)
+
+            if direction == 'up':
+                if curr_indx == 0:
+                    new_order = qorder[1:] + [question_pk]
+                else:
+                    new_order = qorder.copy()
+                    new_order.insert(curr_indx - 1, new_order.pop(curr_indx))
+            else:
+                if curr_indx == len(qorder) - 1:
+                    new_order = [question_pk] + qorder[:-1]
+                else:
+                    new_order = qorder.copy()
+                    new_order.insert(curr_indx + 1, new_order.pop(curr_indx))
+
+            exer.question_order = new_order
+            exer.save()
+
+        return HttpResponseRedirect(exer.get_question_url())

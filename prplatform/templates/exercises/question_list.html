@@ -29,10 +29,24 @@
         <div class="d-flex">
           {{ q.text }}
 
-          <a class="btn btn-primary btn-sm ml-auto"
-             href="{% url 'courses:exercises:question-update' course.base_course.url_slug course.url_slug exercise.pk q.pk %}">
-            Edit
-          </a>
+          <span class="ml-auto">
+            <form class="d-inline" method="POST" action="">
+              {% csrf_token %}
+              <input type="hidden" name="dir" value="up">
+              <input type="hidden" name="question" value="{{ q.pk }}">
+              <button type="submit" class="btn btn-sm btn-default">&#8679;</button>
+            </form>
+            <form class="d-inline" method="POST" action="">
+              {% csrf_token %}
+              <input type="hidden" name="dir" value="down">
+              <input type="hidden" name="question" value="{{ q.pk }}">
+              <button class="btn btn-sm btn-default">&#8681;</button>
+            </form>
+            <a class="btn btn-primary btn-sm"
+               href="{% url 'courses:exercises:question-update' course.base_course.url_slug course.url_slug exercise.pk q.pk %}">
+              Edit
+            </a>
+          </span>
         </div>
 
         <div>
