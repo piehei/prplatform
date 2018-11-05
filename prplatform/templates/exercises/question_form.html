@@ -1,17 +1,28 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
 
-{% block title %}Question details{% endblock %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Peer-review exercise" ""%}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb "Questions" ""%}
+    {% breadcrumb "Update" "" %}
+{% endblock %}
+
+{% block title %}Question update{% endblock %}
 
 {% block content %}
 
   <h1>Question edit</h1>
-  <form class="form-horizontal" method="post" action="{% url 'courses:update-question' course.base_course.url_slug course.url_slug object.pk %}">
+  <form class="form-horizontal" method="post" action="{{ object.get_update_url }}">
     {% csrf_token %}
     {{ form|crispy }}
     <div class="control-group">
-      <div class="controls">
-        <button type="submit" class="btn">Update</button>
+      <div class="controls d-flex justify-content-between">
+        <a class="btn btn-warning mr-4" href="{{ exercise.get_question_url }}">Cancel</a>
+        <button type="submit" class="btn btn-success">Update</button>
       </div>
     </div>
   </form>

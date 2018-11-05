@@ -34,10 +34,11 @@ class Question(models.Model):
             'pk': self.pk
             })
 
-    def get_edit_url(self):
-        return reverse('courses:update-question', kwargs={
+    def get_edit_url(self, exercise):
+        return reverse('courses:exercises:question-update', kwargs={
             'base_url_slug': self.course.base_course.url_slug,
             'url_slug': self.course.url_slug,
+            'rpk': exercise.pk,
             'pk': self.pk
             })
 

@@ -259,6 +259,14 @@ class ReviewExercise(BaseExercise):
             'pk': self.pk
             })
 
+    def get_question_url(self):
+        base_course = self.course.base_course
+        return reverse('courses:exercises:question-list', kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
     def get_edit_url(self):
         base_course = self.course.base_course
         return reverse('courses:update-review-exercise', kwargs={

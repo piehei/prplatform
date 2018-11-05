@@ -1,20 +1,31 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}Question details{% endblock %}
+{% block title %}Question create{% endblock %}
 
 {% block content %}
-  <h1>Questions...</h1>
-  <form class="form-horizontal" method="post" action="{% url 'courses:create-question' course.base_course.url_slug course.url_slug %}">
+
+  <h1>Create question</h1>
+  <form class="form-horizontal" method="post" action="">
     {% csrf_token %}
     {{ form|crispy }}
-    <h2 class="mt-4">Add more choices:</h2>
-    {{ formset|crispy }}
     <div class="control-group">
       <div class="controls">
         <button type="submit" class="btn">Update</button>
       </div>
     </div>
   </form>
+
+  <br>
+
+  <b>Example of choices:</b>
+  <br>
+  <pre>
+  0|Bad
+  1|Not so good
+  2|Average
+  3|Good
+  4|Perfect
+  </pre>
 
 {% endblock %}

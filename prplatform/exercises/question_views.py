@@ -1,8 +1,10 @@
 from django.views.generic import CreateView, UpdateView, ListView
 from django import forms
 from django.contrib.postgres.forms import SimpleArrayField
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 
+from prplatform.exercises.models import ReviewExercise
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from .question_models import Question
 
@@ -19,16 +21,16 @@ class QuestionModelForm(forms.ModelForm):
     class Meta:
         model = Question
         fields = ['text', 'choices']
-        help_texts = {
-                'choices': ''
-        }
 
 
 class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = Question
     form = QuestionModelForm
-    fields = ['text']
+    fields = ('text', 'choices')
     template_name = "exercises/question_create.html"
+
+    def get_form(self, *args, **kwargs):
+        return QuestionModelForm()
 
     def post(self, *args, **kwargs):
         self.object = None
@@ -38,22 +40,16 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
             q = form.save(commit=False)
             q.course = course
             q.save()
-            return HttpResponseRedirect(q.get_absolute_url())
+            exercise = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+            exercise.questions.add(q)
+            exercise.question_order += [q.pk]
+            exercise.save()
+            return HttpResponseRedirect(exercise.get_question_url())
 
         else:
             ctx = self.get_context_data(**kwargs)
             ctx['form'] = form
             return self.render_to_response(ctx)
-
-
-class CustomQuestionForm(forms.Form):
-    text = forms.CharField(max_length=200, required=False)
-    previous_choice = forms.ModelMultipleChoiceField(queryset=None, required=False)
-
-    def __init__(self, *args, **kwargs):
-        course = kwargs.pop('course')
-        super().__init__(*args, **kwargs)
-        self.fields['previous_choice'].queryset = course.question_choices.all()
 
 
 class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
@@ -66,9 +62,8 @@ class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data()
+        ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['rpk'])
         ctx['form'] = QuestionModelForm(instance=self.get_object())
-        cq = CustomQuestionForm(course=ctx['course'])
-        ctx['customForm'] = cq
 
         return self.render_to_response(ctx)
 
@@ -78,7 +73,9 @@ class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
         if form.is_valid():  # and formset.is_valid():
             q = form.save()
-            return HttpResponseRedirect(q.get_absolute_url())
+            exercise = ReviewExercise.objects.get(pk=self.kwargs['rpk'])
+            messages.success(self.request, 'Question updated successfully')
+            return HttpResponseRedirect(exercise.get_question_url())
         else:
             ctx = self.get_context_data(**kwargs)
             ctx['form'] = form
@@ -93,3 +90,10 @@ class QuestionDetailView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
 class QuestionListView(IsTeacherMixin, CourseContextMixin, ListView):
     model = Question
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        ctx = super().get_context_data()
+        ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+        ctx['object_list'] = ctx['exercise'].questions.all()
+
+        return ctx

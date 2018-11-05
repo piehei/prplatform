@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Peer-review exercise" ""%}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb "Questions" "" %}
+{% endblock %}
+{% block title %}Questions{% endblock %}
+
+{% block content %}
+
+  {% include "../tabs.html" with tab="questions" type="original" object=exercise %}
+
+  <div class="row">
+    <div class="col-md-12">
+
+      {% for q in object_list %}
+      <div class="list-group-item mb-4">
+
+        <div class="d-flex">
+          {{ q.text }}
+
+          <a class="btn btn-primary btn-sm ml-auto"
+             href="{% url 'courses:exercises:question-update' course.base_course.url_slug course.url_slug exercise.pk q.pk %}">
+            Edit
+          </a>
+        </div>
+
+        <div>
+          {% if not q.choices %}
+            No choices added to the question. The student answers in text.
+          {% else %}
+          <br>
+          <b>Choices:</b>
+          {% endif %}
+
+          {% for choice in q.choices %}
+          <div class="list-group-item">
+            Choice {{ forloop.counter }}:
+            {{ choice.1 }} ({{ choice.0 }})
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+{% endblock content %}
+
