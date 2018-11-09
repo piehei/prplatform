@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
 from django import forms
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import ListView, DetailView, UpdateView, TemplateView
@@ -31,6 +32,9 @@ class CourseContextMixin(object):
         ctx['teacher'] = ctx['course'].is_teacher(self.request.user)
         ctx['enrolled'] = ctx['course'].is_enrolled(self.request.user)
         ctx['reviewable'] = None
+
+        if ctx['course'].hidden and not ctx['teacher']:
+            raise PermissionDenied('Only teachers can access this page.')
         return ctx
 
 
@@ -58,7 +62,8 @@ class IsSubmitterMixin(UserPassesTestMixin, LoginRequiredMixin):
 class IsEnrolledMixin(UserPassesTestMixin, LoginRequiredMixin):
 
     raise_exception = True
-    permission_denied_message = "Only enrolled users can access this page. You can enroll to the course from the course front page."
+    permission_denied_message = "Only enrolled users can access this page. " + \
+                                "You can enroll to the course from the course front page."
 
     def test_func(self):
         course = get_object_or_404(Course, url_slug=self.kwargs['url_slug'],
@@ -117,11 +122,16 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
     slug_field = "url_slug"
     slug_url_kwarg = "url_slug"
-    fields = ['start_date', 'end_date', 'aplus_apikey']
+    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey']
 
 
 class CourseListView(ListView):
     model = Course
+
+    def get_queryset(self, *args, **kwargs):
+        obj_list = super().get_queryset()
+        visible_ids = [x.pk for x in obj_list if not x.hidden or x.is_teacher(self.request.user)]
+        return Course.objects.all().filter(pk__in=visible_ids)
 
 
 class CourseEnroll(CourseContextMixin, LoginRequiredMixin, ProcessFormView):
@@ -170,13 +180,10 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
         form = GroupUploadForm(self.request.POST, self.request.FILES)
 
         if form.is_valid():
-            print("is valid")
             utils.handle_group_file(self.request, ctx, form)
         else:
-            print("is invalid")
             ctx['form'] = form
             ctx['groups'] = StudentGroup.objects.filter(course=ctx['course'])
-            print("moi")
             return self.render_to_response(ctx)
 
         return HttpResponseRedirect(reverse("courses:groups", kwargs={'url_slug': self.kwargs['url_slug'],

@@ -61,6 +61,7 @@ class Course(TimeStampedModel):
     start_date = models.DateField()
     end_date = models.DateField()
     students = models.ManyToManyField(User, through='Enrollment')
+    hidden = models.BooleanField("Hide course from students", default=True)
     # TODO: this should propably be put under the teacher ?
     aplus_apikey = models.CharField(max_length=50, blank=True)
 
