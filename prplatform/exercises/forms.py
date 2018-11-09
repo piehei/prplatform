@@ -28,6 +28,8 @@ class SubmissionExerciseForm(ModelForm):
         help_texts = {
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
+                'max_submission_count': 'How many times students can submit. The last submission will be used for ' + \
+                                        'peer-review. This is useful if students by accident submit unfinished work.',
                 'accepted_file_types': 'A comma separated list of file types. Do not include the period character. ' + \
                                        'Valid examples: pdf or pdf,pptx,docx or py,txt',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
