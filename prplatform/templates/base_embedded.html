@@ -1,0 +1,46 @@
+{% load static i18n %}<!DOCTYPE html>
+<html class="bs4" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>{% block title %}prplatform{% endblock title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    {% block css %}
+
+    <link href="{% static 'css/bootstrap-ns.css' %}" rel="stylesheet" data-aplus="yes">
+
+    <!--<link href="{% static 'css/project.css' %}" rel="stylesheet" data-aplus="yes">-->
+    <!--<link href="{% static 'css/pygmentify.css' %}" rel="stylesheet" data-aplus="yes">-->
+
+
+    {% endblock %}
+
+  </head>
+
+  <body>
+    <div class="bs4">
+    <div class="row">
+      <main role="main" class="col-md-12 px-4">
+        <div class="container mt-4">
+
+          {% if messages %}
+              {% for message in messages %}
+                  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
+              {% endfor %}
+          {% endif %}
+
+          {% block content %}
+          {% endblock content %}
+
+        </div>
+      </main>
+    </div>
+    </div>
+    {% block modal %}{% endblock modal %}
+
+  </body>
+</html>
+

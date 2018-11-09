@@ -1,5 +1,5 @@
 
-{% extends "base.html" %}
+{% extends template_base %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
 
@@ -12,14 +12,16 @@
 
 {% block content %}
 
+  {% if not embedded %}
   {% include "../tabs.html" with tab="exercise" %}
+  {% endif %}
 
   <div class="row">
     <div class="col-md-12">
 
       <h2>{{ object.name }}</h2>
 
-      <div class="col-md-12 mb-4">
+      <div style="float:none;" class="col-md-12 mb-4">
         <p class="font-italic">
         {% if object.type != 'GROUP' %}
         In this exercise you're peer-reviewing other students' submissions to the exercise

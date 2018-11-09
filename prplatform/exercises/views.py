@@ -180,7 +180,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         return self.render_to_response(ctx)
 
 
-class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, DetailView):
+class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
 
     def _get_answer_modelforms(self, exercise):
@@ -267,6 +267,9 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         self.object = self.get_object()
         exercise = self.object
         ctx = super().get_context_data(**kwargs)
+        ctx['template_base'] = "base.html"
+        print(self.kwargs)
+        print(self.request.GET)
 
         if not ctx['teacher'] and not exercise.visible_to_students:
             raise PermissionDenied
@@ -276,6 +279,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         ctx['disable_form'] = True
 
         can_submit, errormsg = exercise.can_submit(self.request.user)
+
+        if self.request.GET.get('submission_url'):
+            ctx['embedded'] = True
+            ctx['template_base'] = "base_embedded.html"
+            return ctx
 
         if not can_submit:
             ctx['errormsg'] = errormsg
