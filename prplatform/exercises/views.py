@@ -132,7 +132,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         if not exercise.can_access(user):
             raise PermissionDenied
 
-        if not exercise.can_submit(user):
+        if not exercise.can_submit(user) or ctx['teacher']:
             ctx['disable_form'] = True
 
         ctx['my_submissions'] = exercise.submissions_by_submitter(user)
@@ -274,21 +274,26 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         if exercise.use_groups and not ctx['my_group']:
             ctx['disable_form'] = True
 
-        my_submission_qs = exercise.reviewable_exercise.submissions_by_submitter(self.request.user)
-        my_submission_qs = my_submission_qs.filter(state=OriginalSubmission.READY_FOR_REVIEW)
-        ctx['my_submission'] = my_submission_qs.first()
-        if not my_submission_qs and exercise.require_original_submission and not ctx['teacher']:
+        ctx['my_submission'] = exercise.reviewable_exercise \
+                                       .submissions_by_submitter(self.request.user) \
+                                       .filter(state=OriginalSubmission.READY_FOR_REVIEW) \
+                                       .first()
+
+        if not ctx['my_submission'] and exercise.require_original_submission and not ctx['teacher']:
             ctx['disable_form'] = True
+            return ctx
 
-        if exercise.type == ReviewExercise.RANDOM:
-            ctx = self._get_random_ctx(ctx)
-        elif exercise.type == ReviewExercise.CHOOSE:
-            ctx = self._get_choose_ctx(ctx)
+        else:
 
-        if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
-            ctx['disable_form'] = True
+            if exercise.type == ReviewExercise.RANDOM:
+                ctx = self._get_random_ctx(ctx)
+            elif exercise.type == ReviewExercise.CHOOSE:
+                ctx = self._get_choose_ctx(ctx)
 
-        return ctx
+            if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
+                ctx['disable_form'] = True
+
+            return ctx
 
     def _post_random(self, ctx):
         # TODO: should it be possible to update the previous review submission?
