@@ -16,35 +16,18 @@
 
   <h1>Create a new peer-review exercise</h1>
   <h5>In this exercise the student peer-reviews something.</h5>
+  <div class="alert alert-danger mt-4">
+    ATTENTION! In this view you create a peer-review exercise with some settings and a description. After creating it, you can add questions to it.
+    All settings may be modified later on if needed.
+  </div>
   <form class="form-horizontal" method="post" action="{% url 'courses:create-review-exercise' course.base_course.url_slug course.url_slug %}">
     {% csrf_token %}
     {{ form | crispy }}
-
-
-    <div class="review-exercise-formset">
-      <h3>Questions in this exercise</h3>
-      <p>You can add more questions from the blue button. Questions with empty text will not be added.</p>
-
-      {{ formset | crispy }}
-
-    </div>
-
-    <div class="control-group">
-      <div class="controls">
-        <button type="button" id="add-new-question" class="btn btn-primary">Add new question</button>
-      </div>
-    </div>
-
     <div class="control-group mt-4">
       <div class="controls">
-        <button id="create-review-exercise" type="submit" class="btn">Create review exercise</button>
+        <button type="submit" class="btn btn-primary">Create peer-review exercise</button>
       </div>
     </div>
   </form>
-
-  {% load static %}
-  {% block extra_js %}
-    <script src="{% static 'js/reviewexercise.js' %}"></script>
-  {% endblock extra_js %}
 
 {% endblock %}
