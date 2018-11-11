@@ -165,38 +165,53 @@ class ReviewLockManager(models.Manager):
             """
 
             # this is all _last_ submissions by other submitters sorted by review count
-            candidates = OriginalSubmission.objects \
+            osub_candidates = OriginalSubmission.objects \
                                            .filter(exercise=exercise.reviewable_exercise) \
-                                           .annotate(Count('reviews')) \
-                                           .order_by('reviews__count')
+                                           .annotate(Count('reviewlocks')) \
+                                           .order_by('reviewlocks__count', 'created')
+
+            # osub_candidates are now ordered so that first item has least reviewlocks
+            # was created the longest time ago
+
+
 
             # ATTENTION !!!!!!!!!!
             # the query just above *CANNOT* be joined with the order_by/distinct queries
             # that's why we need two queries
+
+            print(f"{osub_candidates.count()} -- before max_rev_per_sub exlude")
+            osub_candidates = osub_candidates.exclude(reviewlocks__count__gte=exercise.max_reviews_per_submission)
+            print(f"{osub_candidates.count()} -- after max_rev_per_sub exlude")
 
             if exercise.reviewable_exercise.use_groups:
                 latest_submission_ids = OriginalSubmission.objects.filter(exercise=exercise.reviewable_exercise) \
                                                           .values('id') \
                                                           .order_by('submitter_group_id', '-created') \
                                                           .distinct('submitter_group_id')
-                candidates = candidates.exclude(
-                                        submitter_group=exercise.course.find_studentgroup_by_user(user)) \
-                                       .filter(id__in=latest_submission_ids)
+                osub_candidates = osub_candidates.exclude(
+                                                    submitter_group=exercise.course.find_studentgroup_by_user(user)) \
+                                                 .filter(id__in=latest_submission_ids)
+
             else:
                 latest_submission_ids = OriginalSubmission.objects.filter(exercise=exercise.reviewable_exercise) \
                                                           .values('id') \
                                                           .order_by('submitter_user_id', '-created') \
                                                           .distinct('submitter_user_id')
-                candidates = candidates.exclude(
-                                        submitter_user=user) \
-                                       .filter(id__in=latest_submission_ids)
+                osub_candidates = osub_candidates.exclude(submitter_user=user) \
+                                                 .filter(id__in=latest_submission_ids)
 
-            candidates = candidates.filter(state=OriginalSubmission.READY_FOR_REVIEW)
+            previous_revsub_ids = exercise.last_reviews_by(user).values('reviewed_submission__id')
+            print(f"previous_revsub_ids: {previous_revsub_ids}")
+            print(f"{osub_candidates.count()} -- before prev id exlude")
+            osub_candidates = osub_candidates.exclude(pk__in=previous_revsub_ids)
+            print(f"{osub_candidates.count()} -- after prev id exlude")
+            osub_candidates = osub_candidates.filter(state=OriginalSubmission.READY_FOR_REVIEW)
+            print(f"{osub_candidates.count()} -- after READY_FOR_REVIEW filter")
 
-            if candidates.count() == 0:
+            if osub_candidates.count() == 0:
                 raise EmptyResultSet("nothing to review")
 
-            reviewable = candidates.first()
+            reviewable = osub_candidates.first()
 
         return self.create(user=user,
                            review_exercise=exercise,
@@ -208,7 +223,7 @@ class ReviewLock(TimeStampedModel):
     objects = ReviewLockManager()
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    original_submission = models.ForeignKey(OriginalSubmission, on_delete=models.CASCADE)
+    original_submission = models.ForeignKey(OriginalSubmission, related_name="reviewlocks", on_delete=models.CASCADE)
     review_exercise = models.ForeignKey(ReviewExercise, on_delete=models.CASCADE)
     review_submission = models.ForeignKey(ReviewSubmission, null=True, default=None, on_delete=models.CASCADE)
 
