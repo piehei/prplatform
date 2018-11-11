@@ -44,12 +44,21 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
 
         if self.request.GET.get('mode') == "my":
             ctx['my_mode'] = True
+
             ctx['object_list'] = ctx['exercise'].last_reviews_for(self.request.user)
-            if ctx['exercise'].show_reviews_after_date and ctx['exercise'].show_reviews_after_date > timezone.now():
-                ctx['show_reviews_date_not_passed'] = True
+
+            if ctx['exercise'].reviews_available_date_in_future():
+                ctx['reviews_available_date_in_future'] = True
+                ctx['object_list'] = ReviewSubmission.objects.none()
+
+            if not ctx['exercise'].review_showing_requirements_ok(self.request.user):
+                ctx['needs_to_complete_more_reviews'] = True
+                ctx['object_list'] = ReviewSubmission.objects.none()
+
         else:
             if not ctx['teacher']:
                 ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
+
         return ctx
 
 
@@ -105,16 +114,16 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         ctx = self.get_context_data(**kwargs)
 
         owner = self.object.is_owner(self.request.user)
-        receiver = self.object.reviewed_submission.is_owner(self.request.user)
+        ctx['receiver'] = self.object.reviewed_submission.is_owner(self.request.user)
 
-        if not owner and not receiver and not ctx['teacher']:
+        if not owner and not ctx['receiver'] and not ctx['teacher']:
             raise PermissionDenied
 
-        avail_date = self.object.exercise.show_reviews_after_date
-        if avail_date and avail_date > timezone.now() and receiver:
-            raise PermissionDenied(f'This will be available for viewing after {avail_date}')
-
-        ctx['receiver'] = receiver
+        if ctx['receiver']:
+            if self.object.exercise.reviews_available_date_in_future():
+                raise PermissionDenied(f'This is not available for your viewing just yet.')
+            if not self.object.exercise.review_showing_requirements_ok(self.request.user):
+                raise PermissionDenied('You have to complete more reviews to view this.')
 
         data = []
 

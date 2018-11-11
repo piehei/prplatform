@@ -227,6 +227,11 @@ class ReviewExercise(BaseExercise):
         # TODO: THIS WILL THROW IF Q NOT IN self.question_order
         return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
 
+    def reviews_available_date_in_future(self):
+        if self.show_reviews_after_date and self.show_reviews_after_date > timezone.now():
+            return True
+        return False
+
     def last_reviews_for(self, user):
 
         all_reviews = None
@@ -240,6 +245,15 @@ class ReviewExercise(BaseExercise):
                                           .order_by('submitter_user_id', '-created') \
                                           .distinct('submitter_user_id')
         return all_reviews
+
+    def review_showing_requirements_ok(self, user):
+
+        reviews_by_user = self.last_reviews_by(user)
+
+        if reviews_by_user.count() < self.minimum_reviews_per_student:
+            return False
+
+        return True
 
     def last_reviews_by(self, user):
 

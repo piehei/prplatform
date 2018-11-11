@@ -10,6 +10,10 @@ def my_submission_count(exercise, user):
 def my_received_feedback_count(exercise, user):
     if exercise.course.is_teacher(user):
         return 0
+    if exercise.reviews_available_date_in_future():
+        return 0
+    if not exercise.review_showing_requirements_ok(user):
+        return 0
     return exercise.last_reviews_for(user).count()
 
 

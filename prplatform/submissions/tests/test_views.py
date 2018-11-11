@@ -2,6 +2,8 @@ from django.test import RequestFactory, TestCase
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 
+import datetime
+
 from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
@@ -198,6 +200,29 @@ class SubmissionsTest(TestCase):
         self.assertEqual(ReviewSubmission.objects.all().count(), 2)
         self.assertEqual(response.context_data['object_list'].count(), 1)
         self.assertEqual(response.context_data['object_list'][0].submitter_user, users[0])
+
+        # reviews by student missing
+        rev_exercise.minimum_reviews_per_student = 100
+        rev_exercise.save()
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+        request.user = users[1]
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 0)
+        self.assertContains(response, 'available after completing')
+
+        # available in the future -> students should not see anything
+        rev_exercise.minimum_reviews_per_student = 0
+        rev_exercise.show_reviews_after_date = datetime.datetime.now() + datetime.timedelta(days=1)
+        rev_exercise.save()
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+        request.user = users[1]
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 0)
+        self.assertContains(response, 'will be available after')
 
     def test_ReviewSubPagePermissionsWork(self):
 

@@ -27,9 +27,16 @@
   <div class="row">
     <div class="col-md-12">
 
-      {% if show_reviews_date_not_passed %}
+      {% if reviews_available_date_in_future %}
       Peer-reviews will be available after {{ exercise.show_reviews_after_date }}<br>
-      {% else %}
+      {% endif %}
+
+      {% if needs_to_complete_more_reviews %}
+      Peer-reviews for you will be available after completing {{ exercise.minimum_reviews_per_student }}
+      peer-reviews yourself.
+      {% endif %}
+
+      {% if not reviews_available_date_in_future and not needs_to_complete_more_reviews %}
 
       <table id="reviewsubmissionlist-table" class="table table-striped">
         <thead>
