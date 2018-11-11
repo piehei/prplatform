@@ -214,6 +214,9 @@ class ReviewExercise(BaseExercise):
 
     max_reviews_per_student = models.IntegerField("How many peer-reviews one student can do", default=1)
     max_reviews_per_submission = models.IntegerField("How many peer-reviews one submission can receive", default=1)
+    minimum_reviews_per_student = models.IntegerField(
+            "How many peer-reviews one student *HAS TO* complete before seeing peer-reviews by others", default=1)
+
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)
