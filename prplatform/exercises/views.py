@@ -198,16 +198,16 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         return forms
 
     def _get_teacher_random(self, ctx, exercise):
-        reviewable = exercise.reviewable_exercise.submissions.first()
+        # PLEASE NOTE:
+        # order_by('?') can become _SLOW_ if the queryset returned is big enough
+        reviewable = exercise.reviewable_exercise.submissions.order_by('?').first()
         if reviewable:
             ctx['reviewable'] = reviewable
             ctx['filecontents'] = reviewable.filecontents_or_none()
-
-        my_submission = exercise.reviewable_exercise.submissions.last()
+        my_submission = exercise.reviewable_exercise.submissions.order_by('?').first()
         if my_submission:
             ctx['my_submission'] = my_submission
             ctx['my_filecontents'] = my_submission.filecontents_or_none()
-
         return ctx
 
     def _get_random_ctx(self, ctx):
