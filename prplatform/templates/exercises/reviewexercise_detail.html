@@ -72,12 +72,6 @@
           Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
         </div>
         <br>
-        {% if my_submission %}
-          <a href="{{ my_submission.get_absolute_url }}">
-              You can see your own original submission here.
-          </a>
-        {% endif %}
-
       {% else %}
 
         {% if object.type != 'CHOOSE' %}
@@ -94,6 +88,12 @@
               Teacher's solution
             </button>
           {% endif %}
+
+        {% if teacher %}
+        <br>
+        <span class="font-italic">Since you're a teacher, submissions below are randomly picked to show you the UI.</span>
+        {% endif %}
+
         </p>
         {% endif %}
 

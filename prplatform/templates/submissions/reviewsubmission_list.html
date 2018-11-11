@@ -59,7 +59,7 @@
                 {% endif %}
                 {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
                 <td>
-                    {{ origsub.reviewed_submission }}
+                    {{ origsub.reviewed_submission.submitter }}
                 </td>
                 {% endif %}
                 <td>
