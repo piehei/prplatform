@@ -246,7 +246,7 @@ class ReviewExercise(BaseExercise):
                                           .order_by('reviewed_submission__submitter_group_id', '-created') \
                                           .distinct('reviewed_submission__submitter_group_id')
         else:
-            all_reviews = self.submissions.filter(reviewed_submission__submitter_user=user) \
+            all_reviews = self.submissions.filter(submitter_user=user) \
                                           .order_by('reviewed_submission__submitter_user_id', '-created') \
                                           .distinct('reviewed_submission__submitter_user_id')
         return all_reviews

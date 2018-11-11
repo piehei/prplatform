@@ -83,3 +83,22 @@ class ReviewExerciseTestCase(TestCase):
         self.assertNotEqual(last_for_before_change, last_for_after_change)
         self.assertEqual(self.re.last_reviews_for(self.student1).count(), 2)
 
+    def test_last_reviews_by(self):
+        self.assertEqual(self.re.last_reviews_by(self.student1).count(), 0)
+        self.assertEqual(self.re.last_reviews_by(self.student2).count(), 1)
+        self.assertEqual(self.re.last_reviews_by(self.student3).count(), 2)
+
+        last_by_before_change = self.re.last_reviews_by(self.student3) \
+                                       .filter(reviewed_submission__submitter_user=self.student1).first()
+
+        ReviewSubmission.objects.create(course=self.course,
+                                        exercise=self.re,
+                                        reviewed_submission=self.sub1,
+                                        submitter_user=self.student3)
+
+        last_by_after_change = self.re.last_reviews_by(self.student3) \
+                                      .filter(reviewed_submission__submitter_user=self.student1).first()
+
+        self.assertNotEqual(last_by_before_change, last_by_after_change)
+        self.assertEqual(self.re.last_reviews_by(self.student3).count(), 2)
+
