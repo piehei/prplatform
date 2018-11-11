@@ -197,7 +197,7 @@ class ReviewExercise(BaseExercise):
     RANDOM = 'RANDOM'
     CHOOSE = 'CHOOSE'
     REVIEW_EXERCISE_TYPE_CHOICES = (
-            (RANDOM, 'Random by other user'),
+            (RANDOM, 'Random by other user (prefer oldest with least peer-reviews)'),
             (CHOOSE, 'Student chooses'),
         )
 
