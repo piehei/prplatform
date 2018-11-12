@@ -8,8 +8,6 @@ from django.core.exceptions import EmptyResultSet, PermissionDenied
 from django.contrib import messages
 from django.forms import formset_factory
 
-import re
-
 from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
@@ -111,11 +109,12 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
-    def get_form(self, form_class=None):
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['course'] = Course.objects.get(base_course__url_slug=self.kwargs['base_url_slug'],
+                                              url_slug=self.kwargs['url_slug'])
+        return kwargs
 
-        course = Course.objects.get(base_course__url_slug=self.kwargs['base_url_slug'],
-                                    url_slug=self.kwargs['url_slug'])
-        return ReviewExerciseForm(course=course)
 
 ###
 #
