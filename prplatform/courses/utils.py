@@ -180,8 +180,10 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
                 max_textual_answer_counts.append(max_answer_count_for_tq)
 
                 HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count_for_tq + 1)]
-
-    max_review_range = range(1, max([len(x['reviews_for']) for x in d.values()]) + 1)
+    if d.values():
+        max_review_range = range(1, max([len(x['reviews_for']) for x in d.values()]) + 1)
+    else:
+        max_review_range = range(0)
 
     ctx['max_review_range'] = max_review_range
 
