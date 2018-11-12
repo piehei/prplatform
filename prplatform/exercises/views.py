@@ -10,6 +10,7 @@ from django.forms import formset_factory
 
 import re
 
+from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet, ChooseForm
@@ -70,7 +71,7 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         self.object = None
         course = self.get_context_data()['course']
 
-        form = ReviewExerciseForm(self.request.POST)
+        form = ReviewExerciseForm(self.request.POST, course=course)
         # formset = QuestionModelFormSet(self.request.POST)
 
         if form.is_valid():  # and formset.is_valid():
@@ -110,6 +111,11 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
+    def get_form(self, form_class=None):
+
+        course = Course.objects.get(base_course__url_slug=self.kwargs['base_url_slug'],
+                                    url_slug=self.kwargs['url_slug'])
+        return ReviewExerciseForm(course=course)
 
 ###
 #

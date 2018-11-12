@@ -144,8 +144,7 @@ class ReviewExerciseForm(ModelForm):
     def __init__(self, *args, **kwargs):
         course = kwargs.pop('course', None)
         super().__init__(*args, **kwargs)
-        if course:
-            self.fields['reviewable_exercise'].queryset = SubmissionExercise.objects.filter(course=course)
+        self.fields['reviewable_exercise'].queryset = SubmissionExercise.objects.filter(course=course)
 
     def clean(self):
         cd = super().clean()
