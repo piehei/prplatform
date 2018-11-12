@@ -49,9 +49,6 @@
             {% endfor %}
             </td>
 
-            {% if not row.numerical_avgs|length %}
-              <td></td>
-            {% endif %}
             {% for avg in row.numerical_avgs %}
               <td>{{ avg | floatformat:2 }}</td>
             {% endfor %}

@@ -34,7 +34,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                              .order_by('submitter_group', 'submitter_user')
 
         if not self.request.GET.get('format'):
-            stats, headers = create_stats(ctx)
+            stats, headers = create_stats(ctx, pad=True)
             ctx['stats'] = stats
             ctx['stats_headers'] = headers
             return self.render_to_response(ctx)
@@ -60,7 +60,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
 
                 row += [",".join([x.submitter for x in osr['reviews_for'] if x])]
 
-                row += [round(avg, 2) for avg in osr['numerical_avgs']]
+                row += [round(avg, 2) if avg is not None else "" for avg in osr['numerical_avgs']]
 
                 # 'text_answer_lists' is a list of padded lists
                 # -> flatten

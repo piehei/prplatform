@@ -176,7 +176,16 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
                         answer_strings = [f"{a.submission.submitter}: {a.value_text}" for a in textual_answers]
                         subd['text_answer_lists'].append(answer_strings)
 
-                max_answer_count_for_tq = max([len(x['text_answer_lists'][-1]) for x in d.values()])
+                tkey = 'text_answer_lists'
+                max_answer_count_for_tq = [
+                        len(x[tkey][-1]) for x in d.values() if len(x[tkey]) > 0
+                    ]
+
+                if max_answer_count_for_tq:
+                    max_answer_count_for_tq = max(max_answer_count_for_tq)
+                else:
+                    max_answer_count_for_tq = 0
+
                 max_textual_answer_counts.append(max_answer_count_for_tq)
 
                 HEADERS += [f"A{index + 1}: {num}" for num in range(1, max_answer_count_for_tq + 1)]
