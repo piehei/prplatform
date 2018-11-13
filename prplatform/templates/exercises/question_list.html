@@ -50,17 +50,18 @@
         </div>
 
         <div>
-          <!--{% if not q.choices %}-->
-          <!--<span class="font-italic">No choices added to the question. The student answers in text.</span>-->
-          <!--{% else %}-->
+          {% if q.accepted_filetypes %}
+            Type: file upload
+          {% elif not q.choices %}
+            Type: text answer
+          {% else %}
           <br>
+            {% for choice in q.choices %}
+            <div class="list-group-item">
+              [{{ choice.0 }}] {{ choice.1 }}
+            </div>
+            {% endfor %}
           {% endif %}
-
-          {% for choice in q.choices %}
-          <div class="list-group-item">
-            [{{ choice.0 }}] {{ choice.1 }}
-          </div>
-          {% endfor %}
         </div>
       </div>
       {% endfor %}
