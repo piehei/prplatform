@@ -44,7 +44,7 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
             exer = form.save(commit=False)
             exer.course = course
             exer.save()
-            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
+            return HttpResponseRedirect(reverse('courses:detail', kwargs=kwargs))
 
         else:
             return self.form_invalid(form)
@@ -53,16 +53,17 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
 class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     template_name = "exercises/reviewexercise_create.html"
     form_class = ReviewExerciseForm
+    initial = {
+       'opening_time': timezone.now(),
+       'closing_time': timezone.now(),
+    }
 
-    def get(self, *args, **kwargs):
-        self.object = None
-        ctx = self.get_context_data(**kwargs)
-        ctx['form'] = ReviewExerciseForm(course=ctx['course'],
-                                         initial={
-                                            'opening_time': timezone.now(),
-                                            'closing_time': timezone.now(),
-                                         })
-        return self.render_to_response(ctx)
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['course'] = Course.objects.get(
+                base_course__url_slug=self.kwargs['base_url_slug'],
+                url_slug=self.kwargs['url_slug'])
+        return kwargs
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
@@ -70,23 +71,14 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         course = self.get_context_data()['course']
 
         form = ReviewExerciseForm(self.request.POST, course=course)
-        # formset = QuestionModelFormSet(self.request.POST)
 
         if form.is_valid():  # and formset.is_valid():
-            # this initializes a new ReviewExercise object
-            # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
             exer.question_order = []
             exer.save()
 
-            # for q in formset.ordered_forms:
-                # q.instance.order = q.cleaned_data['ORDER']
-                # q.instance.exercise = exer
-
-            # formset.save()
-
-            return HttpResponseRedirect(reverse('courses:teacher', kwargs=kwargs))
+            return HttpResponseRedirect(reverse('courses:detail', kwargs=kwargs))
 
         else:
             ctx = self.get_context_data(**kwargs)
@@ -111,8 +103,9 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['course'] = Course.objects.get(base_course__url_slug=self.kwargs['base_url_slug'],
-                                              url_slug=self.kwargs['url_slug'])
+        kwargs['course'] = Course.objects.get(
+                base_course__url_slug=self.kwargs['base_url_slug'],
+                url_slug=self.kwargs['url_slug'])
         return kwargs
 
 
