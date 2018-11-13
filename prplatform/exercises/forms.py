@@ -19,7 +19,7 @@ class SubmissionExerciseForm(ModelForm):
                   'aplus_exercise_id',
                   'use_groups',
                   'use_states',
-                  'accepted_file_types',
+                  'accepted_filetypes',
                   ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
@@ -30,7 +30,7 @@ class SubmissionExerciseForm(ModelForm):
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'max_submission_count': 'How many times students can submit. The last submission will be used for ' + \
                                         'peer-review. This is useful if students by accident submit unfinished work.',
-                'accepted_file_types': 'A comma separated list of file types. Do not include the period character. ' + \
+                'accepted_filetypes': 'A comma separated list of file types. Do not include the period character. ' + \
                                        'Valid examples: pdf or pdf,pptx,docx or py,txt',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.<br><b>Do not change this</b> ' + \
@@ -44,7 +44,7 @@ class SubmissionExerciseForm(ModelForm):
         cd = super().clean()
         type = cd.get('type')
         errors = {
-            'accepted_file_types': [],
+            'accepted_filetypes': [],
             'aplus_course_id': [],
             'aplus_exercise_id': []
         }
@@ -52,7 +52,7 @@ class SubmissionExerciseForm(ModelForm):
         if type == SubmissionExercise.TEXT:
 
             # no extra fields chosen
-            field = 'accepted_file_types'
+            field = 'accepted_filetypes'
             if cd.get(field):
                 errors[field].append('This has to be empty for the chosen type')
 
@@ -67,7 +67,7 @@ class SubmissionExerciseForm(ModelForm):
         elif type == SubmissionExercise.FILE_UPLOAD:
 
             # file type is sensible
-            field = 'accepted_file_types'
+            field = 'accepted_filetypes'
             accepted_types = cd.get(field)
 
             if not accepted_types:
@@ -97,7 +97,7 @@ class SubmissionExerciseForm(ModelForm):
                 errors[field].append('You have to provide exercise id in Plus')
 
             # no extra fields
-            field = 'accepted_file_types'
+            field = 'accepted_filetypes'
             if cd.get(field):
                 errors[field].append('This has to be empty for the chosen type')
 

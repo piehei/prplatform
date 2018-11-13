@@ -105,7 +105,7 @@ class SubmissionExercise(BaseExercise):
     max_submission_count = models.IntegerField(default=1)
 
     upload_instructions = models.CharField(max_length=500, blank=True)
-    accepted_file_types = models.CharField(max_length=100, blank=True)
+    accepted_filetypes = models.CharField(max_length=100, blank=True)
 
     use_states = models.BooleanField(default=False)
 

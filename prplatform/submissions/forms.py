@@ -39,12 +39,12 @@ class OriginalSubmissionForm(ModelForm):
     def clean(self):
         # TODO: This should be done more elegantly. The form now accepts any file but this raises an error.
         cd = super().clean()
-        if self.accepted_file_types:
+        if self.accepted_filetypes:
             filename = cd.get('file').name
             import os
-            if os.path.splitext(filename)[1].replace(".", "") not in self.accepted_file_types.split(","):
+            if os.path.splitext(filename)[1].replace(".", "") not in self.accepted_filetypes.split(","):
                 raise ValidationError('Uploaded file is not of accepted type. ' + \
-                                      'Accepted file types are: ' + self.accepted_file_types)
+                                      'Accepted filetypes are: ' + self.accepted_filetypes)
 
 
 class OriginalSubmissionStateForm(ModelForm):

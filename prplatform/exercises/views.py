@@ -134,7 +134,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
             ctx['disable_form'] = True
 
         ctx['my_submissions'] = exercise.submissions_by_submitter(user)
-        ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_file_types)
+        ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
 
         return self.render_to_response(ctx)
 
@@ -158,11 +158,11 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         type = exercise.type
         form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=type)
 
-        form.accepted_file_types = None
+        form.accepted_filetypes = None
         if exercise.type == SubmissionExercise.FILE_UPLOAD:
             # this value is set so that it is available in form.clean()
             # which is called inside is_valid()
-            form.accepted_file_types = exercise.accepted_file_types
+            form.accepted_filetypes = exercise.accepted_filetypes
 
         if form.is_valid():
             # this initializes a new OriginalSubmission object object
