@@ -19,6 +19,10 @@ class Question(models.Model):
     required = models.BooleanField(default=True)
     text = models.CharField(max_length=200)
     hide_from_receiver = models.BooleanField(default=False)
+
+    file_upload = models.BooleanField(default=False)
+    accepted_file_types = models.CharField(max_length=100, blank=True)
+
     choices = ArrayField(
                         ArrayField(models.CharField(max_length=20),
                                    size=2),
