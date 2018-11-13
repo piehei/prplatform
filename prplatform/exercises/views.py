@@ -11,7 +11,7 @@ from django.forms import formset_factory
 from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
-from .forms import SubmissionExerciseForm, ReviewExerciseForm, QuestionModelFormSet, ChooseForm
+from .forms import SubmissionExerciseForm, ReviewExerciseForm, ChooseForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm

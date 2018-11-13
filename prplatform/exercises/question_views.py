@@ -1,53 +1,17 @@
 from django.views.generic import CreateView, UpdateView, ListView
-from django import forms
-from django.contrib.postgres.forms import SimpleArrayField
 from django.contrib import messages
 from django.http import HttpResponseRedirect
 
 from prplatform.exercises.models import ReviewExercise
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from .question_models import Question
-
-
-class QuestionModelForm(forms.ModelForm):
-    choices = SimpleArrayField(
-                            SimpleArrayField(forms.CharField(), delimiter="|"),
-                            delimiter="\n",
-                            widget=forms.Textarea(attrs={'rows': 5}),
-                            required=False,
-                            label='Choices <i>(leave empty if student should answer in text)</i>'
-                            )
-
-    class Meta:
-        model = Question
-        fields = ['text', 'choices']
-
-    def clean_choices(self):
-        print("CLEAN CHOICES")
-        choices = self.cleaned_data['choices']
-        print(choices)
-        if not choices:
-            print("nothing to validate")
-            return choices
-
-        ints = []
-        try:
-            ints = [int(option[0]) for option in choices]
-        except Exception as e:
-            print(e)
-            raise forms.ValidationError('First value before the delimiter character "|" MUST BE an integer')
-
-        options = [op[1] for op in choices]
-        if len(ints) != len(set(ints)) or len(options) != len(set(options)):
-            raise forms.ValidationError('Values MUST BE unique')
-
-        return choices
+from .question_forms import QuestionModelForm
 
 
 class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = Question
     form = QuestionModelForm
-    fields = ('text', 'choices')
+    fields = ('question_text', 'choices')
     template_name = "exercises/question_create.html"
 
     def get_context_data(self, *args, **kwargs):
@@ -80,7 +44,7 @@ class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
 
 class QuestionUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
     model = Question
-    fields = ('text', )
+    fields = ('question_text', )
 
     def get_object(self):
         return Question.objects.get(pk=self.kwargs['pk'])

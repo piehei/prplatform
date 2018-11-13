@@ -18,6 +18,7 @@
   {% include "../tabs.html" with tab="questions" type="original" object=exercise %}
 
   <h1>Create question</h1>
+  {% include "./_question_info.html" %}
   <form class="form-horizontal" method="post" action="">
     {% csrf_token %}
     {{ form|crispy }}

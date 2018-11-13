@@ -17,11 +17,10 @@ class Choice(models.Model):
 class Question(models.Model):
     course = models.ForeignKey(Course, related_name="questions", on_delete=models.CASCADE)
     required = models.BooleanField(default=True)
-    text = models.CharField(max_length=200)
+    question_text = models.CharField(max_length=200)
     hide_from_receiver = models.BooleanField(default=False)
 
-    file_upload = models.BooleanField(default=False)
-    accepted_filetypes = models.CharField(max_length=100, blank=True)
+    accepted_filetypes = models.CharField(max_length=100, null=True, blank=True)
 
     choices = ArrayField(
                         ArrayField(models.CharField(max_length=20),
@@ -29,7 +28,7 @@ class Question(models.Model):
                         blank=True, null=True)
 
     def __str__(self):
-        return f"Q: {self.text}"
+        return f"Q: {self.question_text}"
 
     def get_absolute_url(self):
         return reverse('courses:exercises:question-detail', kwargs={

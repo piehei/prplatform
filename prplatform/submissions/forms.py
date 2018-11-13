@@ -67,13 +67,13 @@ class CompleteAnswerForm(forms.Form):
                 self.fields[fname] = forms.ChoiceField()
                 self.fields[fname].choices = sorted(q.choices, key=lambda c: c[0])
                 self.fields[fname].widget = RadioSelect()
-                self.fields[fname].label = q.text
+                self.fields[fname].label = q.question_text
                 self.fields[fname].required = True if q.required else False
             else:
                 fname = f"{q.pk}-text"
                 self.fields[fname] = forms.CharField()
                 self.fields[fname].widget = forms.Textarea(attrs={'cols': 80, 'rows': 5})
-                self.fields[fname].label = q.text
+                self.fields[fname].label = q.question_text
                 self.fields[fname].required = True if q.required else False
 
 
@@ -88,13 +88,13 @@ class AnswerForm(forms.Form):
             self.fields[fname] = forms.ChoiceField()
             self.fields[fname].choices = sorted(q.choices, key=lambda c: c[0])
             self.fields[fname].widget = RadioSelect()
-            self.fields[fname].label = q.text
+            self.fields[fname].label = q.question_text
             self.fields[fname].required = True if q.required else False
         else:
             fname = f"{q.pk}-text"
             self.fields[fname] = forms.CharField()
             self.fields[fname].widget = forms.Textarea(attrs={'cols': 80, 'rows': 5})
-            self.fields[fname].label = q.text
+            self.fields[fname].label = q.question_text
             self.fields[fname].required = True if q.required else False
 
 
@@ -110,7 +110,7 @@ class AnswerModelForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         question = kwargs.pop('question')
-        question_text = question.text
+        question_text = question.question_text
         choices = question.choices
         required = question.required
 

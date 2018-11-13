@@ -233,7 +233,7 @@
 - model: exercises.question
   pk: 1
   fields:
-    text: Midi
+    question_text: Midi
     choices: []
     course: ["TIE-02100", "TIE-02100-1"]
     hide_from_receiver: False
@@ -241,7 +241,7 @@
 - model: exercises.question
   pk: 2
   fields:
-    text: Score the work
+    question_text: Score the work
     choices: [["1", "1"], ["2", "2"], ["3", "3"]]
     course: ["TIE-02100", "TIE-02100-1"]
     hide_from_receiver: True

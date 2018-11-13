@@ -161,28 +161,6 @@ class ReviewExerciseForm(ModelForm):
             )
 
 
-class QuestionForm(ModelForm):
-    class Meta:
-        model = Question
-        fields = ['text']
-
-
-QuestionModelFormSet = modelformset_factory(Question,
-                                            fields=('text',),
-                                            can_delete=True,
-                                            can_order=True,
-                                            min_num=1,
-                                            validate_min=True,
-                                            max_num=10,
-                                            extra=10)
-
-# QuestionFormSet = inlineformset_factory(ReviewExercise, Question,
-                                        # fields=('text',),
-                                        # can_delete=True,
-                                        # can_order=True,
-                                        # max_num=10, extra=10)
-
-
 class ChooseForm(Form):
     """
     If choose type is used in ReviewExercise, then this form is used

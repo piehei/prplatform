@@ -132,11 +132,11 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
                 continue
 
             if ans.value_text:
-                data.append({'q': ans.question.text, 'a': ans.value_text})
+                data.append({'q': ans.question.question_text, 'a': ans.value_text})
             else:
                 # TODO : braindead ???
                 choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
-                data.append({'q': ans.question.text, 'a': choice})
+                data.append({'q': ans.question.question_text, 'a': choice})
 
         ctx['qa_list'] = data
         return self.render_to_response(ctx)
