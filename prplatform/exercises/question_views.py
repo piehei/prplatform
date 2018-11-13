@@ -22,6 +22,27 @@ class QuestionModelForm(forms.ModelForm):
         model = Question
         fields = ['text', 'choices']
 
+    def clean_choices(self):
+        print("CLEAN CHOICES")
+        choices = self.cleaned_data['choices']
+        print(choices)
+        if not choices:
+            print("nothing to validate")
+            return choices
+
+        ints = []
+        try:
+            ints = [int(option[0]) for option in choices]
+        except Exception as e:
+            print(e)
+            raise forms.ValidationError('First value before the delimiter character "|" MUST BE an integer')
+
+        options = [op[1] for op in choices]
+        if len(ints) != len(set(ints)) or len(options) != len(set(options)):
+            raise forms.ValidationError('Values MUST BE unique')
+
+        return choices
+
 
 class QuestionCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = Question
