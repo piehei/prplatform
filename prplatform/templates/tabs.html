@@ -16,12 +16,14 @@
               Edit
             </a>
           </li>
+          {% if object.questions %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'questions' %}active{% endif %}"
                href="{{ object.get_question_url }}">
               Questions
             </a>
           </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
                href="{{ object.get_list_url }}">
