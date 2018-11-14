@@ -10,7 +10,7 @@ from django.utils import timezone
 
 import os
 
-from .models import OriginalSubmission, ReviewSubmission
+from .models import OriginalSubmission, ReviewSubmission, Answer
 from .forms import OriginalSubmissionStateForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin, IsEnrolledMixin
@@ -133,10 +133,12 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
 
             if ans.value_text:
                 data.append({'q': ans.question.question_text, 'a': ans.value_text})
-            else:
+            elif ans.value_choice:
                 # TODO : braindead ???
                 choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
                 data.append({'q': ans.question.question_text, 'a': choice})
+            else:
+                data.append({'q': ans.question.question_text, 'f': ans.get_download_url()})
 
         ctx['qa_list'] = data
         return self.render_to_response(ctx)
@@ -147,25 +149,39 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
     def get(self, *args, **kwargs):
         user = self.request.user
 
-        # user tries to download this
-        obj = get_object_or_404(OriginalSubmission, pk=kwargs['pk'])
-        teacher = obj.course.is_teacher(user)
-        owner = obj.is_owner(user)
+        dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
+
+        if dtype == 'answer':
+            obj = get_object_or_404(Answer, pk=kwargs['pk'])
+            teacher = obj.submission.course.is_teacher(user)
+            owner = obj.submission.is_owner(user)
+            re = obj.submission.exercise
+            file_itself = obj.uploaded_file
+        else:
+            obj = get_object_or_404(OriginalSubmission, pk=kwargs['pk'])
+            teacher = obj.course.is_teacher(user)
+            owner = obj.is_owner(user)
+            re = obj.exercise.review_exercise
+            file_itself = obj.file
 
         enrolled_can_access = False
-        re = obj.exercise.review_exercise
-        if re and re.type == ReviewExercise.CHOOSE:
+        if re and re.type == ReviewExercise.CHOOSE and dtype == 'osub':
             # anyone on the course can download anything
             enrolled_can_access = True
 
-        pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
-        reviewer = kwargs['pk'] in pks_of_users_reviewables
+        reviewer = False
+        receiver = False
+        if dtype == 'osub':
+            pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
+            reviewer = kwargs['pk'] in pks_of_users_reviewables
+        else:
+            receiver = obj.submission.reviewed_submission.is_owner(user)
 
-        if not teacher and not owner and not reviewer and not enrolled_can_access:
+        if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
             raise PermissionDenied
 
-        filename = obj.file.name.split('/')[-1]
-        response = HttpResponse(obj.file, content_type='text/plain')
+        filename = file_itself.name.split('/')[-1]
+        response = HttpResponse(file_itself, content_type='text/plain')
 
         # TODO: enough headers? meta type etc.?
         response['Content-Disposition'] = 'attachment; filename=%s' % filename

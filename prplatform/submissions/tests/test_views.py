@@ -1,6 +1,7 @@
 from django.test import RequestFactory, TestCase
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 import datetime
 
@@ -245,8 +246,8 @@ class SubmissionsTest(TestCase):
             rs = ReviewSubmission.objects.create(course=course, submitter_user=user,
                                                  exercise=rev_exercise, reviewed_submission=reviewed_sub)
             rs_objects.append(rs)
-            Answer.objects.create(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1))
-            Answer.objects.create(submission=rs, value_choice="1", question=Question.objects.get(pk=2))
+            Answer(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1)).save()
+            Answer(submission=rs, value_choice="1", question=Question.objects.get(pk=2)).save()
 
         # teacher sees all reviews
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
@@ -275,12 +276,11 @@ class SubmissionsTest(TestCase):
         self.assertContains(response, "juupase juu")
         self.assertNotContains(response, "Score the work")
 
-    def test_student_cannot_load_code_not_owned(self):
+    def test_student_cannot_download_submission_not_owned(self):
         exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
 
         user1 = User.objects.get(username="student1")
-        from django.core.files.uploadedfile import SimpleUploadedFile
 
         exercise.type = 'FILE_UPLOAD'
         exercise.accepted_filetypes = '.txt'
@@ -296,3 +296,48 @@ class SubmissionsTest(TestCase):
 
         self.assertRaises(PermissionDenied,
                           DownloadSubmissionView.as_view(), request, **self.kwargs)
+
+    def test_student_cannot_download_answer_file_not_owned(self):
+        s_exercise = SubmissionExercise.objects.get(name="T1 TEXT")
+        r_exercise = ReviewExercise.objects.get(name="T1 TEXT REVIEW")
+        course = Course.objects.get(pk=1)
+
+        user1 = User.objects.get(username="student1")
+        user2 = User.objects.get(username="student2")
+        user3 = User.objects.get(username="student3")
+
+        sub = OriginalSubmission(course=course, text="juups", submitter_user=user1, exercise=s_exercise)
+        sub.save()
+
+        r_exercise.question_order = ['3']
+        r_exercise.save()
+
+        rev_sub = ReviewSubmission(course=course, reviewed_submission=sub, submitter_user=user2, exercise=r_exercise)
+        rev_sub.save()
+        print(rev_sub)
+
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+
+        answer_with_file = Answer(
+                question=Question.objects.get(pk=3),
+                submission=rev_sub,
+                uploaded_file=tmpFile,
+                )
+        answer_with_file.save()
+        print(answer_with_file)
+
+        request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
+        request.user = user3
+        self.kwargs['pk'] = answer_with_file.pk
+
+        self.assertRaises(PermissionDenied,
+                          DownloadSubmissionView.as_view(), request, **self.kwargs)
+
+        for user in [user1, user2, User.objects.get(username="teacher1")]:
+            request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
+            request.user = user
+            self.kwargs['pk'] = answer_with_file.pk
+
+            response = DownloadSubmissionView.as_view()(request, **self.kwargs)
+
+            self.assertEqual(response.status_code, 200)
