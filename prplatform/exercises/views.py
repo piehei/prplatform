@@ -219,7 +219,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
 
         rlock = None
-        rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
+        if exercise.use_groups:
+            rlock_list = ReviewLock.objects.filter(group=ctx['my_group'], review_exercise=exercise)
+        else:
+            rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
+
         if rlock_list:
             last_rlock = rlock_list.last()
 
@@ -234,7 +238,10 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             #       is it a good idea to determine possible reviewables in the creation
             #       of the reviewlock?
             try:
-                rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
+                if exercise.use_groups:
+                    rlock = ReviewLock.objects.create_rlock(exercise, self.request.user, group=ctx['my_group'])
+                else:
+                    rlock = ReviewLock.objects.create_rlock(exercise, self.request.user)
             except EmptyResultSet:  # nothing to review just yet
                 rlock = None
 
@@ -269,34 +276,39 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
 
         ctx['forms'] = self._get_answer_modelforms(exercise)
 
+        group_check_ok = True
         if exercise.use_groups and not ctx['my_group']:
-            ctx['disable_form'] = True
+            group_check_ok = False
 
         ctx['my_submission'] = exercise.reviewable_exercise \
                                        .submissions_by_submitter(self.request.user) \
                                        .filter(state=OriginalSubmission.READY_FOR_REVIEW) \
                                        .first()
 
-        if not ctx['my_submission'] and exercise.require_original_submission and not ctx['teacher']:
+        ctx['disable_form'] = True
 
-            ctx['disable_form'] = True
+        if not ctx['my_submission'] and exercise.require_original_submission and not ctx['teacher']:
+            ctx['own_submission_is_missing'] = True
             return ctx
 
-        elif exercise.is_open():
+        elif exercise.is_open() and group_check_ok:
 
+            ctx['show_content_to_review'] = True
             if exercise.type == ReviewExercise.RANDOM:
                 ctx = self._get_random_ctx(ctx)
             elif exercise.type == ReviewExercise.CHOOSE:
                 ctx = self._get_choose_ctx(ctx)
 
-            if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
-                ctx['disable_form'] = True
+            if ctx['reviewable'] and not ctx['teacher']:
+                ctx['disable_form'] = False
+
+            if 'reviews_done' in ctx and ctx['reviews_done']:
+                ctx['show_content_to_review'] = False
 
             return ctx
 
         else:
 
-            ctx['disable_form'] = True
             return ctx
 
     def _post_random(self, ctx):
@@ -304,12 +316,15 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=self.object)
         rlock = rlock_list.last()
 
-        # TODO: this crashes when teacher submits since there's no release lock
-        reviewed_submission = rlock.original_submission
-        new_review_submission = ReviewSubmission.objects.create(course=ctx['course'],
-                                                                submitter_user=self.request.user,  # TODO: groups?
-                                                                exercise=self.object,
-                                                                reviewed_submission=reviewed_submission)
+        new_review_submission = ReviewSubmission(course=ctx['course'],
+                                                 submitter_user=self.request.user,
+                                                 exercise=self.object,
+                                                 reviewed_submission=rlock.original_submission)
+        if self.object.use_groups:
+            new_review_submission.submitter_group = ctx['my_group']
+
+        new_review_submission.save()
+
         rlock.review_submission = new_review_submission
         rlock.save()
 

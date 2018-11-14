@@ -180,8 +180,14 @@ class Answer(models.Model):
 
 class ReviewLockManager(models.Manager):
 
-    def create_rlock(self, exercise, user):
-        print(f"create_lock called for {exercise} {user}")
+    def create_rlock(self, exercise, user, group=None):
+        print(f"create_lock called for {exercise} {user} {group}")
+
+        if exercise.use_groups and not group:
+            raise Exception("Group info doesn't match")
+
+        if not exercise.use_groups and group:
+            raise Exception("Group info doesn't match")
 
         if exercise.type == ReviewExercise.RANDOM:
             print("type is RANDOM")
@@ -242,6 +248,7 @@ class ReviewLockManager(models.Manager):
             reviewable = osub_candidates.first()
 
         return self.create(user=user,
+                           group=group,
                            review_exercise=exercise,
                            original_submission=reviewable)
 
