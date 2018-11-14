@@ -24,6 +24,8 @@
 
       {# include "./_stats_form.html" #}
       <a class="btn btn-sm btn-success mt-2" href="?format=csv">Download CSV</a>
+
+      <h3>Reviews</h3>
       <table id="stats-table" class="table table-sm table-hover table-bordered">
         <thead>
           <tr>
@@ -58,7 +60,18 @@
         </tbody>
       </table>
 
+      {% if re.type == 'RANDOM' %}
+
+      <h3 class="mt-4">Review locks</h3>
+      <p>This is a list of "review locks" the system has created. Whenever a student loads the review page,
+         a lock is automatically created. This prevents future page loads changing the thing that is being
+         reviewed by the student. If the exercise has been configured so that one student can make multiple
+         peer-reviews, more review locks are created after previous ones have been fulfilled (review is done).
+         <strong>This list can be</strong> longer than the one above since students might not complete the
+         reviews.
+      </p>
       {% include "./_reviewlock_stats.html" %}
+      {% endif %}
     </div>
   </div>
 
