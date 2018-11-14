@@ -256,3 +256,8 @@ class ReviewLock(TimeStampedModel):
     review_exercise = models.ForeignKey(ReviewExercise, on_delete=models.CASCADE)
     review_submission = models.ForeignKey(ReviewSubmission, null=True, default=None, on_delete=models.CASCADE)
 
+    @property
+    def owner(self):
+        if self.group:
+            return f"{self.group}"
+        return f"self.user"
