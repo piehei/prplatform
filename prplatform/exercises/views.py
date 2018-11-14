@@ -278,10 +278,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
                                        .first()
 
         if not ctx['my_submission'] and exercise.require_original_submission and not ctx['teacher']:
+
             ctx['disable_form'] = True
             return ctx
 
-        else:
+        elif exercise.is_open():
 
             if exercise.type == ReviewExercise.RANDOM:
                 ctx = self._get_random_ctx(ctx)
@@ -291,6 +292,11 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             if ctx['teacher'] or not ctx['reviewable'] or not exercise.is_open():
                 ctx['disable_form'] = True
 
+            return ctx
+
+        else:
+
+            ctx['disable_form'] = True
             return ctx
 
     def _post_random(self, ctx):
