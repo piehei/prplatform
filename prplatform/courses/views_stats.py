@@ -22,6 +22,12 @@ class StatsForm(Form):
 class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
     template_name = "courses/stats.html"
 
+    def _get_review_locks(self, re):
+
+        return {
+                'values': re.reviewlock_set.all()
+            }
+
     def get(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)
         ctx['form'] = StatsForm(course=ctx['course'])
@@ -37,6 +43,9 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
             stats, headers = create_stats(ctx, pad=True)
             ctx['stats'] = stats
             ctx['stats_headers'] = headers
+
+            ctx['review_locks'] = self._get_review_locks(re)
+
             return self.render_to_response(ctx)
 
         else:

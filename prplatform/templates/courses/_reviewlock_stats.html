@@ -1,0 +1,20 @@
+      <table id="reviewlock-table" class="table table-sm table-hover table-bordered">
+        <thead>
+          <tr>
+            <th scope="col">Receiver</th >
+            <th scope="col">Reviewer</th >
+          </tr>
+        </thead>
+        <tbody>
+        {% for lock in review_locks.values %}
+          <tr scope="row">
+            <td>
+              {{ lock.original_submission.submitter }}
+            </td>
+            <td>
+              {{ lock.user }}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+
