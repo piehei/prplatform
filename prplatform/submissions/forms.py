@@ -102,7 +102,7 @@ class AnswerModelForm(ModelForm):
 
     class Meta:
         model = Answer
-        fields = ['question', 'value_text', 'value_choice']  # one of these is removed below
+        fields = ['question', 'value_text', 'value_choice', 'uploaded_file']  # two of these is removed below
         widgets = {
             'value_text': Textarea(attrs={'cols': 80, 'rows': 3}),
             'value_choice': RadioSelect(),
@@ -112,7 +112,9 @@ class AnswerModelForm(ModelForm):
         question = kwargs.pop('question')
         question_text = question.question_text
         choices = question.choices
+        filetypes = question.accepted_filetypes
         required = question.required
+
 
         # this is required to retrieve separate answers from the POST
         self.prefix = f"Q-PREFIX-{question.pk}-"
@@ -132,9 +134,33 @@ class AnswerModelForm(ModelForm):
             if required:
                 self.fields['value_choice'].required = True
             self.fields.pop('value_text')
+            self.fields.pop('uploaded_file')
+
+        elif filetypes:
+            self.fields['uploaded_file'].label = question_text
+            self.fields['uploaded_file'].help_text = f'<b>Accepted filetypes: {filetypes}</b>'
+
+            if required:
+                self.fields['uploaded_file'].required = True
+            self.fields.pop('value_text')
+            self.fields.pop('value_choice')
+
         else:
             self.fields['value_text'].label = question_text
             self.fields['value_text'].help_text = '<b>You can make this text area bigger from the bottom-right corner!</b>'
             if required:
                 self.fields['value_text'].required = True
             self.fields.pop('value_choice')
+            self.fields.pop('uploaded_file')
+
+    def clean_uploaded_file(self, *args, **kwargs):
+        file_itself = self.cleaned_data['uploaded_file']
+        if file_itself:
+            filename = file_itself.name
+            filetypes = self.cleaned_data['question'].accepted_filetypes
+            import os
+            if os.path.splitext(filename)[1].replace(".", "") not in filetypes.split(","):
+                raise ValidationError('Uploaded file is not of accepted type. '
+                                      'Accepted filetypes are: ' + filetypes)
+        return file_itself
+

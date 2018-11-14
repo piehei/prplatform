@@ -341,7 +341,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         forms = []
         valid = True
         for q in qlist:
-            af = AnswerModelForm(self.request.POST, question=q)
+            af = AnswerModelForm(self.request.POST, self.request.FILES, question=q)
             forms.append(af)
             if not af.is_valid():
                 valid = False

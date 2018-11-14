@@ -142,12 +142,40 @@ class ReviewSubmission(BaseSubmission):
             })
 
 
+def answer_upload_fp(instance, filename):
+    """ This will be the filename of the uploaded file """
+    return f"uploads/course_{instance.submission.course.pk}/" + \
+           f"answers_{instance.submission.exercise.pk}/ans_{instance.submission.pk}/{filename}"
+
+
 class Answer(models.Model):
 
     submission = models.ForeignKey(ReviewSubmission, related_name="answers", on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name="answers", on_delete=models.CASCADE)
     value_text = models.CharField(max_length=5000, blank=True, null=True)
     value_choice = models.CharField(max_length=20, blank=True, null=True)
+    uploaded_file = models.FileField(upload_to=answer_upload_fp, blank=True)
+
+    def save(self, *args, **kwargs):
+        """ Overrides the model's save method so that when a file is uploaded
+            its name may contain the object's PK. The PK would not be available
+            at the save time since the row wouldn't have been written to the DB
+            just yet.
+        """
+        if self.pk is None:
+            uploaded_file = self.uploaded_file
+            self.uploaded_file = None
+            super().save(*args, **kwargs)
+            self.uploaded_file = uploaded_file
+
+        super().save(*args, **kwargs)
+
+    def get_download_url(self):
+        return reverse('courses:submissions:download', kwargs={
+            'base_url_slug': self.submission.course.base_course.url_slug,
+            'url_slug': self.submission.course.url_slug,
+            'pk': self.pk
+            }) + "?type=answer"
 
 
 class ReviewLockManager(models.Manager):
