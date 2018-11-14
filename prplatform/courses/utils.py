@@ -141,7 +141,7 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
     if numeric_questions:
         for nq in numeric_questions:
 
-            HEADERS.append(f"Q: {nq.text}")
+            HEADERS.append(f"Q: {nq.question_text}")
 
             for subd in d.values():
 
