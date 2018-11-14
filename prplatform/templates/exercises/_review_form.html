@@ -8,7 +8,8 @@
     The teacher has not configured any questions. You cannot make a submission.
   {% else %}
 
-  <form class="form-horizontal needs-validation"
+  <form enctype="multipart/form-data"
+        class="form-horizontal needs-validation"
         method="post"
         action="{{ object.get_absolute_url }}{% if chooseForm %}?choice={{reviewable.pk}}{% endif %}">
 

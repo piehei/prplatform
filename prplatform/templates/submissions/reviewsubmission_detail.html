@@ -58,7 +58,11 @@
               <br>
               Answer:<br>
               <div class="ml-4">
-                {{ item.a | linebreaks }}
+                {% if 'a' in item %}
+                  {{ item.a | linebreaks }}
+                {% else %}
+                <a href="{{ item.f }}">Click here to download submitted file</a>
+                {% endif %}
               </div>
             </li>
           {% endfor %}
