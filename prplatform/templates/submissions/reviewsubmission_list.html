@@ -52,25 +52,25 @@
           </tr>
         </thead>
         <tbody>
-            {% for origsub in object_list %}
+            {% for rev_sub in object_list %}
               <tr scope="row">
                 <td>
-                  <a href="{{ origsub.get_absolute_url }}">
+                  <a href="{{ rev_sub.get_absolute_url }}">
                     {{ forloop.counter }}
                   </a>
                 </td>
                 {% if teacher %}
                 <td>
-                  {{ origsub.submitter }}
+                  {{ rev_sub.submitter }}
                 </td>
                 {% endif %}
                 {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
                 <td>
-                    {{ origsub.reviewed_submission.submitter }}
+                    {{ rev_sub.reviewed_submission.submitter }}
                 </td>
                 {% endif %}
                 <td>
-                  {{ origsub.created | date:"SHORT_DATETIME_FORMAT" }}
+                  {{ rev_sub.created | date:"SHORT_DATETIME_FORMAT" }}
                 </td>
               </tr>
             {% endfor %}
