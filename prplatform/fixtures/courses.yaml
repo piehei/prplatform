@@ -245,3 +245,13 @@
     choices: [["1", "1"], ["2", "2"], ["3", "3"]]
     course: ["TIE-02100", "TIE-02100-1"]
     hide_from_receiver: True
+
+- model: exercises.question
+  pk: 3
+  fields:
+    question_text: Upload a txt file
+    choices: []
+    accepted_filetypes: "txt"
+    course: ["TIE-02100", "TIE-02100-1"]
+    hide_from_receiver: False
+
