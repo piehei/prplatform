@@ -140,6 +140,7 @@
     name: T2 FILE
     description: Sum this and that
     type: "FILE_UPLOAD"
+    accepted_filetypes: "pdf"
     upload_instructions: Upload the final Python code into the system
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
