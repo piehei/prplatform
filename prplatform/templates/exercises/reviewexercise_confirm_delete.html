@@ -16,10 +16,24 @@
 
 <form method="post">
     {% csrf_token %}
-    <p>Are you sure you want to delete "{{ object }}"?</p>
+    <p>Are you sure you want to delete review exercise "{{ object }}"?</p>
+
+    <p>Deleting the exercise will also delete:</p>
+
+    <strong>Peer-reviews:</strong>
+    <br>
+    {% if not object.submissions.all %}
+      No peer-reviews found
+    {% endif %}
+    {% for rsub in object.submissions.all %}
+    <div class="list-group-item p-1">{{ rsub }}</div>
+    {% endfor %}
+
+    <div class="mt-4">
     <a class="btn btn-primary mr-4"
        onClick="javascript:history.go(-1)">Cancel</a>
     <input class="btn btn-danger" type="submit" value="Confirm deletion" />
+    </div>
 </form>
 
 {% endblock %}
