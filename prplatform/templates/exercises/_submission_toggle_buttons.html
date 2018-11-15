@@ -1,0 +1,21 @@
+          <div class="m-2">
+            <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">
+              To be reviewed
+            </button>
+            <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-my-submission" aria-expanded="false" aria-controls="collapseExample">
+              My submission
+            </button>
+
+            {% if object.model_answer %}
+              <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-model-answer" aria-expanded="false" aria-controls="collapseExample">
+                Teacher's solution
+              </button>
+            {% endif %}
+          </div>
+
+          {% if teacher %}
+          <div class="m-2">
+            <span class="font-italic">Since you're a teacher, submissions below are randomly picked to show you the UI.</span>
+          </div>
+          {% endif %}
+

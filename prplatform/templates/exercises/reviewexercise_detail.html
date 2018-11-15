@@ -53,51 +53,28 @@
       </div>
 
       {% if own_submission_is_missing %}
-        <div class="alert alert-warning">
+        <div class="alert alert-warning ml-3 mr-3">
           You cannot make peer-reviews before making your own original submission.
           Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
         </div>
       {% elif reviews_done %}
-        <div class="alert alert-warning font-italic">
+        <div class="alert alert-warning font-italic ml-3 mr-3">
           You have already submitted your peer-reviews to this exercise.
         </div>
       {% endif %}
 
       {% if show_content_to_review %}
 
-        {% if chooseForm %}
-          {% include "./_choose_form.html" %}
-        {% endif %}
+        {% include "./_choose_form.html" %}
 
-        {% if not reviewable and not chooseForm and not teacher %}
-          <div class="alert alert-warning">
+        {% if not reviewable and not chooseForm %}
+          <div class="alert alert-warning ml-3 mr-3">
             Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
           </div>
           <br>
         {% else %}
 
-          {% if object.type != 'CHOOSE' %}
-          <p>
-            <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-reviewable" aria-expanded="false" aria-controls="collapseExample">
-              To be reviewed
-            </button>
-            <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-my-submission" aria-expanded="false" aria-controls="collapseExample">
-              My submission
-            </button>
-
-            {% if object.model_answer %}
-              <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#collapse-model-answer" aria-expanded="false" aria-controls="collapseExample">
-                Teacher's solution
-              </button>
-            {% endif %}
-
-          {% if teacher %}
-          <br>
-          <span class="font-italic">Since you're a teacher, submissions below are randomly picked to show you the UI.</span>
-          {% endif %}
-
-          </p>
-          {% endif %}
+            {% include "./_submission_toggle_buttons.html" %}
 
             {% include "./_my_submission.html" %}
             {% include "./_reviewable.html" with chooseMode=chooseForm %}
