@@ -17,9 +17,39 @@
 <form method="post">
     {% csrf_token %}
     <p>Are you sure you want to delete "{{ object }}"?</p>
+    <p>Deleting the exercise will also delete:</p>
+
+    <strong>Original submissions:</strong>
+    <br>
+    {% if not object.submissions.all %}
+      No original submissions found
+    {% endif %}
+    {% for osub in object.submissions.all %}
+    <div class="list-group-item p-1">{{ osub }}</div>
+    {% endfor %}
+
+    <br><br>
+
+    {% if object.review_exercise %}
+    <strong>Review exercise:</strong>
+    <br>
+    {{ object.review_exercise }}
+    <br><br>
+    <strong>Peer-reviews:</strong>
+    <br>
+    {% if not object.review_exercise.submissions.all %}
+      No peer-reviews found
+    {% endif %}
+    {% for rsub in object.review_exercise.submissions.all %}
+    <div class="list-group-item p-1">{{ rsub }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <div class="mt-4">
     <a class="btn btn-primary mr-4"
        onClick="javascript:history.go(-1)">Cancel</a>
     <input class="btn btn-danger" type="submit" value="Confirm deletion" />
+    </div>
 </form>
 
 {% endblock %}
