@@ -17,7 +17,7 @@ class QuestionModelForm(forms.ModelForm):
         model = Question
         fields = ['question_text', 'choices', 'accepted_filetypes']
         help_texts = {
-                'accepted_filetypes': 'Comma-separated list of '}
+                'accepted_filetypes': 'Comma-separated list of filetypes. No whitespace.'}
 
     def clean(self):
         cd = super().clean()
