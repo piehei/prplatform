@@ -49,6 +49,12 @@ class SubmissionExerciseForm(ModelForm):
             'aplus_exercise_id': []
         }
 
+        opening = cd.get('opening_time')
+        closing = cd.get('closing_time')
+
+        if opening >= closing:
+            raise ValidationError('Exercise cannot close before it opens')
+
         if type == SubmissionExercise.TEXT:
 
             # no extra fields chosen
@@ -148,6 +154,12 @@ class ReviewExerciseForm(ModelForm):
 
     def clean(self):
         cd = super().clean()
+
+        opening = cd.get('opening_time')
+        closing = cd.get('closing_time')
+
+        if opening >= closing:
+            raise ValidationError('Exercise cannot close before it opens')
 
         exer_type = cd.get('type')
         can_review_own_submission = cd.get('can_review_own_submission', None)

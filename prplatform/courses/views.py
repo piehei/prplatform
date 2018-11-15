@@ -124,6 +124,14 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     slug_url_kwarg = "url_slug"
     fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey']
 
+    def form_valid(self, form):
+
+        if form.cleaned_data['start_date'] >= form.cleaned_data['end_date']:
+            form.errors['end_date'] = ["Course cannot end before it starts"]
+            return super().form_invalid(form)
+
+        return super().form_valid(form)
+
 
 class CourseListView(ListView):
     model = Course
