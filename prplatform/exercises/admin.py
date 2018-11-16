@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import SubmissionExercise, ReviewExercise
-from .deadline_extension_models import SubmissionExerciseDeadlineExtension
+from .deviation_models import SubmissionExerciseDeviation
 from .question_models import Question, QuestionInUse, Choice, ChoiceInUse
 
 
@@ -29,6 +29,6 @@ class ChoiceModelAdmin(admin.ModelAdmin):
 class ChoiceInUseModelAdmin(admin.ModelAdmin):
     pass
 
-@admin.register(SubmissionExerciseDeadlineExtension)
-class SEDeadlineExtensionModelAdmin(admin.ModelAdmin):
+@admin.register(SubmissionExerciseDeviation)
+class SEDeviationModelAdmin(admin.ModelAdmin):
     pass

@@ -13,7 +13,8 @@ from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, 
 from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, \
                                        ReviewExerciseDetailView
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
-from prplatform.exercises.deadline_extension_models import SubmissionExerciseDeadlineExtension
+from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
+
 
 def add_middleware(request, middleware_class):
     middleware = middleware_class()
@@ -106,7 +107,7 @@ class ExerciseTest(TestCase):
         self.assertEqual(response.context_data['disable_form'], True)
 
         # student *SHOULD* have an extension
-        extension = SubmissionExerciseDeadlineExtension(course=se.course, exercise=se,
+        extension = SubmissionExerciseDeviation(course=se.course, exercise=se,
                                                         user=s1, new_deadline=datetime.datetime(2050, 1, 1))
         extension.save()
 

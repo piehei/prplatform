@@ -52,11 +52,11 @@ class BaseExercise(TimeStampedModel):
 
     def deadline_extension_for(self, user):
         if self.use_groups:
-            extension = self.deadline_extensions.filter(
+            extension = self.deviations.filter(
                     group=self.course.find_studentgroup_by_user(user)
                     ).first()
         else:
-            extension = self.deadline_extensions.filter(user=user).first()
+            extension = self.deviations.filter(user=user).first()
 
         if not extension or extension.new_deadline <= self.closing_time:
             return None
@@ -80,6 +80,16 @@ class BaseExercise(TimeStampedModel):
     def get_list_url(self):
         urls = {'SubmissionExercise': 'courses:submissions:original-list',
                 'ReviewExercise': 'courses:submissions:review-list'}
+        base_course = self.course.base_course
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
+    def get_deviations_list_url(self):
+        urls = {'SubmissionExercise': 'courses:exercises:submission-deviation-list',
+                'ReviewExercise': 'courses:exercises:review-deviation-list'}
         base_course = self.course.base_course
         return reverse(urls[self.__class__.__name__], kwargs={
             'base_url_slug': base_course.url_slug,
