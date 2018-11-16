@@ -36,7 +36,9 @@
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
                href="{{ object.get_list_url }}">
               My submissions
-              <span class="ml-1 badge badge-primary badge-pill">{{ object|my_submission_count:user }}</span>
+              <span class="ml-1 badge badge-primary badge-pill">
+                {{ object|my_submission_count:user }} / {{ object.max_submission_count}}
+              </span>
             </a>
           </li>
         {% endif %}
