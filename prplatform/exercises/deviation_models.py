@@ -8,8 +8,6 @@ from .models import SubmissionExercise
 
 class Deviation(TimeStampedModel):
 
-    course = models.ForeignKey(Course, related_name='%(class)s_deviations',
-                               on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='%(class)s_deviations',
                              null=True, blank=True,
                              on_delete=models.CASCADE)
