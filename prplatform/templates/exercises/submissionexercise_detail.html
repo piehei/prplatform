@@ -30,7 +30,7 @@
           {% with object|deadline_extension_for:request.user as extension %}
             {% if extension %}
             <br>
-            <strong>However, teacher has given you an extended deadline until
+            <strong>However, you have an extended deadline until
               {{ extension.new_deadline | date:"SHORT_DATETIME_FORMAT" }}
             </strong>
             {% endif %}

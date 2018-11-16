@@ -126,6 +126,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         exercise = self.object
         user = self.request.user
         ctx = self.get_context_data(**kwargs)
+        ctx['disable_form'] = False
 
         if not exercise.can_access(user):
             raise PermissionDenied
