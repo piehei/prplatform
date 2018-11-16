@@ -1,0 +1,12 @@
+    {% if errormsg and errormsg != 'not_open' %}
+
+      <div class="alert alert-warning ml-3 mr-3">
+      {% if errormsg == 'own_submission_missing' %}
+        You cannot make peer-reviews before making your own original submission.
+        Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
+      {% elif errormsg == 'reviews_done' %}
+        You have already submitted your peer-reviews to this exercise.
+      {% endif %}
+      </div>
+
+    {% endif %}

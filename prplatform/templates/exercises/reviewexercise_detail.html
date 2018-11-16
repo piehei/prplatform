@@ -16,19 +16,17 @@
 
   <div class="row">
     <div class="col-md-12">
-      <h2>{{ object.name }}
-      </h2>
 
-      <!--
-      {% if teacher %}
-        <div class="alert alert-danger" role="alert">
-          <h4 class="alert-heading">Alert teacher!</h4>
-          This page is now in <strong>teacher</strong> mode. TODO
-        </div>
-      {% endif %}
-      -->
+      <h2>{{ object.name }}</h2>
 
-      {% if not object.is_open %}
+      <div class="col-md-12 mb-4">
+        <p class="font-italic">In this exercise you're peer-reviewing other students' submissions to the exercise
+          <a href="{{ object.reviewable_exercise.get_absolute_url }}">
+            {{ object.reviewable_exercise.name }}
+          </a>
+        </p>
+
+      {% if errormsg == 'not_open' %}
         <div class="alert alert-danger">
           {% if object.opens_in_future %}
           This exercise will open on {{ object.opening_time }}
@@ -38,30 +36,15 @@
         </div>
       {% endif %}
 
-      <div class="col-md-12 mb-4">
-        <p class="font-italic">In this exercise you're peer-reviewing other students' submissions to the exercise
-          <a href="{{ object.reviewable_exercise.get_absolute_url }}">
-            {{ object.reviewable_exercise.name }}
-          </a>
-        </p>
 
         <h5>Description</h5>
         {% if not object.description %}
           No description available
         {% endif %}
-          {{ object.description | linebreaks }}
+        {{ object.description | linebreaks }}
       </div>
 
-      {% if own_submission_is_missing %}
-        <div class="alert alert-warning ml-3 mr-3">
-          You cannot make peer-reviews before making your own original submission.
-          Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
-        </div>
-      {% elif reviews_done %}
-        <div class="alert alert-warning font-italic ml-3 mr-3">
-          You have already submitted your peer-reviews to this exercise.
-        </div>
-      {% endif %}
+      {% include "./_re_errormsgs.html" %}
 
       {% if show_content_to_review %}
 
@@ -75,12 +58,10 @@
         {% else %}
 
             {% include "./_submission_toggle_buttons.html" %}
-
             {% include "./_my_submission.html" %}
             {% include "./_reviewable.html" with chooseMode=chooseForm %}
             {% include "./_model_answer.html" %}
 
-          </div>
         {% endif %}
 
       {% endif %}

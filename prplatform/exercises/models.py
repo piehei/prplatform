@@ -1,3 +1,4 @@
+from django.apps import apps
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
@@ -5,7 +6,6 @@ from django.contrib.postgres.fields import ArrayField
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.courses.models import Course
-# from .question_models import Question
 
 
 class BaseExercise(TimeStampedModel):
@@ -267,6 +267,36 @@ class ReviewExercise(BaseExercise):
                                           .order_by('reviewed_submission__submitter_user_id', '-created') \
                                           .distinct('reviewed_submission__submitter_user_id')
         return all_reviews
+
+    def can_submit(self, user):
+        if self.is_teacher(user):
+            return True, None
+
+        if user.is_anonymous:
+            return False, None
+
+        if not self.course.is_enrolled(user):
+            return False, None
+
+        if not self.is_open():
+            return False, "not_open"
+
+        if self.use_groups and not self.course.find_studentgroup_by_user(user):
+            return False, None
+
+        if self.submissions_by_submitter(user).count() >= self.max_reviews_per_student:
+            return False, "reviews_done"
+
+        if self.original_submissions_by(user).count() == 0 \
+                and self.require_original_submission:
+            return False, "own_submission_missing"
+
+        return True, None
+
+    def original_submissions_by(self, user):
+        return self.reviewable_exercise \
+                   .submissions_by_submitter(user) \
+                   .filter(state=apps.get_model('submissions', 'OriginalSubmission').READY_FOR_REVIEW)
 
     def get_absolute_url(self):
         base_course = self.course.base_course

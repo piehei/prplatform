@@ -275,41 +275,25 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             raise PermissionDenied
 
         ctx['forms'] = self._get_answer_modelforms(exercise)
-
-        group_check_ok = True
-        if exercise.use_groups and not ctx['my_group']:
-            group_check_ok = False
-
-        ctx['my_submission'] = exercise.reviewable_exercise \
-                                       .submissions_by_submitter(self.request.user) \
-                                       .filter(state=OriginalSubmission.READY_FOR_REVIEW) \
-                                       .first()
-
+        ctx['my_submission'] = exercise.original_submissions_by(self.request.user).first()
         ctx['disable_form'] = True
 
-        if not ctx['my_submission'] and exercise.require_original_submission and not ctx['teacher']:
-            ctx['own_submission_is_missing'] = True
+        can_submit, errormsg = exercise.can_submit(self.request.user)
+
+        if not can_submit:
+            ctx['errormsg'] = errormsg
             return ctx
 
-        elif exercise.is_open() and group_check_ok:
+        if exercise.type == ReviewExercise.RANDOM:
+            ctx = self._get_random_ctx(ctx)
+        elif exercise.type == ReviewExercise.CHOOSE:
+            ctx = self._get_choose_ctx(ctx)
 
-            ctx['show_content_to_review'] = True
-            if exercise.type == ReviewExercise.RANDOM:
-                ctx = self._get_random_ctx(ctx)
-            elif exercise.type == ReviewExercise.CHOOSE:
-                ctx = self._get_choose_ctx(ctx)
+        ctx['show_content_to_review'] = True
+        if ctx['reviewable'] and not ctx['teacher']:
+            ctx['disable_form'] = False
 
-            if ctx['reviewable'] and not ctx['teacher']:
-                ctx['disable_form'] = False
-
-            if 'reviews_done' in ctx and ctx['reviews_done']:
-                ctx['show_content_to_review'] = False
-
-            return ctx
-
-        else:
-
-            return ctx
+        return ctx
 
     def _post_random(self, ctx):
         # TODO: should it be possible to update the previous review submission?
