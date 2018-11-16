@@ -23,7 +23,7 @@
       <div class="list-group-item d-flex justify-content-between">
 
         <div class="col-5" style="border-right:0px solid grey;">
-          {% if ex.visible_to_students or teacher %}
+          {% if ex.visible_to_students %}
             <a href="{{ ex.get_absolute_url }}" style="font-weight: bold;">{{ ex.name }}</a>
             <br>
             Deadline: {{ ex.closing_time | date:"SHORT_DATETIME_FORMAT" }}
