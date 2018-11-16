@@ -4,6 +4,8 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory, TestCase
 
+import datetime
+
 from prplatform.users.models import User
 from prplatform.courses.models import Course
 
@@ -11,7 +13,7 @@ from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, 
 from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, \
                                        ReviewExerciseDetailView
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
-
+from prplatform.exercises.deadline_extension_models import SubmissionExerciseDeadlineExtension
 
 def add_middleware(request, middleware_class):
     middleware = middleware_class()
@@ -85,6 +87,41 @@ class ExerciseTest(TestCase):
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "This exercise was closed on")
+        self.assertEqual(response.context_data['disable_form'], True)
+
+    def test_deadlineExtensionAllowsSubmitting(self):
+
+        s1 = User.objects.get(username="student1")
+        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
+        request.user = s1
+        self.kwargs['pk'] = 4
+
+        se = SubmissionExercise.objects.get(pk=4)
+        se.opening_time = "2005-01-01 10:10"
+        se.closing_time = "2006-01-01 10:10"
+        se.save()
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "This exercise was closed on")
+        self.assertEqual(response.context_data['disable_form'], True)
+
+        # student *SHOULD* have an extension
+        extension = SubmissionExerciseDeadlineExtension(course=se.course, exercise=se,
+                                                        user=s1, new_deadline=datetime.datetime(2050, 1, 1))
+        extension.save()
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "This exercise was closed on")
+        self.assertContains(response, "However, you have an extended deadline until")
+        self.assertEqual(response.context_data['disable_form'], False)
+
+        # student *SHOULD NOT* have an extension
+        extension.new_deadline = "2006-01-01 10:10"
+        extension.save()
+
+        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "This exercise was closed on")
+        self.assertNotContains(response, "However, you have an extended deadline until")
         self.assertEqual(response.context_data['disable_form'], True)
 
     def test_studentCanSubmit(self):
