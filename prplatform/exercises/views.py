@@ -145,13 +145,8 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         exercise = self.object
         user = self.request.user
 
-        # TODO: teacher has to be able to override this!??!?!
-        if not ctx['teacher'] and exercise.closing_time < timezone.now():
-            messages.error(self.request, 'Closing time for the exercise has passed. You cannot submit.')
-            ctx['disable_form'] = True
-            return self.render_to_response(ctx)
         if not exercise.can_submit(user):
-            messages.error(self.request, 'You have used all your submissions.')
+            messages.error(self.request, 'You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
 

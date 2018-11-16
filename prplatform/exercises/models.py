@@ -50,6 +50,19 @@ class BaseExercise(TimeStampedModel):
         # if visible, anyone can access
         return True
 
+    def deadline_extension_for(self, user):
+        if self.use_groups:
+            return self.deadline_extensions.filter(
+                    group=self.course.find_studentgroup_by_user(user)
+                    ).first()
+        return self.deadline_extensions.filter(user=user).first()
+
+    def has_deadline_extension(self, user):
+        extension = self.deadline_extension_for(user)
+        if not extension:
+            return False
+        return extension.new_deadline > self.closing_time
+
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
 
@@ -160,7 +173,7 @@ class SubmissionExercise(BaseExercise):
         if not self.course.is_enrolled(user):
             return False
 
-        if not self.is_open():
+        if not self.is_open() and not self.has_deadline_extension(user):
             return False
 
         if self.use_groups and not self.course.find_studentgroup_by_user(user):

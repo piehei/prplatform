@@ -17,7 +17,12 @@ def my_received_feedback_count(exercise, user):
     return exercise.last_reviews_for(user).count()
 
 
+def deadline_extension_for(exercise, user):
+    return exercise.deadline_extension_for(user)
+
+
 register.filter('my_submission_count', my_submission_count)
 register.filter('my_received_feedback_count', my_received_feedback_count)
+register.filter('deadline_extension_for', deadline_extension_for)
 
 

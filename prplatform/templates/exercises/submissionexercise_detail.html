@@ -3,6 +3,7 @@
 {% load crispy_forms_tags %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
+{% load exercise_filters %}
 
 {% block breadcrumbs %}
     {{ block.super }}
@@ -22,9 +23,19 @@
       {% if not object.is_open %}
         <div class="alert alert-danger d-md-inline-block">
           {% if object.opens_in_future %}
-          This exercise will open on {{ object.opening_time }}
+          This exercise will open on {{ object.opening_time | date:"SHORT_DATETIME_FORMAT" }}
           {% else %}
-          This exercise was closed on {{ object.closing_time }}
+          This exercise was closed on {{ object.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+
+          {% with object|deadline_extension_for:request.user as extension %}
+            {% if extension %}
+            <br>
+            <strong>However, teacher has given you an extended deadline until
+              {{ extension.new_deadline | date:"SHORT_DATETIME_FORMAT" }}
+            </strong>
+            {% endif %}
+          {% endwith %}
+
           {% endif %}
         </div>
         <br>
