@@ -128,9 +128,9 @@ class ReviewExerciseForm(ModelForm):
                   'reviewable_exercise',
                   'type',
                   'can_review_own_submission',
-                  'max_reviews_per_student',
+                  'max_submission_count',
                   'max_reviews_per_submission',
-                  'minimum_reviews_per_student',
+                  'min_submission_count',
                   'require_original_submission',
                   'use_groups',
                   ]

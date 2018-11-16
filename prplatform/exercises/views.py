@@ -223,7 +223,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         if rlock_list:
             last_rlock = rlock_list.last()
 
-            if last_rlock.review_submission and exercise.max_reviews_per_student == len(rlock_list):
+            if last_rlock.review_submission and exercise.max_submission_count == len(rlock_list):
                 ctx['reviews_done'] = True
                 return ctx
             elif not last_rlock.review_submission:

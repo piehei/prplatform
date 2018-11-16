@@ -225,9 +225,9 @@ class ReviewExercise(BaseExercise):
 
     can_review_own_submission = models.BooleanField("Students can peer-review their own submissions", default=False)
 
-    max_reviews_per_student = models.IntegerField("How many peer-reviews one student can do", default=1)
+    max_submission_count = models.IntegerField("How many peer-reviews one student can do", default=1)
     max_reviews_per_submission = models.IntegerField("How many peer-reviews one submission can receive", default=1)
-    minimum_reviews_per_student = models.IntegerField(
+    min_submission_count = models.IntegerField(
             "How many peer-reviews one student *HAS TO* complete before seeing peer-reviews by others", default=1)
 
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
@@ -263,7 +263,7 @@ class ReviewExercise(BaseExercise):
 
         reviews_by_user = self.last_reviews_by(user)
 
-        if reviews_by_user.count() < self.minimum_reviews_per_student:
+        if reviews_by_user.count() < self.min_submission_count:
             return False
 
         return True
@@ -297,7 +297,7 @@ class ReviewExercise(BaseExercise):
         if self.use_groups and not self.course.find_studentgroup_by_user(user):
             return False, None
 
-        if self.submissions_by_submitter(user).count() >= self.max_reviews_per_student:
+        if self.submissions_by_submitter(user).count() >= self.max_submission_count:
             return False, "reviews_done"
 
         if self.original_submissions_by(user).count() == 0 \
