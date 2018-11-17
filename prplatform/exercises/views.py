@@ -353,6 +353,12 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
 
+        can_submit, errormsg = self.object.can_submit(self.request.user)
+        if not can_submit:
+            messages.error(self.request, 'You cannot submit.')
+            ctx['disable_form'] = True
+            return self.render_to_response(ctx)
+
         valid, self.forms = self._validate_forms()
 
         if not valid:

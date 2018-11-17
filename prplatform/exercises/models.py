@@ -107,7 +107,6 @@ class BaseExercise(TimeStampedModel):
             'pk': self.pk
             })
 
-
     class Meta:
         abstract = True
         ordering = ['-closing_time']
@@ -312,7 +311,7 @@ class ReviewExercise(BaseExercise):
         if not self.course.is_enrolled(user):
             return False, None
 
-        if not self.is_open():
+        if not self.is_open() and not self.deadline_extension_for(user):
             return False, "not_open"
 
         if self.use_groups and not self.course.find_studentgroup_by_user(user):
