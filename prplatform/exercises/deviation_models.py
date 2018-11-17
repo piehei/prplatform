@@ -4,7 +4,7 @@ from django.urls import reverse
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
-from .models import SubmissionExercise
+from .models import SubmissionExercise, ReviewExercise
 
 
 class Deviation(TimeStampedModel):
@@ -37,4 +37,10 @@ class Deviation(TimeStampedModel):
 class SubmissionExerciseDeviation(Deviation):
 
     exercise = models.ForeignKey(SubmissionExercise, related_name='deviations',
+                                 on_delete=models.CASCADE)
+
+
+class ReviewExerciseDeviation(Deviation):
+
+    exercise = models.ForeignKey(ReviewExercise, related_name='deviations',
                                  on_delete=models.CASCADE)
