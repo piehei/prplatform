@@ -29,7 +29,7 @@ class Deviation(TimeStampedModel):
         return reverse(urls[self.__class__.__name__], kwargs={
             'base_url_slug': self.exercise.course.base_course.url_slug,
             'url_slug': self.exercise.course.url_slug,
-            'rpk': self.exercise.pk,
+            'exer_pk': self.exercise.pk,
             'pk': self.pk
             })
 
