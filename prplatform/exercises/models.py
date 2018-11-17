@@ -97,6 +97,17 @@ class BaseExercise(TimeStampedModel):
             'pk': self.pk
             })
 
+    def get_deviations_create_url(self):
+        urls = {'SubmissionExercise': 'courses:exercises:submission-deviation-create',
+                'ReviewExercise': 'courses:exercises:review-deviation-create'}
+        base_course = self.course.base_course
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
+
     class Meta:
         abstract = True
         ordering = ['-closing_time']

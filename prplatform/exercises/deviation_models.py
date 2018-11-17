@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User, StudentGroup
@@ -18,6 +19,19 @@ class Deviation(TimeStampedModel):
 
     class Meta:
         abstract = True
+
+    def __str__(self):
+        return f"{self.user} {self.group} {self.new_deadline}"
+
+    def get_delete_url(self):
+        urls = {'SubmissionExerciseDeviation': 'courses:exercises:submission-deviation-delete',
+                'ReviewExerciseDeviation': 'courses:exercises:review-deviation-delete'}
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': self.exercise.course.base_course.url_slug,
+            'url_slug': self.exercise.course.url_slug,
+            'rpk': self.exercise.pk,
+            'pk': self.pk
+            })
 
 
 class SubmissionExerciseDeviation(Deviation):

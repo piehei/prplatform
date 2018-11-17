@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Submission exercise" ""%}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb "Deviations" ""%}
+    {% breadcrumb "Create" "" %}
+{% endblock %}
+
+{% block title %}Create deviation{% endblock %}
+
+{% block content %}
+
+  {% include "../tabs.html" with tab="deviations" type="original" object=exercise %}
+
+  <h1>Create deviation</h1>
+  <form class="form-horizontal" method="post" action="{{ exercise.get_deviations_create_url }}">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls d-flex justify-content-between">
+        <a class="btn btn-warning mr-4" href="{{ exercise.get_deviations_list_url }}">Cancel</a>
+        <button type="submit" class="btn btn-success">Update</button>
+      </div>
+    </div>
+  </form>
+{% endblock %}

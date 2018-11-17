@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Submission exercise" ""%}
+    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb "Deviations" "" %}
+{% endblock %}
+{% block title %}Deviations{% endblock %}
+
+{% block content %}
+
+  {% include "../tabs.html" with tab="deviations" type="original" object=exercise %}
+
+  <div class="row">
+    <div class="col-md-12">
+
+      <a class="btn btn-sm btn-primary mt-2 mb-4"
+         href="{{ exercise.get_deviations_create_url }}">
+        Add deviation
+      </a>
+
+      {% for d in object_list %}
+      <div class="d-flex list-group-item mb-4">
+        {{ d }}
+
+          <form class="ml-auto" action="{{ d.get_delete_url }}" method="POST">
+            {% csrf_token %}
+            <input type="submit" value="DELETE">
+          </form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+{% endblock content %}
+

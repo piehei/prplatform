@@ -107,8 +107,8 @@ class ExerciseTest(TestCase):
         self.assertEqual(response.context_data['disable_form'], True)
 
         # student *SHOULD* have an extension
-        extension = SubmissionExerciseDeviation(course=se.course, exercise=se,
-                                                        user=s1, new_deadline=datetime.datetime(2050, 1, 1))
+        extension = SubmissionExerciseDeviation(exercise=se, user=s1,
+                                                new_deadline=datetime.datetime(2050, 1, 1))
         extension.save()
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
