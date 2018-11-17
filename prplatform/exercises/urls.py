@@ -9,17 +9,31 @@ from .deviation_views import DeviationListView, DeviationCreateView, DeviationDe
 app_name = "exercises"
 
 urlpatterns = [
+
+    # SUBMISSION EXERCISES
     path('s/<int:pk>/', view=views.SubmissionExerciseDetailView.as_view(), name="submission-detail"),
+
     path('s/<int:pk>/deviations',
          DeviationListView.as_view(), {'deviation_type': 's'}, name="submission-deviation-list"),
     path('s/<int:pk>/deviations/create',
          DeviationCreateView.as_view(), {'deviation_type': 's'}, name="submission-deviation-create"),
     path('s/<int:exer_pk>/deviations/<int:pk>/delete',
          DeviationDeleteView.as_view(), {'deviation_type': 's'}, name="submission-deviation-delete"),
+
+    # REVIEW EXERCISES
     path('r/<int:pk>/', view=views.ReviewExerciseDetailView.as_view(), name="review-detail"),
+
+    path('r/<int:pk>/deviations',
+         DeviationListView.as_view(), {'deviation_type': 'r'}, name="review-deviation-list"),
+    path('r/<int:pk>/deviations/create',
+         DeviationCreateView.as_view(), {'deviation_type': 'r'}, name="review-deviation-create"),
+    path('r/<int:exer_pk>/deviations/<int:pk>/delete',
+         DeviationDeleteView.as_view(), {'deviation_type': 'r'}, name="review-deviation-delete"),
+
+
+    # REVIEW QUESTIONS
     path('r/<int:pk>/q', view=QuestionListView.as_view(), name="question-list"),
     path('r/<int:rpk>/q/create/', view=QuestionCreateView.as_view(), name="question-create"),
     path('r/<int:rpk>/q/<int:pk>/', view=QuestionDetailView.as_view(), name="question-detail"),
     path('r/<int:rpk>/q/<int:pk>/update', view=QuestionUpdateView.as_view(), name="question-update"),
-    path('s/<int:pk>/submissions/', include('prplatform.submissions.urls', namespace="submissions"))
 ]

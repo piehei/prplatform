@@ -25,7 +25,7 @@ class Deviation(TimeStampedModel):
 
     def get_delete_url(self):
         urls = {'SubmissionExerciseDeviation': 'courses:exercises:submission-deviation-delete',
-                'ReviewExerciseDeviation': 'courses:exercises:review-deviation-delete'}
+                'ReviewExerciseDeviation':     'courses:exercises:review-deviation-delete'}
         return reverse(urls[self.__class__.__name__], kwargs={
             'base_url_slug': self.exercise.course.base_course.url_slug,
             'url_slug': self.exercise.course.url_slug,

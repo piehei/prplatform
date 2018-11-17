@@ -1,11 +1,10 @@
 from django.views.generic import CreateView, ListView, DeleteView
-from django.utils import timezone
+from django.forms import modelform_factory
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin
 from prplatform.exercises.deviation_models import SubmissionExerciseDeviation, ReviewExerciseDeviation
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
-from prplatform.courses.models import Course
 from .deviation_forms import DeviationForm
 
 
@@ -21,11 +20,14 @@ class DeviationBaseView(object):
         else:
             self.ExerciseModel = ReviewExercise
             self.DeviationModel = ReviewExerciseDeviation
+            self.model = ReviewExerciseDeviation
 
         return super().dispatch(request, args, kwargs)
 
 
 class DeviationListView(IsTeacherMixin, CourseContextMixin, DeviationBaseView, ListView):
+
+    template_name = 'exercises/deviation_list.html'
 
     def get_queryset(self):
         return self.DeviationModel.objects.filter(exercise=self.ExerciseModel.objects.get(pk=self.kwargs['pk']))
@@ -37,8 +39,10 @@ class DeviationListView(IsTeacherMixin, CourseContextMixin, DeviationBaseView, L
 
 
 class DeviationCreateView(IsTeacherMixin, CourseContextMixin, DeviationBaseView, CreateView):
-    template_name = 'exercises/submissionexercisedeviation_form.html'
-    form_class = DeviationForm
+    template_name = 'exercises/deviation_form.html'
+
+    def get_form_class(self):
+        return modelform_factory(self.DeviationModel, form=DeviationForm)
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -62,7 +66,14 @@ class DeviationCreateView(IsTeacherMixin, CourseContextMixin, DeviationBaseView,
 class DeviationDeleteView(IsTeacherMixin, CourseContextMixin, DeviationBaseView, DeleteView):
 
     def get_success_url(self):
-        return reverse('courses:exercises:submission-deviation-list', kwargs={
+        if self.kwargs['deviation_type'] == 's':
+            typestr = 'submission'
+        else:
+            typestr = 'review'
+
+        print(typestr)
+
+        return reverse(f'courses:exercises:{typestr}-deviation-list', kwargs={
             'base_url_slug': self.kwargs['base_url_slug'],
             'url_slug': self.kwargs['url_slug'],
             'pk': self.kwargs['exer_pk']

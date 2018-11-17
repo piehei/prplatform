@@ -1,13 +1,19 @@
 from django.forms import ModelForm, BooleanField, ValidationError
 from django.utils import timezone
 
-from .deviation_models import SubmissionExerciseDeviation
-
 
 class DeviationForm(ModelForm):
+    """ This is a generic DeviationForm which can be used with both
+        Submission and Review exercises to create Submisison and Review
+        Exercise Deviations.
+
+        Please note: model = None in class Meta which means that a
+        modelform_factory is needed in order to dynamically create a correct
+        version of a form.
+    """
 
     class Meta:
-        model = SubmissionExerciseDeviation
+        model = None
         fields = ['user', 'group', 'new_deadline']
         labels = {
                 'new_deadline': 'New deadline. The prepopulated value in the input field is the original deadline.'
@@ -18,7 +24,6 @@ class DeviationForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.exercise = kwargs.pop('exercise')
-
         super().__init__(*args, **kwargs)
 
         self.fields['new_deadline'].initial = self.exercise.closing_time

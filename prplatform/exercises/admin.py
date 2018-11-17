@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from .models import SubmissionExercise, ReviewExercise
-from .deviation_models import SubmissionExerciseDeviation
+from .deviation_models import SubmissionExerciseDeviation, ReviewExerciseDeviation
 from .question_models import Question, QuestionInUse, Choice, ChoiceInUse
 
 
@@ -31,4 +31,8 @@ class ChoiceInUseModelAdmin(admin.ModelAdmin):
 
 @admin.register(SubmissionExerciseDeviation)
 class SEDeviationModelAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(ReviewExerciseDeviation)
+class REDeviationModelAdmin(admin.ModelAdmin):
     pass

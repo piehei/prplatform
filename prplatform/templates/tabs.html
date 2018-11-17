@@ -24,14 +24,14 @@
             </a>
           </li>
           {% endif %}
-          {% if not object.questions %}
+
           <li class="nav-item">
             <a class="nav-link {% if tab == 'deviations' %}active{% endif %}"
                href="{{ object.get_deviations_list_url }}">
               Deviations
             </a>
           </li>
-          {% endif %}
+
           <li class="nav-item">
             <a class="nav-link {% if tab == 'submissions' %}active{% endif %}"
                href="{{ object.get_list_url }}">
