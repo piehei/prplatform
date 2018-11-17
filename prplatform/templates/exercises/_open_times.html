@@ -1,0 +1,23 @@
+{% load exercise_filters %}
+
+      {% if not object.is_open %}
+        <div class="alert alert-danger d-md-inline-block">
+          {% if object.opens_in_future %}
+          This exercise will open on {{ object.opening_time | date:"SHORT_DATETIME_FORMAT" }}
+          {% else %}
+          This exercise was closed on {{ object.closing_time | date:"SHORT_DATETIME_FORMAT" }}
+
+          {% with object|deadline_extension_for:request.user as extension %}
+            {% if extension %}
+            <br>
+            <strong>However, you have an extended deadline until
+              {{ extension.new_deadline | date:"SHORT_DATETIME_FORMAT" }}
+            </strong>
+            {% endif %}
+          {% endwith %}
+
+          {% endif %}
+        </div>
+        <br>
+      {% endif %}
+

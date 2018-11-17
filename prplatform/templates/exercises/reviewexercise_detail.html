@@ -26,15 +26,7 @@
           </a>
         </p>
 
-      {% if errormsg == 'not_open' %}
-        <div class="alert alert-danger">
-          {% if object.opens_in_future %}
-          This exercise will open on {{ object.opening_time }}
-          {% else %}
-          This exercise was closed on {{ object.closing_time }}
-          {% endif %}
-        </div>
-      {% endif %}
+      {% include "./_open_times.html" %}
 
 
         <h5>Description</h5>
