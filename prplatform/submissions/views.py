@@ -1,16 +1,14 @@
 from django.core.exceptions import PermissionDenied
-from django import forms
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.views.generic import DetailView, ListView, UpdateView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 
 import os
 
-from .models import OriginalSubmission, ReviewSubmission, Answer
+from .models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 from .forms import OriginalSubmissionStateForm
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin, IsEnrolledMixin
@@ -148,6 +146,7 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
 
 class DownloadSubmissionView(IsEnrolledMixin, View):
 
+    # TODO: rewrite this whole mess
     def get(self, *args, **kwargs):
         user = self.request.user
 
@@ -174,7 +173,16 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
         reviewer = False
         receiver = False
         if dtype == 'osub':
-            pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
+
+            if re.use_groups:
+                group = re.course.find_studentgroup_by_user(user)
+                if not group:
+                    pks_of_users_reviewables = []
+                else:
+                    pks_of_users_reviewables = ReviewLock.objects.filter(group=group).values_list('original_submission', flat=True)
+            else:
+                pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
+
             reviewer = kwargs['pk'] in pks_of_users_reviewables
         else:
             receiver = obj.submission.reviewed_submission.is_owner(user)
