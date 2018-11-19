@@ -16,6 +16,7 @@ class Deviation(TimeStampedModel):
                               null=True, blank=True,
                               on_delete=models.CASCADE)
     new_deadline = models.DateTimeField()
+    extra_submissions = models.PositiveIntegerField(default=0)
 
     class Meta:
         abstract = True

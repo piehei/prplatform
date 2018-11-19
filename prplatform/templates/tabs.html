@@ -45,7 +45,7 @@
                href="{{ object.get_list_url }}">
               My submissions
               <span class="ml-1 badge badge-primary badge-pill">
-                {{ object|my_submission_count:user }} / {{ object.max_submission_count}}
+                {{ object|my_submission_count:user }} / {{ object|max_submissions_for:user }}
               </span>
             </a>
           </li>

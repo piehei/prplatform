@@ -21,8 +21,13 @@ def deadline_extension_for(exercise, user):
     return exercise.deadline_extension_for(user)
 
 
+def max_submissions_for(exercise, user):
+    return exercise.max_submissions_for(user)
+
+
 register.filter('my_submission_count', my_submission_count)
 register.filter('my_received_feedback_count', my_received_feedback_count)
 register.filter('deadline_extension_for', deadline_extension_for)
+register.filter('max_submissions_for', max_submissions_for)
 
 

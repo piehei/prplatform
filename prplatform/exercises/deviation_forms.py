@@ -14,7 +14,7 @@ class DeviationForm(ModelForm):
 
     class Meta:
         model = None
-        fields = ['user', 'group', 'new_deadline']
+        fields = ['user', 'group', 'new_deadline', 'extra_submissions']
         labels = {
                 'new_deadline': 'New deadline. The prepopulated value in the input field is the original deadline.'
                 }
@@ -46,7 +46,7 @@ class DeviationForm(ModelForm):
     def clean(self):
 
         cd = super().clean()
-        if cd['new_deadline'] <= self.exercise.closing_time:
+        if cd['new_deadline'] < self.exercise.closing_time:
             raise ValidationError('New deadline cannot be before original deadline')
 
         return cd

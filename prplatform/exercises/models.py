@@ -50,18 +50,26 @@ class BaseExercise(TimeStampedModel):
         # if visible, anyone can access
         return True
 
-    def deadline_extension_for(self, user):
+    def deviation_for(self, user):
         if self.use_groups:
-            extension = self.deviations.filter(
+            return self.deviations.filter(
                     group=self.course.find_studentgroup_by_user(user)
                     ).first()
         else:
-            extension = self.deviations.filter(user=user).first()
+            return self.deviations.filter(user=user).first()
 
-        if not extension or extension.new_deadline <= self.closing_time:
+    def deadline_extension_for(self, user):
+
+        deviation = self.deviation_for(user)
+        if not deviation or deviation.new_deadline <= self.closing_time:
             return None
+        return deviation
 
-        return extension
+    def max_submissions_for(self, user):
+        deviation = self.deviation_for(user)
+        if not deviation:
+            return self.max_submission_count
+        return self.max_submission_count + deviation.extra_submissions
 
     def my_submissions(self, user):
         return self.submissions.filter(submitter=user)
@@ -208,7 +216,8 @@ class SubmissionExercise(BaseExercise):
             if latest_sub.state == latest_sub.BOOMERANG:
                 return True
 
-        if submissions.count() >= self.max_submission_count:
+        # WARNING: do NOT move this above the BOOMERANG check
+        if submissions.count() >= self.max_submissions_for(user):
             return False
 
         return True
@@ -316,13 +325,13 @@ class ReviewExercise(BaseExercise):
         if not self.course.is_enrolled(user):
             return False, None
 
-        if not self.is_open() and not self.deadline_extension_for(user):
-            return False, "not_open"
-
         if self.use_groups and not self.course.find_studentgroup_by_user(user):
             return False, None
 
-        if self.submissions_by_submitter(user).count() >= self.max_submission_count:
+        if not self.is_open() and not self.deadline_extension_for(user):
+            return False, "not_open"
+
+        if self.submissions_by_submitter(user).count() >= self.max_submissions_for(user):
             return False, "reviews_done"
 
         if self.original_submissions_by(user).count() == 0 \
