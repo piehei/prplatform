@@ -172,16 +172,8 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
         reviewer = False
         receiver = False
         if dtype == 'osub':
-
-            if re.use_groups:
-                group = re.course.find_studentgroup_by_user(user)
-                if not group:
-                    pks_of_users_reviewables = []
-                else:
-                    pks_of_users_reviewables = ReviewLock.objects.filter(group=group).values_list('original_submission', flat=True)
-            else:
-                pks_of_users_reviewables = user.reviewlock_set.all().values_list('original_submission', flat=True)
-
+            pks_of_users_reviewables = re.reviewlocks_for(self.request.user) \
+                                         .values_list('original_submission', flat=True)
             reviewer = kwargs['pk'] in pks_of_users_reviewables
         else:
             receiver = obj.submission.reviewed_submission.is_owner(user)
