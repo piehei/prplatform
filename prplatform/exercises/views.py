@@ -296,11 +296,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
     def _post_random(self, ctx):
         # TODO: should it be possible to update the previous review submission?
 
-        if self.object.use_groups:
-            rlock_list = ReviewLock.objects.filter(group=ctx['my_group'], review_exercise=self.object)
-        else:
-            rlock_list = ReviewLock.objects.filter(user=self.request.user, review_exercise=self.object)
-
+        rlock_list = self.object.reviewlocks_for(self.request.user)
         rlock = rlock_list.last()
 
         new_review_submission = ReviewSubmission(course=ctx['course'],

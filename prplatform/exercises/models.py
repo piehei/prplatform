@@ -345,6 +345,16 @@ class ReviewExercise(BaseExercise):
                    .submissions_by_submitter(user) \
                    .filter(state=apps.get_model('submissions', 'OriginalSubmission').READY_FOR_REVIEW)
 
+    def reviewlocks_for(self, user):
+        if self.use_groups:
+            g = self.course.find_studentgroup_by_user(user)
+            if not g:
+                return self.reviewlock_set.none()
+            return self.reviewlock_set.filter(group=g,
+                                              review_exercise=self)
+        return self.reviewlock_set.filter(user=user,
+                                          review_exercise=self)
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={

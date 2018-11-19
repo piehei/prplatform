@@ -149,7 +149,6 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
     # TODO: rewrite this whole mess
     def get(self, *args, **kwargs):
         user = self.request.user
-
         dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
 
         if dtype == 'answer':
