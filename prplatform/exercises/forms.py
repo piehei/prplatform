@@ -178,8 +178,12 @@ class ChooseForm(Form):
     If choose type is used in ReviewExercise, then this form is used
     to offer the student the choices. This form shows student all the
     other students' submissions so the student can choose who to review.
+
+    If the type of the Review Exercise is "GROUP", then the form
+    shows only those in the student's own group.
     """
-    choice = ModelChoiceField(queryset=None, label='')
+
+    choice = ModelChoiceField(queryset=None, label='', empty_label="(Nothing)")
 
     def __init__(self, *args, **kwargs):
         exercise = kwargs.pop('exercise')
@@ -197,4 +201,14 @@ class ChooseForm(Form):
         else:
             qs = qs.order_by('submitter_user__name')
 
+        if exercise.type == ReviewExercise.GROUP:
+            qs = qs.filter(
+                    submitter_user__email__in=exercise
+                    .course.find_studentgroup_by_user(user).student_usernames)
+
         self.fields['choice'].queryset = qs
+        if qs.count() == 0:
+            self.fields['choice'].help_text = "<b>Unfortunately no one has returned anything.</b> " + \
+                                              "You cannot choose anything just yet."
+
+        self.fields['choice'].label_from_instance = lambda choice: choice.submitter_group if choice.submitter_group else choice.submitter_user

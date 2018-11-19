@@ -246,7 +246,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
-    def _get_choose_ctx(self, ctx):
+    def _get_choose_ctx(self, ctx, groups=False):
 
         sid = self.request.GET.get('choice')
         if sid:
@@ -284,6 +284,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
             ctx = self._get_random_ctx(ctx)
         elif exercise.type == ReviewExercise.CHOOSE:
             ctx = self._get_choose_ctx(ctx)
+        elif exercise.type == ReviewExercise.GROUP:
+            ctx = self._get_choose_ctx(ctx, groups=True)
 
         ctx['show_content_to_review'] = True
         if ctx['reviewable'] and not ctx['teacher']:

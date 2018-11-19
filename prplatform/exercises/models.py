@@ -123,10 +123,13 @@ class SubmissionExercise(BaseExercise):
     TEXT = 'TEXT'
     FILE_UPLOAD = 'FILE_UPLOAD'
     APLUS = 'APLUS'
+    GROUP_NO_SUBMISSION = 'GROUP_NO_SUBMISSION'
     SUBMISSION_EXERCISE_TYPE_CHOICES = (
             (TEXT, 'Student submits a text form'),
             (FILE_UPLOAD, 'Student uploads a file'),
-            (APLUS, 'Submission is done in A+')
+            (APLUS, 'Submission is done in A+'),
+            (GROUP_NO_SUBMISSION, "Use this for group peer-reviews (students "
+                                  "peer-review each other but don't return any original submissions)")
         )
 
     type = models.CharField(
@@ -229,9 +232,11 @@ class ReviewExercise(BaseExercise):
 
     RANDOM = 'RANDOM'
     CHOOSE = 'CHOOSE'
+    GROUP = 'GROUP'
     REVIEW_EXERCISE_TYPE_CHOICES = (
             (RANDOM, 'Random by other user (prefer oldest with least peer-reviews)'),
             (CHOOSE, 'Student chooses'),
+            (GROUP, 'Students peer-review other students in their own group'),
         )
 
     type = models.CharField(
