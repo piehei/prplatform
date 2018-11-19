@@ -10,7 +10,7 @@ from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, \
                                          ReviewSubmissionListView, ReviewSubmissionDetailView
 
@@ -297,6 +297,83 @@ class SubmissionsTest(TestCase):
         self.assertRaises(PermissionDenied,
                           DownloadSubmissionView.as_view(), request, **self.kwargs)
 
+    def test_student_can_download_submission(self):
+        exercise = SubmissionExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+
+        user1 = User.objects.get(username="student1")
+        user2 = User.objects.get(username="student2")
+        user3 = User.objects.get(username="student3")
+
+        group = StudentGroup(name="g-1", student_usernames=[user1.email, user2.email], course=course)
+        group.save()
+
+        exercise.type = 'FILE_UPLOAD'
+        exercise.accepted_filetypes = '.txt'
+        exercise.save()
+
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=course, file=tmpFile, submitter_user=user1, submitter_group=group,
+                                 exercise=exercise)
+        sub.save()
+
+        for user, code in [(user1, 200), (user2, 200), (user3, 403)]:
+            request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{sub.pk}/')
+            request.user = user
+            self.kwargs['pk'] = sub.pk
+
+            if code == 403:
+                self.assertRaises(PermissionDenied,
+                                  DownloadSubmissionView.as_view(), request, **self.kwargs)
+            else:
+                response = DownloadSubmissionView.as_view()(request, **self.kwargs)
+                self.assertEqual(response.status_code, code)
+
+    def test_student_can_download_via_reviewlock(self):
+        exercise = SubmissionExercise.objects.get(pk=1)
+        course = Course.objects.get(pk=1)
+
+        user1 = User.objects.get(username="student1")
+        user2 = User.objects.get(username="student2")
+        user3 = User.objects.get(username="student3")
+
+        exercise.type = 'FILE_UPLOAD'
+        exercise.accepted_filetypes = '.txt'
+        exercise.save()
+
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=course, file=tmpFile, submitter_user=user1,
+                                 exercise=exercise)
+        sub.save()
+
+        re = ReviewExercise.objects.get(pk=1)
+        re.type = ReviewExercise.RANDOM
+        re.save()
+
+        rlock = ReviewLock(user=user2, original_submission=sub, review_exercise=re, review_submission=None)
+        rlock.save()
+
+        # user with reviewlock can download
+        request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{sub.pk}/')
+        request.user = user2
+        self.kwargs['pk'] = sub.pk
+        response = DownloadSubmissionView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.status_code, 200)
+
+        re.use_groups = True
+        re.save()
+        group = StudentGroup(name="g-1", student_usernames=[user2.email, user3.email], course=course)
+        group.save()
+        rlock.group = group
+        rlock.save()
+
+        # user in a group that has a reviewlock can download
+        request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{sub.pk}/')
+        request.user = user3
+        self.kwargs['pk'] = sub.pk
+        response = DownloadSubmissionView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.status_code, 200)
+
     def test_student_cannot_download_answer_file_not_owned(self):
         s_exercise = SubmissionExercise.objects.get(name="T1 TEXT")
         r_exercise = ReviewExercise.objects.get(name="T1 TEXT REVIEW")
@@ -314,7 +391,6 @@ class SubmissionsTest(TestCase):
 
         rev_sub = ReviewSubmission(course=course, reviewed_submission=sub, submitter_user=user2, exercise=r_exercise)
         rev_sub.save()
-        print(rev_sub)
 
         tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
 
@@ -324,7 +400,6 @@ class SubmissionsTest(TestCase):
                 uploaded_file=tmpFile,
                 )
         answer_with_file.save()
-        print(answer_with_file)
 
         request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
         request.user = user3
@@ -333,7 +408,12 @@ class SubmissionsTest(TestCase):
         self.assertRaises(PermissionDenied,
                           DownloadSubmissionView.as_view(), request, **self.kwargs)
 
-        for user in [user1, user2, User.objects.get(username="teacher1")]:
+        g = StudentGroup(name="g1", course=course, student_usernames=[user1.email, user3.email])
+        g.save()
+        sub.submitter_group = g
+        sub.save()
+
+        for user in [user1, user2, user3, User.objects.get(username="teacher1")]:
             request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
             request.user = user
             self.kwargs['pk'] = answer_with_file.pk
