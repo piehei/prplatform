@@ -8,11 +8,18 @@
           {% endfor %}
         </div>
 
-        <h5 class="mt-3">Enrolled students of the course:</h5>
+        <br>
+
+        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#students-collapse" aria-expanded="false" aria-controls="collapseExample">
+          Show enrolled students of the course
+        </button>
+        <br>
+        <br>
+
         {% if not object.students.all %}
           No one has yet to enroll to this course.
         {% endif %}
-        <div class="list-group">
+        <div id="students-collapse" class="collapse list-group">
           {% for student in object.students.all %}
             <div class="list-group-item">
               {{ student.username }}, {{ student.email }}
@@ -20,3 +27,4 @@
           {% endfor %}
         </div>
 
+        <br><br>
