@@ -3,7 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.test import RequestFactory, TestCase
 
 from prplatform.users.models import User
-from prplatform.exercises.models import SubmissionExercise
+from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 from prplatform.courses.models import Course
 from prplatform.courses.views import CourseDetailView, CourseListView
@@ -74,43 +74,47 @@ class CoursesTest(TestCase):
         except Exception:
             self.fail("Student should be allowed to access")
 
-    def test_studentDoesntSeeHiddenSubmissionExercises(self):
+    def test_exerciseVisibilitySettingsWork(self):
 
         request = self.factory.get('/courses/prog1/F2018/')
+
         request.user = User.objects.get(username="student1")
-
         response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, 'T2 FILE SUBMISSION')
+        self.assertContains(response, 'T2 FILE REVIEW')
 
-        self.assertEqual(response.context_data['submissionexercises'].count(),
-                         SubmissionExercise.objects.count())
-
-        sub = SubmissionExercise.objects.get(name='T2 FILE')
-        sub.visible_to_students = False
-        sub.save()
-
-        response = CourseDetailView.as_view()(request, **self.kwargs)
-
-        self.assertEqual(response.context_data['submissionexercises'].count(),
-                         SubmissionExercise.objects.count() - 1)
-
-    def test_teacherSeesHiddenSubmissionExercises(self):
-
-        request = self.factory.get('/courses/prog1/F2018/')
         request.user = User.objects.get(username="teacher1")
-
         response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, 'T2 FILE SUBMISSION')
+        self.assertContains(response, 'T2 FILE REVIEW')
 
-        self.assertEqual(response.context_data['submissionexercises'].count(),
-                         SubmissionExercise.objects.count())
-
-        sub = SubmissionExercise.objects.get(name='T2 FILE')
+        sub = SubmissionExercise.objects.get(name='T2 FILE SUBMISSION')
         sub.visible_to_students = False
         sub.save()
 
+        request.user = User.objects.get(username="student1")
         response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, 'T2 FILE SUBMISSION')
+        self.assertContains(response, 'T2 FILE REVIEW')
 
-        self.assertEqual(response.context_data['submissionexercises'].count(),
-                         SubmissionExercise.objects.count())
+        request.user = User.objects.get(username="teacher1")
+        response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, 'T2 FILE SUBMISSION')
+        self.assertContains(response, 'T2 FILE REVIEW')
+
+        sub = ReviewExercise.objects.get(name='T2 FILE REVIEW')
+        sub.visible_to_students = False
+        sub.save()
+
+        request.user = User.objects.get(username="student1")
+        response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, 'T2 FILE SUBMISSION')
+        self.assertNotContains(response, 'T2 FILE REVIEW')
+
+        request.user = User.objects.get(username="teacher1")
+        response = CourseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, 'T2 FILE SUBMISSION')
+        self.assertContains(response, 'T2 FILE REVIEW')
 
     def test_isEnrolled(self):
 
