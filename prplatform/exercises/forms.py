@@ -202,9 +202,12 @@ class ChooseForm(Form):
             qs = qs.order_by('submitter_user__name')
 
         if exercise.type == ReviewExercise.GROUP:
-            qs = qs.filter(
-                    submitter_user__email__in=exercise
-                    .course.find_studentgroup_by_user(user).student_usernames)
+            group = exercise.course.find_studentgroup_by_user(user)
+            if group:
+                qs = qs.filter(
+                        submitter_user__email__in=group.student_usernames)
+            else:
+                qs = qs.none()
 
         self.fields['choice'].queryset = qs
         if qs.count() == 0:
