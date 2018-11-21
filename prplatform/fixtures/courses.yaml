@@ -137,7 +137,7 @@
   pk: 2
   fields:
     course: ["TIE-02100", "TIE-02100-1"]
-    name: T2 FILE
+    name: T2 FILE SUBMISSION
     description: Sum this and that
     type: "FILE_UPLOAD"
     accepted_filetypes: "pdf"

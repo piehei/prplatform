@@ -19,9 +19,8 @@
     </div>
 
     {% for ex in submissionexercises %}
-
+      {% if teacher or ex.visible_to_students or ex.review_exercise.visible_to_students %}
       <div class="list-group-item d-flex justify-content-between">
-
         <div class="col-5" style="border-right:0px solid grey;">
           {% if ex.visible_to_students %}
             <a href="{{ ex.get_absolute_url }}" style="font-weight: bold;">{{ ex.name }}</a>
@@ -98,6 +97,7 @@
 
 
       </div>
+      {% endif %}
     {% endfor %}
 
     {% if teacher %}

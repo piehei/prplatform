@@ -103,14 +103,8 @@ class CourseDetailView(CourseContextMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-
-        sub_exercises = self.object.submissionexercise_exercises.all()
-        rev_exercises = self.object.reviewexercise_exercises.all()
-        if not ctx['teacher']:
-            sub_exercises = sub_exercises.filter(visible_to_students=True)
-            rev_exercises = rev_exercises.filter(visible_to_students=True)
-        ctx['submissionexercises'] = sub_exercises
-        ctx['reviewexercises'] = rev_exercises
+        ctx['submissionexercises'] = self.object.submissionexercise_exercises.all()
+        ctx['reviewexercises'] = self.object.reviewexercise_exercises.all()
         return ctx
 
 
