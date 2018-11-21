@@ -115,7 +115,7 @@ def create_user(aplus_submission):
 
         user = User.objects.create_user(email, email, '')
         user.set_unusable_password()
-        user.is_active = False
+        user.temporary = True
         user.save()
         return True
 
@@ -123,7 +123,7 @@ def create_user(aplus_submission):
 def create_submission(submission_exercise, aplus_submission):
     """
        1. check if there's an user with the aplus submitter's email
-       2. if not, crate one and set is_active = False
+       2. if not, crate one and set temporary = True
        3. get the submissions file from aplus API
        4. create a new original submission with the file and submitter
     """

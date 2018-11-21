@@ -25,20 +25,21 @@ def change_original_submission_submitters(sender, **kwargs):
 
     request = kwargs.get('request', None)
     user = kwargs.get('user', None)
-    oauth = getattr(request, 'oauth', None)
-    temp_user = User.objects.filter(email=user.email, is_active=False).first()
+    temp_user = User.objects.filter(email=user.email, temporary=True).first()
 
-    if request and user and oauth and temp_user:
+    print("USER LOGGED IN")
+
+    if request and user and temp_user:
 
         logger.info(f"Changing the submitter of original submissions for")
         for sub in temp_user.originalsubmission_submitters.all():
             logger.info(sub)
-            sub.submitter = user
+            sub.submitter_user = user
             sub.save()
 
         # TODO: if this implementation holds, check there's no concurrency bugs
-        logger.info(f"Original submissions by {temp_user} have been modified to be" + \
-                    "submitted by {user}")
+        logger.info(f"Original submissions by {temp_user} have been modified to be"
+                    f"submitted by {user}")
         logger.info(f"Deleting user {temp_user}")
 
         ret = temp_user.delete()
