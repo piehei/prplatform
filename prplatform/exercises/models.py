@@ -284,9 +284,9 @@ class ReviewExercise(BaseExercise):
     def last_reviews_for(self, user):
 
         if self.show_reviews_only_to_teacher:
-            return None
+            return self.submissions.none()
 
-        all_reviews = None
+        all_reviews = self.submissions.none()
         if self.use_groups:
             all_reviews = self.submissions.filter(
                     reviewed_submission__submitter_group=self.course.find_studentgroup_by_user(user)) \

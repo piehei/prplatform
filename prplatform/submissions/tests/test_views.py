@@ -202,6 +202,20 @@ class SubmissionsTest(TestCase):
         self.assertEqual(response.context_data['object_list'].count(), 1)
         self.assertEqual(response.context_data['object_list'][0].submitter_user, users[0])
 
+        # if RE.show_reviews_only_to_teacher, nothing in the list
+        rev_exercise.show_reviews_only_to_teacher = True
+        rev_exercise.save()
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+        request.user = users[1]
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['object_list'].count(), 0)
+        self.assertContains(response, 'will only be visible')
+
+        rev_exercise.show_reviews_only_to_teacher = False
+        rev_exercise.save()
+
         # reviews by student missing
         rev_exercise.min_submission_count = 100
         rev_exercise.save()

@@ -112,7 +112,8 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         ctx = self.get_context_data(**kwargs)
 
         owner = self.object.is_owner(self.request.user)
-        ctx['receiver'] = self.object.reviewed_submission.is_owner(self.request.user)
+        ctx['receiver'] = self.object.reviewed_submission.is_owner(self.request.user) and \
+            not self.object.exercise.show_reviews_only_to_teacher
 
         if not owner and not ctx['receiver'] and not ctx['teacher']:
             raise PermissionDenied
