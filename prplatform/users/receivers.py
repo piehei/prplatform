@@ -14,7 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django.dispatch import receiver
 from django_lti_login.signals import lti_login_authenticated
 
-from prplatform.courses.models import Course
+from prplatform.courses.models import Course, Enrollment
 from prplatform.users.models import User
 
 logger = logging.getLogger('users.receivers')
@@ -31,11 +31,18 @@ def change_original_submission_submitters(sender, **kwargs):
 
     if request and user and temp_user:
 
+        enrolled_courses = []
+
         logger.info(f"Changing the submitter of original submissions for")
         for sub in temp_user.originalsubmission_submitters.all():
             logger.info(sub)
             sub.submitter_user = user
             sub.save()
+
+            if sub.course not in enrolled_courses:
+                Enrollment.objects.create(course=sub.course, student=user)
+                logger.info(f"enrolled to {sub.course}")
+
 
         # TODO: if this implementation holds, check there's no concurrency bugs
         logger.info(f"Original submissions by {temp_user} have been modified to be"
