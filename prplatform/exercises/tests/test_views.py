@@ -6,7 +6,7 @@ from django.test import RequestFactory, TestCase
 
 import datetime
 
-from prplatform.users.models import User
+from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
@@ -15,6 +15,7 @@ from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionE
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
 
+from prplatform.submissions.views import ReviewSubmissionListView
 
 def add_middleware(request, middleware_class):
     middleware = middleware_class()
@@ -29,6 +30,15 @@ class ExerciseTest(TestCase):
         # Every test needs access to the request factory.
         self.factory = RequestFactory()
         self.kwargs = {'base_url_slug': 'prog1', 'url_slug': 'F2018'}
+
+        self.s1 = User.objects.get(username="student1")
+        self.s2 = User.objects.get(username="student2")
+        self.s3 = User.objects.get(username="student3")
+        self.s4 = User.objects.get(username="student4")
+
+        self.students = [self.s1, self.s2, self.s3, self.s4]
+
+        self.t1 = User.objects.get(username="teacher1")
 
     ###
     #   SubmissionExerciseCreateView
@@ -254,3 +264,104 @@ class ExerciseTest(TestCase):
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "answer by student2")
         self.assertEqual(ReviewLock.objects.count(), 1)
+
+    def test_group_peer_review(self):
+
+        se = SubmissionExercise.objects.get(name="T1 TEXT")
+        re = ReviewExercise.objects.get(name="T1 TEXT REVIEW")
+
+        se.type = SubmissionExercise.GROUP_NO_SUBMISSION
+        se.save()
+
+        re.type = ReviewExercise.GROUP
+        re.use_groups = True
+        re.save()
+
+        g = StudentGroup(course=se.course,
+                         name="g1",
+                         student_usernames=[self.s1.email, self.s2.email, "temp-test@temp-test.com"]
+                         )
+        g.save()
+
+        user_count_before = User.objects.all().count()
+        self.assertEqual(0, se.submissions.count())
+
+        request = self.factory.get(re.get_absolute_url())
+        request.user = self.s1
+        self.kwargs['pk'] = re.pk
+        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        # should create temp user for temp-test@temp-test.com
+        self.assertEqual(user_count_before + 1, User.objects.all().count())
+        # should have three orig subs because three group members
+        self.assertEqual(3, se.submissions.count())
+
+        temp_email = "temp-test@temp-test.com"
+        temp_user = User.objects.get(email=temp_email)
+        self.assertEqual(temp_user.temporary, True)
+
+        request.user = self.s2
+        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        # page load as another group member shouldn't affect these
+        self.assertEqual(user_count_before + 1, User.objects.all().count())
+        self.assertEqual(3, se.submissions.count())
+
+        orig_subs_for_temp_user = OriginalSubmission.objects.filter(submitter_user=temp_user)
+        self.assertEqual(1, orig_subs_for_temp_user.count())
+
+        resub = ReviewSubmission(
+                    course=re.course,
+                    exercise=re,
+                    submitter_user=self.s1,
+                    reviewed_submission=orig_subs_for_temp_user.first(),
+                )
+        resub.save()
+
+        # create actual user, this basically simulates sihbboleth login in a future time
+        actual_user = User.objects.create(username="actual_user",
+                                          email=temp_email,
+                                          password="actual_passwd")
+
+        self.assertEqual(2, User.objects.filter(email=temp_email).count())
+
+        orig_submitter = OriginalSubmission.objects.get(submitter_user__email=temp_email).submitter_user.username
+
+        # login the actual user
+        # this triggers users/receivers.py which will:
+        #   - find all submissions done with a temp user using same email
+        #   - transfer all submissions to this actual user
+        #   - delete temp user
+
+        self.client.force_login(actual_user)
+
+        actual_submitter = OriginalSubmission.objects.get(submitter_user__email=temp_email).submitter_user.username
+        self.assertNotEqual(orig_submitter, actual_submitter)
+
+        self.assertEqual(1, User.objects.filter(email=temp_email).count())
+        actual_user = User.objects.get(email=temp_email)
+        self.assertEqual(actual_user.temporary, False)
+
+        request.user = actual_user
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        self.assertEqual(user_count_before + 1, User.objects.all().count())
+        self.assertEqual(3, se.submissions.count())
+
+        # nothing, student1, student2
+        self.assertEqual(str(response.context_data['chooseForm']).count("<option"), 3)
+
+        re.can_review_own_submission = True
+        re.save()
+
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        # nothing, student1, student2, actual_user
+        self.assertEqual(str(response.context_data['chooseForm']).count("<option"), 4)
+
+        # actual_user can see one review by another student (student1)
+        request = self.factory.get(re.get_list_url())
+        request.user = actual_user
+        self.kwargs['pk'] = re.pk
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
