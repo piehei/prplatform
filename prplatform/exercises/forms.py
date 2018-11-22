@@ -164,7 +164,7 @@ class ReviewExerciseForm(ModelForm):
         exer_type = cd.get('type')
         can_review_own_submission = cd.get('can_review_own_submission', None)
 
-        if can_review_own_submission and not exer_type == ReviewExercise.CHOOSE:
+        if can_review_own_submission and exer_type not in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
 
             # TODO:
             # due to a django-crispy-forms and bs4 bug we'll give a general error
