@@ -163,14 +163,19 @@ class ReviewExerciseForm(ModelForm):
 
         exer_type = cd.get('type')
         can_review_own_submission = cd.get('can_review_own_submission', None)
+        use_groups = cd.get('use_groups', None)
 
         if can_review_own_submission and exer_type not in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
 
             # TODO:
             # due to a django-crispy-forms and bs4 bug we'll give a general error
             raise ValidationError(
-                "There was a problem. 'Can review own submission' can *ONLY* be used with the type 'Student chooses'"
+                "There was a problem. 'Can review own submission' cannot be used with the type 'Random'"
             )
+
+        if use_groups and exer_type == ReviewExercise.GROUP:
+            raise ValidationError('The option "Use groups" cannot be used when students do peer-reviews '
+                                  'about their group members (type is GROUP)')
 
 
 class ChooseForm(Form):
