@@ -270,6 +270,8 @@ class ReviewExercise(BaseExercise):
     questions = models.ManyToManyField('exercises.Question', related_name='exercises')
     question_order = ArrayField(models.IntegerField("PKs of questions"))
 
+    show_reviews_only_to_teacher = models.BooleanField(default=False)
+
     def question_list_in_order(self):
         # TODO: THIS WILL THROW IF Q NOT IN self.question_order
         return sorted(self.questions.all(), key=lambda i: self.question_order.index(i.pk))
@@ -281,6 +283,9 @@ class ReviewExercise(BaseExercise):
 
     def last_reviews_for(self, user):
 
+        if self.show_reviews_only_to_teacher:
+            return None
+
         all_reviews = None
         if self.use_groups:
             all_reviews = self.submissions.filter(
@@ -291,6 +296,7 @@ class ReviewExercise(BaseExercise):
             all_reviews = self.submissions.filter(reviewed_submission__submitter_user=user) \
                                           .order_by('submitter_user_id', '-created') \
                                           .distinct('submitter_user_id')
+
         return all_reviews
 
     def review_showing_requirements_ok(self, user):

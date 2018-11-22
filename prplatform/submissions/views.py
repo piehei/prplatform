@@ -45,8 +45,6 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
 
             ctx['object_list'] = ctx['exercise'].last_reviews_for(self.request.user)
 
-            print(ctx['object_list'])
-
             if ctx['exercise'].reviews_available_date_in_future():
                 ctx['reviews_available_date_in_future'] = True
                 ctx['object_list'] = ReviewSubmission.objects.none()

@@ -33,7 +33,11 @@
 
       {% if needs_to_complete_more_reviews %}
       Peer-reviews for you will be available after completing {{ exercise.min_submission_count }}
-      peer-reviews yourself.
+      peer-reviews yourself.<br>
+      {% endif %}
+
+      {% if my_mode and exercise.show_reviews_only_to_teacher %}
+      In this peer-review exercise, the peer-reviews will only be visible to the teachers of the course.
       {% endif %}
 
       {% if not reviews_available_date_in_future and not needs_to_complete_more_reviews %}

@@ -15,9 +15,13 @@ class QuestionModelForm(forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ['question_text', 'choices', 'accepted_filetypes']
+        fields = ['question_text', 'hide_from_receiver', 'choices', 'accepted_filetypes']
         help_texts = {
-                'accepted_filetypes': 'Comma-separated list of filetypes. No whitespace.'}
+                'hide_from_receiver': ('<b>PLEASE NOTE:</b>: you can hide *ALL* questions/answers from the'
+                                       'peer-reviewed student in the "Edit" tab by choosing '
+                                       '"Show reviews only to theacher"'),
+                'accepted_filetypes': 'Comma-separated list of filetypes. No whitespace.',
+                }
 
     def clean(self):
         cd = super().clean()

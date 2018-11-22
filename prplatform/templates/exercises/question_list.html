@@ -23,6 +23,13 @@
         Create a new question
       </a>
 
+
+      {% if exercise.show_reviews_only_to_teacher %}
+        <div class="alert alert-primary">
+          <strong>All answers will be shown only to teacher!</strong> (You can change this via the "Edit" tab.)
+        </div>
+      {% endif %}
+
       {% for q in object_list %}
       <div class="list-group-item mb-4">
 
@@ -47,6 +54,7 @@
               Edit
             </a>
           </span>
+
         </div>
 
         <div>
@@ -63,6 +71,11 @@
             {% endfor %}
           {% endif %}
         </div>
+
+          {% if q.hide_from_receiver %}
+            <span class="badge badge-pill badge-secondary">Only teacher sees the answer</span>
+          {% endif %}
+
       </div>
       {% endfor %}
     </div>

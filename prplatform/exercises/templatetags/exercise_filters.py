@@ -14,7 +14,11 @@ def my_received_feedback_count(exercise, user):
         return 0
     if not exercise.review_showing_requirements_ok(user):
         return 0
-    return exercise.last_reviews_for(user).count()
+    qs = exercise.last_reviews_for(user)
+    if qs:
+        return qs.count()
+    else:
+        return 0
 
 
 def deadline_extension_for(exercise, user):

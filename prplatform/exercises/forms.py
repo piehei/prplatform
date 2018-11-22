@@ -132,6 +132,7 @@ class ReviewExerciseForm(ModelForm):
                   'max_reviews_per_submission',
                   'min_submission_count',
                   'require_original_submission',
+                  'show_reviews_only_to_teacher',
                   'use_groups',
                   ]
         widgets = {
@@ -145,6 +146,11 @@ class ReviewExerciseForm(ModelForm):
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
                 'can_review_own_submission': 'This is available ONLY for the type "Student chooses"',
+                'show_reviews_only_to_teacher': ('This hides all peer-reviews from the person that is being '
+                                                 'peer-reviewed.<br><b>PLEASE NOTE:</b> if you configure multiple '
+                                                 'questions, you can also individually choose to hide some of them. '
+                                                 'This option *OVERRIDES* that and shows nothing to receivers.'
+                                                 )
                 }
 
     def __init__(self, *args, **kwargs):
