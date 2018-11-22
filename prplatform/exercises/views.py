@@ -12,6 +12,7 @@ from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
 from .question_models import Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, ChooseForm
+from . import utils
 
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
@@ -285,7 +286,8 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         elif exercise.type == ReviewExercise.CHOOSE:
             ctx = self._get_choose_ctx(ctx)
         elif exercise.type == ReviewExercise.GROUP:
-            ctx = self._get_choose_ctx(ctx, groups=True)
+            utils.prepare_group_review_exercise_for(exercise, self.request.user)
+            ctx = self._get_choose_ctx(ctx)
 
         ctx['show_content_to_review'] = True
         if ctx['reviewable'] and not ctx['teacher']:
@@ -371,7 +373,7 @@ class ReviewExerciseDetailView(IsEnrolledMixin, GroupMixin, CourseContextMixin, 
         if self.object.type == ReviewExercise.RANDOM:
             return self._post_random(ctx)
 
-        elif self.object.type == ReviewExercise.CHOOSE:
+        elif self.object.type in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
             return self._post_choose(ctx)
 
 

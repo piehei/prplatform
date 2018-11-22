@@ -335,7 +335,8 @@ class ReviewExercise(BaseExercise):
             return False, "reviews_done"
 
         if self.original_submissions_by(user).count() == 0 \
-                and self.require_original_submission:
+                and self.require_original_submission \
+                and not self.type == self.GROUP:
             return False, "own_submission_missing"
 
         return True, None
