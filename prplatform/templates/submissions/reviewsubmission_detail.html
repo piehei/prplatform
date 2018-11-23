@@ -37,13 +37,24 @@
 
         <strong>Review time:</strong> {{ object.created }}<br>
 
+        {% if object.exercise.type != 'GROUP' %}
         {% if teacher or receiver %}
           <strong>Reviewed submission:</strong>
           <a href="{{ object.reviewed_submission.get_absolute_url }}">
             {{ object.reviewed_submission }}
-          </a>
+          </a><br>
+        {% endif %}
         {% endif %}
 
+        {% if object.exercise.type != 'RANDOM' and not receiver %}
+          {% if object.reviewed_submission.submitter_group %}
+            <strong>Reviewed group:</strong>
+            {{ object.reviewed_submission.submitter_group }}
+          {% else %}
+            <strong>Reviewed student:</strong>
+            {{ object.reviewed_submission.submitter_user }}
+          {% endif %}
+        {% endif %}
       </div>
 
       <div class="shadow p-3 mb-5 bg-white rounded">

@@ -23,6 +23,16 @@ class SubmissionsTest(TestCase):
         self.factory = RequestFactory()
         self.kwargs = {'base_url_slug': 'prog1', 'url_slug': 'F2018'}
 
+        self.s1 = User.objects.get(username="student1")
+        self.s2 = User.objects.get(username="student2")
+        self.s3 = User.objects.get(username="student3")
+        self.s4 = User.objects.get(username="student4")
+
+        self.students = [self.s1, self.s2, self.s3, self.s4]
+
+        self.t1 = User.objects.get(username="teacher1")
+        self.course = Course.objects.get(pk=1)
+
     def test_studentCanOnlyViewPersonalSubmissions(self):
 
         exercise = SubmissionExercise.objects.get(pk=1)
@@ -289,6 +299,83 @@ class SubmissionsTest(TestCase):
         response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "juupase juu")
         self.assertNotContains(response, "Score the work")
+
+    def test_ReviewSubmissionDetail_shows_correct_info(self):
+
+        sub_exercise = SubmissionExercise.objects.get(name='T1 TEXT')
+        rev_exercise = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
+
+        for user in self.students:
+            OriginalSubmission(course=self.course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
+
+        reviewed = self.s2
+        reviewer = self.s1
+        reviewed_sub = OriginalSubmission.objects.get(exercise=sub_exercise, submitter_user=reviewed)
+        rev_sub = ReviewSubmission.objects.create(course=self.course, submitter_user=reviewer,
+                                                  exercise=rev_exercise, reviewed_submission=reviewed_sub)
+
+        request = self.factory.get(rev_sub.get_absolute_url())
+        self.kwargs['pk'] = rev_exercise.pk
+        self.kwargs['sub_pk'] = rev_sub.pk
+
+        rev_exercise.min_submission_count = 0  # so that receiver can view
+        rev_exercise.type = ReviewExercise.RANDOM
+        rev_exercise.save()
+
+        request.user = self.t1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertContains(response, "<strong>Reviewed submission")
+
+        request.user = reviewer
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertNotContains(response, "<strong>Reviewed")
+
+        request.user = reviewed
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, "<strong>Submitter")
+        self.assertContains(response, "<strong>Reviewed submission")
+
+        rev_exercise.type = ReviewExercise.CHOOSE
+        rev_exercise.save()
+
+        request.user = self.t1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertContains(response, "<strong>Reviewed submission")
+
+        request.user = reviewer
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertNotContains(response, "<strong>Reviewed submission")
+        self.assertContains(response, "<strong>Reviewed student")
+
+        request.user = reviewed
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, "<strong>Submitter")
+        self.assertContains(response, "<strong>Reviewed submission")
+        self.assertNotContains(response, "<strong>Reviewed student")
+
+        rev_exercise.type = ReviewExercise.GROUP
+        rev_exercise.save()
+
+        request.user = self.t1
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertContains(response, "<strong>Reviewed student")
+
+        request.user = reviewer
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "<strong>Submitter")
+        self.assertNotContains(response, "<strong>Reviewed submission")
+        self.assertContains(response, "<strong>Reviewed student")
+
+        request.user = reviewed
+        response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, "<strong>Submitter")
+        self.assertNotContains(response, "<strong>Reviewed submission")
+        self.assertNotContains(response, "<strong>Reviewed student")
 
     def test_student_cannot_download_submission_not_owned(self):
         exercise = SubmissionExercise.objects.get(pk=1)
