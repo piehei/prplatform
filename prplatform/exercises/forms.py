@@ -145,7 +145,8 @@ class ReviewExerciseForm(ModelForm):
                 'show_reviews_after_date': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
-                'can_review_own_submission': 'This is available ONLY for the type "Student chooses"',
+                'can_review_own_submission': ('Students can give peer-reviews to themselves. '
+                                              'This cannot be used with the type "Random".'),
                 'show_reviews_only_to_teacher': ('This hides all peer-reviews from the person that is being '
                                                  'peer-reviewed.<br><b>PLEASE NOTE:</b> if you configure multiple '
                                                  'questions, you can also individually choose to hide some of them. '
