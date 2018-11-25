@@ -20,10 +20,15 @@
       <h2>{{ object.name }}</h2>
 
       <div class="col-md-12 mb-4">
-        <p class="font-italic">In this exercise you're peer-reviewing other students' submissions to the exercise
+        <p class="font-italic">
+        {% if object.type != 'GROUP' %}
+        In this exercise you're peer-reviewing other students' submissions to the exercise
           <a href="{{ object.reviewable_exercise.get_absolute_url }}">
             {{ object.reviewable_exercise.name }}
           </a>
+        {% else %}
+        In this exercise you're peer-reviewing other members in your own group.
+        {% endif %}
         </p>
 
       {% include "./_open_times.html" %}
