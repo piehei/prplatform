@@ -1,4 +1,6 @@
-from django.forms import ModelForm, modelform_factory, Textarea, ValidationError, FileInput, RadioSelect, BaseFormSet, formset_factory
+from django.forms import (ModelForm, modelform_factory, Textarea, ValidationError,
+                          FileInput, RadioSelect, BaseFormSet, formset_factory,
+                          HiddenInput)
 from .models import OriginalSubmission, Answer
 from prplatform.exercises.models import SubmissionExercise
 from django import forms
@@ -17,7 +19,6 @@ class OriginalSubmissionForm(ModelForm):
             be removed from the presented form.
             The other field, that is not removed, will be marked required.
         """
-        from django.forms.widgets import HiddenInput
         type = kwargs.pop('type', None)
         filetypes = kwargs.pop('filetypes', None)
         super().__init__(*args, **kwargs)
@@ -121,9 +122,13 @@ class AnswerModelForm(ModelForm):
 
         super().__init__(*args, **kwargs)
 
-        from django.forms.widgets import HiddenInput
         self.initial = {'question': question}
         self.fields['question'].widget = HiddenInput()
+
+        if question.hide_from_receiver:
+            question_text += '<br><span class="badge badge-warning">Only teacher sees this answer</span>'
+        else:
+            question_text += '<br><span class="badge badge-warning">Peer-reviewed will see this answer</span>'
 
         # if this is a question with choices, remove free text field
         # and limit the choices to the teacher chosen choices
