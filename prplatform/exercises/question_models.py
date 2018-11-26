@@ -23,7 +23,7 @@ class Question(models.Model):
     accepted_filetypes = models.CharField(max_length=100, null=True, blank=True)
 
     choices = ArrayField(
-                        ArrayField(models.CharField(max_length=20),
+                        ArrayField(models.CharField(max_length=200),
                                    size=2),
                         blank=True, null=True)
 
