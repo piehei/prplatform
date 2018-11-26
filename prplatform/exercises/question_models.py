@@ -17,13 +17,13 @@ class Choice(models.Model):
 class Question(models.Model):
     course = models.ForeignKey(Course, related_name="questions", on_delete=models.CASCADE)
     required = models.BooleanField(default=True)
-    question_text = models.CharField(max_length=200)
+    question_text = models.CharField(max_length=500)
     hide_from_receiver = models.BooleanField(default=False)
 
     accepted_filetypes = models.CharField(max_length=100, null=True, blank=True)
 
     choices = ArrayField(
-                        ArrayField(models.CharField(max_length=200),
+                        ArrayField(models.CharField(max_length=500),
                                    size=2),
                         blank=True, null=True)
 
