@@ -25,9 +25,9 @@ class BaseSubmission(TimeStampedModel):
     @property
     def submitter(self):
         if self.submitter_group:
-            return self.submitter_group.name
+            return self.submitter_group
         else:
-            return self.submitter_user.username
+            return self.submitter_user
 
     def is_owner(self, user):
         if self.submitter_group:
