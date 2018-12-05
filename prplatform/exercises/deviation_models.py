@@ -22,7 +22,10 @@ class Deviation(TimeStampedModel):
         abstract = True
 
     def __str__(self):
-        return f"{self.user} {self.group} {self.new_deadline}"
+        if self.group:
+            return f"{self.group} | {self.extra_submissions} | {self.new_deadline}"
+        else:
+            return f"{self.user} | {self.extra_submissions} | {self.new_deadline}"
 
     def get_delete_url(self):
         urls = {'SubmissionExerciseDeviation': 'courses:exercises:submission-deviation-delete',
