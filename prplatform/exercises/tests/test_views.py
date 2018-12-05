@@ -10,12 +10,12 @@ from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
 
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
+from prplatform.submissions.views import ReviewSubmissionListView
 from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, \
                                        ReviewExerciseDetailView
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
 
-from prplatform.submissions.views import ReviewSubmissionListView
 
 def add_middleware(request, middleware_class):
     middleware = middleware_class()
@@ -53,11 +53,11 @@ class ExerciseTest(TestCase):
         self.assertRaises(PermissionDenied,
                           SubmissionExerciseCreateView.as_view(), request, **self.kwargs)
 
-        request.user = User.objects.get(username="student1")
+        request.user = self.s1
         self.assertRaises(PermissionDenied,
                           SubmissionExerciseCreateView.as_view(), request, **self.kwargs)
 
-        request.user = User.objects.get(username="teacher1")
+        request.user = self.t1
         try:
             SubmissionExerciseCreateView.as_view()(request, **self.kwargs)
         except Exception:
@@ -66,7 +66,7 @@ class ExerciseTest(TestCase):
     def test_exerciseOpen(self):
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = User.objects.get(username="student1")
+        request.user = self.s1
         self.kwargs['pk'] = 1
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -78,7 +78,7 @@ class ExerciseTest(TestCase):
     def test_exerciseOpens(self):
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = User.objects.get(username="student1")
+        request.user = self.s1
         self.kwargs['pk'] = 4
 
         se = SubmissionExercise.objects.get(pk=4)
@@ -93,7 +93,7 @@ class ExerciseTest(TestCase):
     def test_exerciseClosed(self):
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = User.objects.get(username="student1")
+        request.user = self.s1
         self.kwargs['pk'] = 4
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -102,9 +102,8 @@ class ExerciseTest(TestCase):
 
     def test_deadlineExtensionAllowsSubmitting(self):
 
-        s1 = User.objects.get(username="student1")
         request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = s1
+        request.user = self.s1
         self.kwargs['pk'] = 4
 
         se = SubmissionExercise.objects.get(pk=4)
@@ -117,7 +116,7 @@ class ExerciseTest(TestCase):
         self.assertEqual(response.context_data['disable_form'], True)
 
         # student *SHOULD* have an extension
-        extension = SubmissionExerciseDeviation(exercise=se, user=s1,
+        extension = SubmissionExerciseDeviation(exercise=se, user=self.s1,
                                                 new_deadline=datetime.datetime(2050, 1, 1))
         extension.save()
 
@@ -138,7 +137,7 @@ class ExerciseTest(TestCase):
     def test_studentCanSubmit(self):
 
         request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': 'Submitted text'})
-        request.user = User.objects.get(username="student1")
+        request.user = self.s1
         self.kwargs['pk'] = 1
 
         request = add_middleware(request, SessionMiddleware)
@@ -150,14 +149,13 @@ class ExerciseTest(TestCase):
     def test_studentCannotSubmitMultipleTimes(self):
 
         # first create a submission by a student
-        user1 = User.objects.get(username="student1")
         s_exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        orig_sub_user1 = OriginalSubmission(course=course, submitter_user=user1, exercise=s_exercise, text="jadajada")
+        orig_sub_user1 = OriginalSubmission(course=course, submitter_user=self.s1, exercise=s_exercise, text="jadajada")
         orig_sub_user1.save()
         # then load the page and check it disables second submission
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = user1
+        request.user = self.s1
         self.kwargs['pk'] = 1
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -165,37 +163,36 @@ class ExerciseTest(TestCase):
         self.assertContains(response, "You have reached the maximum number of submissions")
         self.assertEqual(response.context_data['disable_form'], True)
 
-        user2 = User.objects.get(username="student2")
-        OriginalSubmission(course=course, submitter_user=user2, exercise=s_exercise, text="juuh").save()
+        OriginalSubmission(course=course, submitter_user=self.s2, exercise=s_exercise, text="juuh").save()
         r_exercise = ReviewExercise.objects.get(reviewable_exercise=s_exercise)
         request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-        request.user = user2
+        request.user = self.s2
         self.kwargs['pk'] = 1
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "jadajada")
         self.assertEqual(ReviewLock.objects.all().count(), 1)
-        rsub = ReviewSubmission(course=course, exercise=r_exercise, submitter_user=user2, reviewed_submission=orig_sub_user1)
+        rsub = ReviewSubmission(course=course, exercise=r_exercise, submitter_user=self.s2,
+                                reviewed_submission=orig_sub_user1)
         rsub.save()
         rlock = ReviewLock.objects.first()
         rlock.review_submission = rsub
         rlock.save()
         request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-        request.user = user2
+        request.user = self.s2
         self.kwargs['pk'] = 1
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
 
     def test_teacherCanSubmitMultipleTimes(self):
 
-        user = User.objects.get(username="teacher1")
         exercise = SubmissionExercise.objects.get(pk=1)
         course = Course.objects.get(pk=1)
-        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter_user=user, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = user
+        request.user = self.t1
         self.kwargs['pk'] = 1
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -205,22 +202,19 @@ class ExerciseTest(TestCase):
 
     def test_submissionStatesWork(self):
 
-        students = [
-            User.objects.get(username="student1"),
-            User.objects.get(username="student2")
-        ]
         exercise = SubmissionExercise.objects.get(name='T5 STATE')
         course = Course.objects.get(pk=1)
 
         subs = []
-        for s in students:
-            sub = OriginalSubmission(course=course, submitter_user=s, state='submitted', exercise=exercise, text=f"answer by {s.username}")
+        for s in self.students[:2]:
+            sub = OriginalSubmission(course=course, submitter_user=s, state='submitted', exercise=exercise,
+                                     text=f"answer by {s.username}")
             sub.save()
             subs.append(sub)
 
         # submissions used
         request = self.factory.get('/courses/prog1/F2018/exercises/s/5/')
-        request.user = students[0]
+        request.user = self.s1
         self.kwargs['pk'] = 5
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "You have reached the maximum number of submissions")
@@ -230,7 +224,7 @@ class ExerciseTest(TestCase):
 
         # can submit when BOOMERANG
         request = self.factory.get('/courses/prog1/F2018/exercises/s/5/')
-        request.user = students[0]
+        request.user = self.s1
         self.kwargs['pk'] = 5
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertNotContains(response, "You have reached the maximum number of submissions")
@@ -238,7 +232,7 @@ class ExerciseTest(TestCase):
         # cannot peer-review while BOOMERANG
         r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
         request = self.factory.get(r_exer.get_absolute_url())
-        request.user = students[0]
+        request.user = self.s1
         self.kwargs['pk'] = r_exer.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "You cannot make peer-reviews before")
@@ -249,7 +243,7 @@ class ExerciseTest(TestCase):
         # only READY_FOR_REVIEW is available for review
         r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
         request = self.factory.get(r_exer.get_absolute_url())
-        request.user = students[1]
+        request.user = self.s2
         self.kwargs['pk'] = r_exer.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "Not a thing was found")
@@ -259,7 +253,7 @@ class ExerciseTest(TestCase):
 
         r_exer = ReviewExercise.objects.get(name='T5 STATE REVIEW')
         request = self.factory.get(r_exer.get_absolute_url())
-        request.user = students[0]
+        request.user = self.s1
         self.kwargs['pk'] = r_exer.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "answer by student2")
@@ -365,3 +359,5 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = re.pk
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
+
+
