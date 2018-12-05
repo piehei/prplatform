@@ -150,6 +150,7 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
         user = self.request.user
         dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
 
+
         if dtype == 'answer':
             obj = get_object_or_404(Answer, pk=kwargs['pk'])
             teacher = obj.submission.course.is_teacher(user)
@@ -160,7 +161,12 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
             obj = get_object_or_404(OriginalSubmission, pk=kwargs['pk'])
             teacher = obj.course.is_teacher(user)
             owner = obj.is_owner(user)
-            re = obj.exercise.review_exercise
+            # review_exercise might not exist yet if the teacher has only
+            # configured the submission exercise
+            if hasattr(obj.exercise, 'review_exercise') and obj.exercise.review_exercise is not None:
+                re = obj.exercise.review_exercise
+            else:
+                re = None
             file_itself = obj.file
 
         enrolled_can_access = False
@@ -171,8 +177,10 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
         reviewer = False
         receiver = False
         if dtype == 'osub':
-            pks_of_users_reviewables = re.reviewlocks_for(self.request.user) \
-                                         .values_list('original_submission', flat=True)
+            pks_of_users_reviewables = []
+            if re:
+                pks_of_users_reviewables = re.reviewlocks_for(self.request.user) \
+                                             .values_list('original_submission', flat=True)
             reviewer = kwargs['pk'] in pks_of_users_reviewables
         else:
             receiver = obj.submission.reviewed_submission.is_owner(user)
