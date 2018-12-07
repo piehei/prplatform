@@ -36,9 +36,15 @@ def handle_group_file(request, ctx, form):
                 groups[name] = usernames
 
             for username in usernames:
+
                 if username in used_usernames:
                     messages.error(request, f'Username "{username}" appears in more than one group. Cannot continue.')
                     group_file_is_valid = False
+
+                if username != username.strip():
+                    messages.error(request, f'Username "{username}" contains whitespace. Remove that to continue.')
+                    group_file_is_valid = False
+
                 used_usernames.append(username)
 
     # Moodle format fiel header row:
@@ -85,9 +91,15 @@ def handle_group_file(request, ctx, form):
 
                 if re.compile('Member [0-9] Email').fullmatch(field_name):
                     username_now = field
+
                     if username_now in used_usernames:
                         messages.error(request, f'Username "{field}" appears in more than one group. Cannot continue.')
                         group_file_is_valid = False
+
+                    if username_now != username_now.strip():
+                        messages.error(request, f'Username "{username_now}" contains whitespace. Remove that to continue.')
+                        group_file_is_valid = False
+
                     groups[group_name].append(username_now)
                     used_usernames.append(username_now)
 
