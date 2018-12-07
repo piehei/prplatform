@@ -45,7 +45,7 @@
       <table id="reviewsubmissionlist-table" class="table table-striped">
         <thead>
           <tr>
-            <th>Review</th>
+            <th>View</th>
             {% if teacher %}
             <th>Reviewer</th>
             {% endif %}
@@ -59,8 +59,8 @@
             {% for rev_sub in object_list %}
               <tr scope="row">
                 <td>
-                  <a href="{{ rev_sub.get_absolute_url }}">
-                    {{ forloop.counter }}
+                  <a role="button" class="btn btn-outline-secondary btn-sm" href="{{ rev_sub.get_absolute_url }}">
+                    View
                   </a>
                 </td>
                 {% if teacher %}

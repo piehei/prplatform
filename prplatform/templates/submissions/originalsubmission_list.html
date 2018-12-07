@@ -24,6 +24,7 @@
       <table id="originalsubmissionlist-table" class="table table-striped">
         <thead>
           <tr>
+            <th>View</th>
             <th>Submitter</th>
             <th>Date</th>
             <th>Status</th>
@@ -44,12 +45,15 @@
           {% for origsub in object_list %}
             <tr scope="row">
               <td>
+                <a role="button" class="btn btn-outline-secondary btn-sm" href="{{ origsub.get_absolute_url }}">
+                  View
+                </a>
+              </td>
+              <td>
                 {{ origsub.submitter }}
               </td>
               <td>
-                <a href="{{ origsub.get_absolute_url }}">
                   {{ origsub.created | date:"SHORT_DATETIME_FORMAT" }}
-                </a>
               </td>
               <td>
                 {{ origsub.state }}
