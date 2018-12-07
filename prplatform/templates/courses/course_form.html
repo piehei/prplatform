@@ -14,4 +14,16 @@
       </div>
     </div>
   </form>
+
+  <br>
+  <strong>You may change the order of the exercises on the course home page by filling the form field above. Use all IDs listed below and separate them by comma (,).</strong>
+  <br>
+  Your exercise IDs:
+  <ul>
+    {% for exer in object.submissionexercise_exercises.all %}
+    <li>ID: {{ exer.pk }} | {{ exer }} </li>
+    {% endfor %}
+  </ul>
+
+
 {% endblock %}

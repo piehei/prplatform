@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
@@ -64,6 +65,8 @@ class Course(TimeStampedModel):
     hidden = models.BooleanField("Hide course from students", default=True)
     # TODO: this should propably be put under the teacher ?
     aplus_apikey = models.CharField(max_length=50, blank=True)
+
+    exercise_order_on_front_page = ArrayField(models.IntegerField(), blank=True, null=True)
 
     class Meta:
         unique_together = (('base_course', 'code'))

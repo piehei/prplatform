@@ -104,7 +104,14 @@ class CourseDetailView(CourseContextMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['submissionexercises'] = self.object.submissionexercise_exercises.all()
-        ctx['reviewexercises'] = self.object.reviewexercise_exercises.all()
+
+        order = self.get_object().exercise_order_on_front_page
+        if order:
+            print("order")
+            # not optimal to sort in python land vs. SQL ***BUT*** the QS is small enough to be just fine
+            ctx['submissionexercises'] = sorted(ctx['submissionexercises'],
+                                                key=lambda ex: order.index(ex.pk) if ex.pk in order else 100)
+
         return ctx
 
 
@@ -116,7 +123,7 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
     slug_field = "url_slug"
     slug_url_kwarg = "url_slug"
-    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey']
+    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey', 'exercise_order_on_front_page']
 
     def form_valid(self, form):
 
@@ -124,6 +131,24 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
             form.errors['end_date'] = ["Course cannot end before it starts"]
             return super().form_invalid(form)
 
+        order = form.cleaned_data['exercise_order_on_front_page']
+
+        if len(order) > 0:
+            exercise_pks = self.get_object().submissionexercise_exercises.all().values_list('pk', flat=True)
+            minus = set(exercise_pks) - set(order)
+            if len(minus) > 0:
+                form.errors['exercise_order_on_front_page'] = [(
+                        'You have to fill in *ALL* exercise IDs when you'
+                        f'define their order on the fron page. You left out: {list(minus)}'
+                    )]
+                return super().form_invalid(form)
+
+            minus_another_way = set(order) - set(exercise_pks)
+            if len(minus_another_way) > 0:
+                form.errors['exercise_order_on_front_page'] = [(
+                    f'You tried to use an ID that may *NOT* be found from the below list: {list(minus_another_way)}'
+                    )]
+                return super().form_invalid(form)
         return super().form_valid(form)
 
 
