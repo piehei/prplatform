@@ -20,7 +20,7 @@ class User(AbstractUser):
     temporary = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.email}"
+        return f"{self.email[:self.email.index('@')]}"
 
     def get_absolute_url(self):
         return reverse("users:detail", kwargs={"username": self.username})
@@ -39,7 +39,7 @@ class StudentGroup(models.Model):
         unique_together = ['course', 'name']
 
     def __str__(self):
-        return f"{self.name} ({', '.join(self.student_usernames)})"
+        return f"{self.name} ({', '.join([x[:x.index('@')] if '@' in x else x for x in self.student_usernames])})"
 
     def has_student(self, user):
         return user.email in self.student_usernames
