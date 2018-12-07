@@ -77,10 +77,11 @@
                   {{ course.code }}</a>
             </h5>
             <hr></hr>
-            <ul class="nav flex-column">
+            <ul class="nav flex-column ml-3">
               {% if course %}
                 <li class="nav-item">
-                  <a class="nav-link font-weight-bold" href="{{ course.get_absolute_url }}">
+                  <a class="font-weight-bold" href="{{ course.get_absolute_url }}">
+                    Course home
                   </a>
                 </li>
               {% endif %}
