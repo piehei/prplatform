@@ -93,6 +93,14 @@ class OriginalSubmission(BaseSubmission):
             'sub_pk': self.pk
             })
 
+    def get_delete_url(self):
+        return reverse('courses:submissions:original-delete', kwargs={
+            'base_url_slug': self.course.base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.exercise.pk,
+            'sub_pk': self.pk
+            })
+
     def get_file_download_url(self):
         return reverse('courses:submissions:download', kwargs={
             'base_url_slug': self.course.base_course.url_slug,

@@ -1,8 +1,9 @@
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
 from django.views import View
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView, ListView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
@@ -141,6 +142,31 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
 
         ctx['qa_list'] = data
         return self.render_to_response(ctx)
+
+
+####
+#
+# DELETE VIEWS
+#
+
+class OriginalSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
+    model = OriginalSubmission
+    pk_url_kwarg = 'sub_pk'
+
+    def get_object(self):
+        self.object = None
+        ctx = self.get_context_data()
+        obj = super().get_object()
+        if obj.course != ctx['course']:
+            raise PermissionDenied('You cannot remove submissions from other courses...')
+        return obj
+
+    def get_success_url(self):
+        return reverse_lazy('courses:submissions:original-list', kwargs={
+            'base_url_slug': self.kwargs['base_url_slug'],
+            'url_slug': self.kwargs['url_slug'],
+            'pk': self.kwargs['pk']
+            })
 
 
 class DownloadSubmissionView(IsEnrolledMixin, View):
