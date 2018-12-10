@@ -12,7 +12,8 @@ from prplatform.exercises.question_models import Question
 
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, \
-                                         ReviewSubmissionListView, ReviewSubmissionDetailView
+                                         ReviewSubmissionListView, ReviewSubmissionDetailView, \
+                                         OriginalSubmissionDeleteView
 
 
 class SubmissionsTest(TestCase):
@@ -494,3 +495,51 @@ class SubmissionsTest(TestCase):
             else:
                 response = DownloadSubmissionView.as_view()(request, **self.kwargs)
                 self.assertEqual(response.status_code, 200)
+
+    def test_original_submission_delete_confirmation_page_shows_cascades(self):
+
+        os = OriginalSubmission(
+                course=self.course,
+                exercise=SubmissionExercise.objects.get(name="T1 TEXT"),
+                submitter_user=self.s1,
+                text="jada jada jada jada",
+                )
+        os.save()
+
+        request = self.factory.get(os.get_delete_url())
+        self.kwargs['pk'] = os.exercise.pk
+        self.kwargs['sub_pk'] = os.pk
+        request.user = self.s1
+
+        # students cannot access
+        self.assertRaises(PermissionDenied,
+                          OriginalSubmissionDeleteView.as_view(), request, **self.kwargs)
+
+        request.user = self.t1
+        response = OriginalSubmissionDeleteView.as_view()(request, **self.kwargs)
+        self.assertContains(response, "No peer-reviews exist yet")
+
+        res = []
+        for s in [self.s2, self.s3]:
+            re = ReviewSubmission(
+                    course=self.course,
+                    exercise=ReviewExercise.objects.get(name="T1 TEXT REVIEW"),
+                    reviewed_submission=os,
+                    submitter_user=s,
+                    )
+            re.save()
+            res.append(re)
+
+        response = OriginalSubmissionDeleteView.as_view()(request, **self.kwargs)
+        self.assertNotContains(response, "No peer-reviews exist yet")
+        # -> is turned into -&gt; in the response -> just replace that when looking for
+        self.assertContains(response, str(res[0]).replace(">", "&gt;"))
+        self.assertContains(response, str(res[1]).replace(">", "&gt;"))
+
+        self.assertEqual(OriginalSubmission.objects.count(), 1)
+        self.assertEqual(ReviewSubmission.objects.count(), 2)
+
+        os.delete()
+
+        self.assertEqual(OriginalSubmission.objects.count(), 0)
+        self.assertEqual(ReviewSubmission.objects.count(), 0)
