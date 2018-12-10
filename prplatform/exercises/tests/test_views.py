@@ -5,6 +5,7 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory, TestCase
 
 import datetime
+import pytz
 
 from prplatform.users.models import User, StudentGroup
 from prplatform.courses.models import Course
@@ -82,8 +83,8 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = 4
 
         se = SubmissionExercise.objects.get(pk=4)
-        se.opening_time = "2020-01-01 10:10"
-        se.closing_time = "2021-01-01 10:10"
+        se.opening_time = "2020-01-01 10:10+03:00"
+        se.closing_time = "2021-01-01 10:10+03:00"
         se.save()
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -107,8 +108,8 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = 4
 
         se = SubmissionExercise.objects.get(pk=4)
-        se.opening_time = "2005-01-01 10:10"
-        se.closing_time = "2006-01-01 10:10"
+        se.opening_time = "2005-01-01 10:10+03:00"
+        se.closing_time = "2006-01-01 10:10+03:00"
         se.save()
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -117,7 +118,7 @@ class ExerciseTest(TestCase):
 
         # student *SHOULD* have an extension
         extension = SubmissionExerciseDeviation(exercise=se, user=self.s1,
-                                                new_deadline=datetime.datetime(2050, 1, 1))
+                                                new_deadline=datetime.datetime(2050, 1, 1, tzinfo=pytz.UTC))
         extension.save()
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
@@ -126,7 +127,7 @@ class ExerciseTest(TestCase):
         self.assertEqual(response.context_data['disable_form'], False)
 
         # student *SHOULD NOT* have an extension
-        extension.new_deadline = "2006-01-01 10:10"
+        extension.new_deadline = "2006-01-01 10:10+03:00"
         extension.save()
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)

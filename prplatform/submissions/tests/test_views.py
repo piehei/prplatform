@@ -2,6 +2,7 @@ from django.test import RequestFactory, TestCase
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 
 import datetime
 
@@ -232,7 +233,7 @@ class SubmissionsTest(TestCase):
 
         # available in the future -> students should not see anything
         rev_exercise.min_submission_count = 0
-        rev_exercise.show_reviews_after_date = datetime.datetime.now() + datetime.timedelta(days=1)
+        rev_exercise.show_reviews_after_date = timezone.now() + datetime.timedelta(days=1)
         rev_exercise.save()
 
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
