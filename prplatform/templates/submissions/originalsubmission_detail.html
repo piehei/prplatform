@@ -61,8 +61,7 @@
       </div>
 
       {% if object.exercise.use_states %}
-
-        {% if teacher %}
+      {% if teacher %} {# TODO: do we need a student version of the below stuff? #}
           <hr></hr>
           <h2>Teacher feedback to student:</h2>
             {% if state_form %}
@@ -90,8 +89,17 @@
                 </div>
               {% endfor %}
             </div>
-        {% endif %}
+      {% endif %}
+      {% endif %}
 
+      {% if teacher %}
+        <h3>Peer-reviews of this original submission:</h3>
+        <i>(Only teacher sees this)</i>
+        {% for re in object.reviews.all  %}
+          <div class="list-group-item">
+            <a href="{{ re.get_absolute_url }}">{{ re  }}</a>
+          </div>
+        {% endfor %}
       {% endif %}
 
     </div>
