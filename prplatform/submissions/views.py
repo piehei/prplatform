@@ -169,6 +169,26 @@ class OriginalSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteVie
             })
 
 
+class ReviewSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
+    model = ReviewSubmission
+    pk_url_kwarg = 'sub_pk'
+
+    def get_object(self):
+        self.object = None
+        ctx = self.get_context_data()
+        obj = super().get_object()
+        if obj.course != ctx['course']:
+            raise PermissionDenied('You cannot remove submissions from other courses...')
+        return obj
+
+    def get_success_url(self):
+        return reverse_lazy('courses:submissions:review-list', kwargs={
+            'base_url_slug': self.kwargs['base_url_slug'],
+            'url_slug': self.kwargs['url_slug'],
+            'pk': self.kwargs['pk']
+            })
+
+
 class DownloadSubmissionView(IsEnrolledMixin, View):
 
     # TODO: rewrite this whole mess

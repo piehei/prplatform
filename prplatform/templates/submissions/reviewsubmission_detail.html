@@ -26,6 +26,11 @@
 
       <div class="shadow p-3 mb-5 bg-white rounded">
 
+        {% if teacher %}
+        <a href="{{ object.get_delete_url }}"
+           class="btn btn-sm btn-danger float-right">Delete</a>
+        {% endif %}
+
         {% if not receiver %}
         <strong>Submitter:</strong> {{ object.submitter_user }}<br>
 

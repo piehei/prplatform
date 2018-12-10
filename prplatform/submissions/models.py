@@ -34,6 +34,27 @@ class BaseSubmission(TimeStampedModel):
             return self.submitter_group.has_student(user)
         return self.submitter_user == user
 
+    def get_absolute_url(self):
+        urls = {'OriginalSubmission': 'courses:submissions:original-detail',
+                'ReviewSubmission': 'courses:submissions:review-detail'}
+        base_course = self.course.base_course
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.exercise.pk,
+            'sub_pk': self.pk
+            })
+
+    def get_delete_url(self):
+        urls = {'OriginalSubmission': 'courses:submissions:original-delete',
+                'ReviewSubmission': 'courses:submissions:review-delete'}
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': self.course.base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.exercise.pk,
+            'sub_pk': self.pk
+            })
+
 
 def upload_fp(instance, filename):
     """ This will be the filename of the uploaded file """
@@ -85,21 +106,6 @@ class OriginalSubmission(BaseSubmission):
         else:
             return all_subs.filter(submitter_user=self.submitter_user)
 
-    def get_absolute_url(self):
-        return reverse('courses:submissions:original-detail', kwargs={
-            'base_url_slug': self.course.base_course.url_slug,
-            'url_slug': self.course.url_slug,
-            'pk': self.exercise.pk,
-            'sub_pk': self.pk
-            })
-
-    def get_delete_url(self):
-        return reverse('courses:submissions:original-delete', kwargs={
-            'base_url_slug': self.course.base_course.url_slug,
-            'url_slug': self.course.url_slug,
-            'pk': self.exercise.pk,
-            'sub_pk': self.pk
-            })
 
     def get_file_download_url(self):
         return reverse('courses:submissions:download', kwargs={
@@ -140,14 +146,6 @@ class ReviewSubmission(BaseSubmission):
 
     def __str__(self):
         return f"{self.submitter} -> {self.reviewed_submission.submitter} | {self.exercise}"
-
-    def get_absolute_url(self):
-        return reverse('courses:submissions:review-detail', kwargs={
-            'base_url_slug': self.course.base_course.url_slug,
-            'url_slug': self.course.url_slug,
-            'pk': self.exercise.pk,
-            'sub_pk': self.pk
-            })
 
 
 def answer_upload_fp(instance, filename):
