@@ -14,7 +14,7 @@ from prplatform.exercises.question_models import Question
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, \
                                          ReviewSubmissionListView, ReviewSubmissionDetailView, \
-                                         OriginalSubmissionDeleteView
+                                         OriginalSubmissionDeleteView, ReviewSubmissionDeleteView
 
 
 class SubmissionsTest(TestCase):
@@ -539,6 +539,17 @@ class SubmissionsTest(TestCase):
 
         self.assertEqual(OriginalSubmission.objects.count(), 1)
         self.assertEqual(ReviewSubmission.objects.count(), 2)
+
+        request = self.factory.get(res[0].get_delete_url())
+        self.kwargs['pk'] = res[0].exercise.pk
+        self.kwargs['sub_pk'] = res[0].pk
+        request.user = self.s1
+
+        # students cannot access
+        self.assertRaises(PermissionDenied,
+                          ReviewSubmissionDeleteView.as_view(), request, **self.kwargs)
+
+        # delete page doesn't list any useful information, no need to check
 
         os.delete()
 
