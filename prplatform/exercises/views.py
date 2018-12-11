@@ -3,10 +3,12 @@ from django.views.generic.edit import DeleteView
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.shortcuts import redirect
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import EmptyResultSet, PermissionDenied
 from django.contrib import messages
 from django.forms import formset_factory
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
@@ -17,7 +19,6 @@ from . import utils
 from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
-
 
 ###
 #
@@ -115,18 +116,20 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 # DETAIL VIEWS
 #
 
+# TODO FIX ME
+# needed for LTI posting, could it be done in some other way??????? this is not secure
+@method_decorator(csrf_exempt, name='dispatch')
 class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     model = SubmissionExercise
 
-    # TODO: restrict submissions by both opening AND closing times
-    #       refactor the logic to a class method instead of inlining it here
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         exercise = self.object
         user = self.request.user
         ctx = self.get_context_data(**kwargs)
+        ctx['template_base'] = "base.html"
         ctx['disable_form'] = False
 
         if not exercise.can_access(user):
@@ -138,22 +141,31 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         ctx['my_submissions'] = exercise.submissions_by_submitter(user)
         ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
 
+        if self.request.GET.get('submission_url'):
+            ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
+            ctx['embedded'] = True
+            ctx['enrolled'] = True
+            ctx['disable_form'] = False
+            ctx['template_base'] = "base_embedded.html"
+
         return self.render_to_response(ctx)
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
+        print("POST COMING")
         self.object = self.get_object()
         ctx = self.get_context_data()
+        ctx['template_base'] = "base.html"
         exercise = self.object
         user = self.request.user
+        LTI_MODE = 'oauth_consumer_key' in self.request.POST
 
-        if not exercise.can_submit(user):
+        if not LTI_MODE and not exercise.can_submit(user):
             messages.error(self.request, 'You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
 
-        type = exercise.type
-        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=type)
+        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=exercise.type)
 
         form.accepted_filetypes = None
         if exercise.type == SubmissionExercise.FILE_UPLOAD:
@@ -173,8 +185,15 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
             if exercise.use_states:
                 sub.state = OriginalSubmission.SUBMITTED
             sub.save()
-            messages.success(self.request, 'Submission successful! You may see it below.')
-            return redirect(sub)
+
+            if LTI_MODE:
+                return HttpResponse('Submission received!')
+            else:
+                messages.success(self.request, 'Submission successful! You may see it below.')
+                return redirect(sub)
+
+        if LTI_MODE:
+            return HttpResponse('An error occurred.')
 
         ctx['form'] = form
         return self.render_to_response(ctx)
@@ -282,6 +301,8 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
         if self.request.GET.get('submission_url'):
             ctx['embedded'] = True
+            ctx['disable_form'] = False
+            ctx['enrolled'] = True
             ctx['template_base'] = "base_embedded.html"
             return ctx
 
