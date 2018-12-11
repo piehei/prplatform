@@ -187,7 +187,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
             sub.save()
 
             if LTI_MODE:
-                return HttpResponse('Submission received!')
+                return self._construct_aplus_response()
             else:
                 messages.success(self.request, 'Submission successful! You may see it below.')
                 return redirect(sub)
@@ -197,6 +197,19 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
         ctx['form'] = form
         return self.render_to_response(ctx)
+
+    def _construct_aplus_response(self):
+        # TODO: teacher should be able to configure this
+        response = HttpResponse(('<html>'
+                                 '<head>'
+                                 '<meta name="max-points" value="1" />'
+                                 '<meta name="points" value="1" />'
+                                 '</head>'
+                                 '<body>'
+                                 'Submission received!'
+                                 '</body>'
+                                 '</html>'))
+        return response
 
 
 class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):

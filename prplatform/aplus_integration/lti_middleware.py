@@ -10,11 +10,6 @@ def LtiLoginMiddleware(get_response):
     # One-time configuration and initialization.
 
     def middleware(request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
-
-        print("\n\n\n\nLTI_LOGIN_MIDDLEWARE --- middleware")
-        print(request)
 
         uri = urlparse(request.build_absolute_uri())
         method = request.method
@@ -25,24 +20,28 @@ def LtiLoginMiddleware(get_response):
         if request.GET:
             query_dict.update(request.GET.items())
 
-        uri = uri._replace(query=urlencode(query_dict.items())).geturl()
+        if 'lti_message_type' in query_dict and \
+           'lti_version' in query_dict and \
+           'oauth_consumer_key' in query_dict:
 
-        headers = {k: v for k, v in request.META.items() if not k.startswith('wsgi.')}
+            uri = uri._replace(query=urlencode(query_dict.items())).geturl()
 
-        if 'HTTP_AUTHORIZATION' in headers:
-            headers['Authorization'] = headers['HTTP_AUTHORIZATION']
-        if 'CONTENT_TYPE' in headers:
-            headers['Content-Type'] = headers['CONTENT_TYPE']
+            headers = {k: v for k, v in request.META.items() if not k.startswith('wsgi.')}
 
-        endpoint = SignatureOnlyEndpoint(LTIRequestValidator())
+            if 'HTTP_AUTHORIZATION' in headers:
+                headers['Authorization'] = headers['HTTP_AUTHORIZATION']
+            if 'CONTENT_TYPE' in headers:
+                headers['Content-Type'] = headers['CONTENT_TYPE']
 
-        is_valid, oauth_request = endpoint.validate_request(uri, method, '', headers)
+            endpoint = SignatureOnlyEndpoint(LTIRequestValidator())
 
-        if is_valid:
+            is_valid, oauth_request = endpoint.validate_request(uri, method, '', headers)
 
-            user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
-            print(user)
-            request.user = user
+            if is_valid:
+
+                user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
+                print(user)
+                request.user = user
 
         response = get_response(request)
 
