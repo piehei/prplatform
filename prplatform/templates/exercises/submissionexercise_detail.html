@@ -1,5 +1,5 @@
 
-{% extends "base.html" %}
+{% extends template_base %}
 {% load crispy_forms_tags %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
@@ -13,7 +13,9 @@
 
 {% block content %}
 
+  {% if not embedded %}
   {% include "../tabs.html" with tab="exercise" type="original" %}
+  {% endif %}
 
   <div class="row">
     <div class="col-md-12">
@@ -42,7 +44,7 @@
       {% else %}
 
         <form enctype="multipart/form-data"
-              action="{{ object.get_absolute_url }}"
+              action="{% if APLUS_POST_URL %} {{ APLUS_POST_URL }} {% else %} {{ object.get_absolute_url }} {% endif %}"
               method="post">
               {% csrf_token %}
               {{ form | crispy }}

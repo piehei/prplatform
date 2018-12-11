@@ -22,10 +22,14 @@ def my_received_feedback_count(exercise, user):
 
 
 def deadline_extension_for(exercise, user):
+    if user.is_anonymous:
+        return None
     return exercise.deadline_extension_for(user)
 
 
 def max_submissions_for(exercise, user):
+    if user.is_anonymous:
+        return 0
     return exercise.max_submissions_for(user)
 
 
