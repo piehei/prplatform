@@ -100,8 +100,9 @@ class Course(TimeStampedModel):
                 )
 
     def enroll(self, user):
-        new_enrollment = Enrollment(student=user, course=self)
-        new_enrollment.save()
+        if not self.is_enrolled(user):
+            new_enrollment = Enrollment(student=user, course=self)
+            new_enrollment.save()
 
     def find_studentgroup_by_user(self, user):
         if user.is_anonymous:
