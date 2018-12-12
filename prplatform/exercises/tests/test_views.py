@@ -40,6 +40,7 @@ class ExerciseTest(TestCase):
         self.students = [self.s1, self.s2, self.s3, self.s4]
 
         self.t1 = User.objects.get(username="teacher1")
+        self.course = Course.objects.get(pk=1)
 
     ###
     #   SubmissionExerciseCreateView
@@ -149,48 +150,154 @@ class ExerciseTest(TestCase):
 
     def test_studentCannotSubmitMultipleTimes(self):
 
-        # first create a submission by a student
-        s_exercise = SubmissionExercise.objects.get(pk=1)
-        course = Course.objects.get(pk=1)
-        orig_sub_user1 = OriginalSubmission(course=course, submitter_user=self.s1, exercise=s_exercise, text="jadajada")
-        orig_sub_user1.save()
-        # then load the page and check it disables second submission
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
+        # student cannot submit multiple times SubmissionExercises
+        se = SubmissionExercise.objects.get(pk=1)
+        for s in [self.s1, self.s2]:
+            OriginalSubmission(course=self.course,
+                               submitter_user=s,
+                               exercise=se,
+                               text=f"text by {s}").save()
+
+            request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
+            request.user = s
+            self.kwargs['pk'] = 1
+
+            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, "You have reached the maximum number of submissions")
+            self.assertEqual(response.context_data['disable_form'], True)
+
+        # this will create two reviewlocks since both loaded the page
+        re = ReviewExercise.objects.get(reviewable_exercise=se)
+        for s in [self.s1, self.s2]:
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {self.s1 if s == self.s2 else self.s2}")
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # after submissions are created, no more reviews can be made
+        for s in [self.s1, self.s2]:
+            rlock = ReviewLock.objects.get(user=s)
+
+            rsub = ReviewSubmission(course=self.course,
+                                    exercise=re,
+                                    submitter_user=s,
+                                    reviewed_submission=rlock.original_submission)
+            rsub.save()
+
+            rlock.review_submission = rsub
+            rlock.save()
+
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
+
+    def test_reviewlocks_created_correctly(self):
+
+        se = SubmissionExercise.objects.get(pk=1)
+        for s in self.students:
+            OriginalSubmission(course=self.course,
+                               submitter_user=s,
+                               exercise=se,
+                               text=f"text by {s}").save()
+
+        # this will create two reviewlocks since both loaded the page
+        re = ReviewExercise.objects.get(reviewable_exercise=se)
+        for s in [self.s1, self.s2]:
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {self.s1 if s == self.s2 else self.s2}")
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # the same reviewlocks are still used since no reviews have been made
+        for s in [self.s1, self.s2]:
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {self.s1 if s == self.s2 else self.s2}")
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # after submissions are created, no more reviews can be made
+        for s in [self.s1, self.s2]:
+            rlock = ReviewLock.objects.get(user=s)
+
+            rsub = ReviewSubmission(course=self.course,
+                                    exercise=re,
+                                    submitter_user=s,
+                                    reviewed_submission=rlock.original_submission)
+            rsub.save()
+
+            rlock.review_submission = rsub
+            rlock.save()
+
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
+
+        # now in the system: 4 OS, 2 RL, 2 RS
+
+        # s4 loads the page -> RL should be for s3
+        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        request.user = self.s4
+        self.kwargs['pk'] = re.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, f"text by {self.s3}")
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
+
+        re.max_submission_count = 2
+        re.save()
+
+        # s1 loads the page -> RL should be for s4 since no RLs for s4 exist yet
         request.user = self.s1
-        self.kwargs['pk'] = 1
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-
-        self.assertContains(response, "You have reached the maximum number of submissions")
-        self.assertEqual(response.context_data['disable_form'], True)
-
-        OriginalSubmission(course=course, submitter_user=self.s2, exercise=s_exercise, text="juuh").save()
-        r_exercise = ReviewExercise.objects.get(reviewable_exercise=s_exercise)
-        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-        request.user = self.s2
-        self.kwargs['pk'] = 1
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "jadajada")
-        self.assertEqual(ReviewLock.objects.all().count(), 1)
-        rsub = ReviewSubmission(course=course, exercise=r_exercise, submitter_user=self.s2,
-                                reviewed_submission=orig_sub_user1)
-        rsub.save()
-        rlock = ReviewLock.objects.first()
-        rlock.review_submission = rsub
-        rlock.save()
-        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        self.assertContains(response, f"text by {self.s4}")
+        self.assertEqual(ReviewLock.objects.all().count(), 4)
+
+        # s2 loads the page -> nothing to review since all can recieve only one
         request.user = self.s2
-        self.kwargs['pk'] = 1
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
+        print(ReviewLock.objects.all())
+        self.assertEqual(ReviewLock.objects.all().count(), 4)
+        self.assertContains(response, f"Not a thing was found to be")
+
+        # increase the number of reviews an OS can get
+        re.max_reviews_per_submission = 2
+        re.save()
+
+        # s2 should now get s3 since cannot get himself and s1 already done
+        request.user = self.s2
+        self.kwargs['pk'] = re.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, f"text by {self.s3}")
+        self.assertEqual(ReviewLock.objects.all().count(), 5)
+
+        # s3 has not yet loaded the page -> should get s1
+        request.user = self.s3
+        self.kwargs['pk'] = re.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertContains(response, f"text by {self.s1}")
+        self.assertEqual(ReviewLock.objects.all().count(), 6)
 
     def test_teacherCanSubmitMultipleTimes(self):
 
         exercise = SubmissionExercise.objects.get(pk=1)
-        course = Course.objects.get(pk=1)
-        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
-        OriginalSubmission(course=course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=self.course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=self.course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
+        OriginalSubmission(course=self.course, submitter_user=self.t1, exercise=exercise, text="jadajada").save()
 
         request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
         request.user = self.t1
@@ -203,12 +310,11 @@ class ExerciseTest(TestCase):
 
     def test_submissionStatesWork(self):
 
-        exercise = SubmissionExercise.objects.get(name='T5 STATE')
-        course = Course.objects.get(pk=1)
+        se = SubmissionExercise.objects.get(name='T5 STATE')
 
         subs = []
         for s in self.students[:2]:
-            sub = OriginalSubmission(course=course, submitter_user=s, state='submitted', exercise=exercise,
+            sub = OriginalSubmission(course=self.course, submitter_user=s, state='submitted', exercise=se,
                                      text=f"answer by {s.username}")
             sub.save()
             subs.append(sub)
@@ -360,5 +466,3 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = re.pk
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
-
-
