@@ -1,7 +1,16 @@
-from django.forms import (BooleanField, Form, ModelForm, Textarea,
-                          ValidationError, ModelChoiceField,)
+from django.forms import (
+        BooleanField,
+        Form,
+        ModelForm,
+        Textarea,
+        ValidationError,
+        ModelChoiceField,
+    )
 
-from .models import SubmissionExercise, ReviewExercise
+from .models import (
+        ReviewExercise,
+        SubmissionExercise,
+    )
 
 
 class SubmissionExerciseForm(ModelForm):

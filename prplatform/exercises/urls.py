@@ -1,9 +1,17 @@
 from django.urls import path
-from django.conf.urls import url, include
 
 from . import views
-from .question_views import QuestionCreateView, QuestionUpdateView, QuestionDetailView, QuestionListView
-from .deviation_views import DeviationListView, DeviationCreateView, DeviationDeleteView
+from .deviation_views import (
+        DeviationCreateView,
+        DeviationDeleteView,
+        DeviationListView,
+    )
+from .question_views import (
+        QuestionCreateView,
+        QuestionDetailView,
+        QuestionListView,
+        QuestionUpdateView,
+    )
 
 
 app_name = "exercises"

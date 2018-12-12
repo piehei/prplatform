@@ -1,22 +1,41 @@
+from django.contrib import messages
+from django.core.exceptions import EmptyResultSet, PermissionDenied
+from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
-from django.urls import reverse, reverse_lazy
-from django.utils import timezone
-from django.shortcuts import redirect
-from django.http import HttpResponseRedirect, HttpResponse
-from django.core.exceptions import EmptyResultSet, PermissionDenied
-from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 
 from prplatform.courses.models import Course
-from .models import SubmissionExercise, ReviewExercise
-from .forms import SubmissionExerciseForm, ReviewExerciseForm, ChooseForm
-from . import utils
+from prplatform.courses.views import (
+        CourseContextMixin,
+        ExerciseContextMixin,
+        GroupMixin,
+        IsTeacherMixin,
+    )
+from prplatform.submissions.forms import (
+        AnswerModelForm,
+        OriginalSubmissionForm,
+    )
+from prplatform.submissions.models import (
+        OriginalSubmission,
+        ReviewLock,
+        ReviewSubmission,
+    )
 
-from prplatform.courses.views import ExerciseContextMixin, CourseContextMixin, IsTeacherMixin, GroupMixin
-from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
+from .models import (
+        ReviewExercise,
+        SubmissionExercise,
+    )
+from .forms import (
+        ChooseForm,
+        ReviewExerciseForm,
+        SubmissionExerciseForm,
+    )
+from . import utils
 
 
 ###

@@ -1,8 +1,8 @@
 from django.apps import apps
-from django.urls import reverse
-from django.db import models
-from django.utils import timezone
 from django.contrib.postgres.fields import ArrayField
+from django.db import models
+from django.urls import reverse
+from django.utils import timezone
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.courses.models import Course
