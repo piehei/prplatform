@@ -38,6 +38,15 @@ class CourseContextMixin(object):
         return ctx
 
 
+class ExerciseContextMixin(CourseContextMixin):
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if not self.object.can_access(self.request.user):
+            raise PermissionDenied
+        return ctx
+
+
 class IsTeacherMixin(UserPassesTestMixin, LoginRequiredMixin):
     """ This makes sure that the user is logged in and is a teacher
         of the course. 403 forbidden is raised if not. """
