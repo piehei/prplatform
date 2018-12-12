@@ -11,7 +11,11 @@
   <form enctype="multipart/form-data"
         class="form-horizontal needs-validation"
         method="post"
-        action="{{ object.get_absolute_url }}{% if chooseForm %}?choice={{reviewable.pk}}{% endif %}">
+        action="{% if APLUS_POST_URL %}
+                  {{ APLUS_POST_URL }}
+                {% else %}
+                  {{ object.get_absolute_url }}{% if chooseForm %}?choice={{reviewable.pk}}{% endif %}
+                {% endif %}">
 
     {% csrf_token %}
 
