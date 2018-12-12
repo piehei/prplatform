@@ -232,7 +232,6 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         return ctx
 
     def _get_random_ctx(self, ctx):
-        user = self.request.user
         exercise = self.object
 
         if ctx['teacher']:
@@ -241,22 +240,11 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         if ctx['my_submission']:
             ctx['my_filecontents'] = ctx['my_submission'].filecontents_or_none()
 
-        rlock = None
-        if exercise.use_groups:
-            rlock_list = ReviewLock.objects.filter(group=ctx['my_group'], review_exercise=exercise)
-        else:
-            rlock_list = ReviewLock.objects.filter(user=user, review_exercise=exercise)
+        rlock = exercise.reviewlocks_for(self.request.user).last()
 
-        if rlock_list:
-            last_rlock = rlock_list.last()
-
-            if last_rlock.review_submission and exercise.max_submission_count == len(rlock_list):
-                ctx['reviews_done'] = True
-                return ctx
-            elif not last_rlock.review_submission:
-                rlock = last_rlock
-
-        if not rlock:
+        # if rlock doesn't exist or it exists and has a review attached
+        if not rlock or \
+           rlock and rlock.review_submission is not None:
             # TODO: can field errors be raised from something not thought about here?
             #       is it a good idea to determine possible reviewables in the creation
             #       of the reviewlock?
