@@ -20,10 +20,12 @@ from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrol
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
 from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
 
+
 ###
 #
 # CREATE VIEWS
 #
+
 
 class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
     model = SubmissionExercise
@@ -123,7 +125,6 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     model = SubmissionExercise
 
-
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         exercise = self.object
@@ -152,7 +153,6 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     def post(self, *args, **kwargs):
         """ TODO: error checking """
-        print("POST COMING")
         self.object = self.get_object()
         ctx = self.get_context_data()
         ctx['template_base'] = "base.html"
@@ -212,6 +212,7 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         return response
 
 
+@method_decorator(csrf_exempt, name='dispatch')
 class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
     model = ReviewExercise
 
@@ -300,8 +301,6 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         exercise = self.object
         ctx = super().get_context_data(**kwargs)
         ctx['template_base'] = "base.html"
-        print(self.kwargs)
-        print(self.request.GET)
 
         if not ctx['teacher'] and not exercise.visible_to_students:
             raise PermissionDenied
@@ -313,11 +312,10 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         can_submit, errormsg = exercise.can_submit(self.request.user)
 
         if self.request.GET.get('submission_url'):
+            ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
             ctx['embedded'] = True
-            ctx['disable_form'] = False
             ctx['enrolled'] = True
             ctx['template_base'] = "base_embedded.html"
-            return ctx
 
         if not can_submit:
             ctx['errormsg'] = errormsg
@@ -339,7 +337,6 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     def _post_random(self, ctx):
         # TODO: should it be possible to update the previous review submission?
-
         rlock_list = self.object.reviewlocks_for(self.request.user)
         rlock = rlock_list.last()
 
@@ -399,15 +396,16 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
+        LTI_MODE = 'oauth_consumer_key' in self.request.POST
 
         can_submit, errormsg = self.object.can_submit(self.request.user)
-        if not can_submit:
+
+        if not LTI_MODE and not can_submit:
             messages.error(self.request, 'You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
 
         valid, self.forms = self._validate_forms()
-
         if not valid:
             ctx['forms'] = self.forms
             return self.render_to_response(ctx)
