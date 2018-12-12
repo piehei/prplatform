@@ -6,19 +6,17 @@ from django.shortcuts import redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.exceptions import EmptyResultSet, PermissionDenied
 from django.contrib import messages
-from django.forms import formset_factory
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
 from prplatform.courses.models import Course
 from .models import SubmissionExercise, ReviewExercise
-from .question_models import Question
 from .forms import SubmissionExerciseForm, ReviewExerciseForm, ChooseForm
 from . import utils
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsEnrolledMixin, GroupMixin
+from prplatform.courses.views import ExerciseContextMixin, CourseContextMixin, IsTeacherMixin, GroupMixin
 from prplatform.submissions.forms import OriginalSubmissionForm, AnswerModelForm
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
+from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
 
 
 ###
@@ -39,12 +37,9 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         form = SubmissionExerciseForm(self.request.POST)
-        self.object = None  # TODO: WTF ?????????????????????????????????????????????
         course = self.get_context_data()['course']
 
         if form.is_valid():
-            # this initializes a new SubmissionExercise object
-            # --> after injecting the ForeignKey course it is safe to save
             exer = form.save(commit=False)
             exer.course = course
             exer.save()
@@ -87,7 +82,6 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         else:
             ctx = self.get_context_data(**kwargs)
             ctx['form'] = form
-            # ctx['formset'] = formset
             return self.render_to_response(ctx)
 
 ###
@@ -96,12 +90,12 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
 #
 
 
-class SubmissionExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
+class SubmissionExerciseUpdateView(IsTeacherMixin, ExerciseContextMixin, UpdateView):
     model = SubmissionExercise
     form_class = SubmissionExerciseForm
 
 
-class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
+class ReviewExerciseUpdateView(IsTeacherMixin, ExerciseContextMixin, UpdateView):
     model = ReviewExercise
     form_class = ReviewExerciseForm
 
@@ -121,25 +115,21 @@ class ReviewExerciseUpdateView(IsTeacherMixin, CourseContextMixin, UpdateView):
 # TODO FIX ME
 # needed for LTI posting, could it be done in some other way??????? this is not secure
 @method_decorator(csrf_exempt, name='dispatch')
-class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
+class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
     model = SubmissionExercise
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        exercise = self.object
         user = self.request.user
         ctx = self.get_context_data(**kwargs)
         ctx['template_base'] = "base.html"
         ctx['disable_form'] = False
 
-        if not exercise.can_access(user):
-            raise PermissionDenied
-
-        if not exercise.can_submit(user) or ctx['teacher']:
+        if not self.object.can_submit(user) or ctx['teacher']:
             ctx['disable_form'] = True
 
-        ctx['my_submissions'] = exercise.submissions_by_submitter(user)
+        ctx['my_submissions'] = self.object.submissions_by_submitter(user)
         ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
 
         if self.request.GET.get('submission_url'):
@@ -213,15 +203,12 @@ class SubmissionExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
+class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
     model = ReviewExercise
 
-    def _get_answer_modelforms(self, exercise):
-        # this gathers all the teacher-chosen questions that
-        # the peer-reviewing student will answer
+    def _get_answer_forms(self):
         forms = []
-        sorted_questions = exercise.question_list_in_order()
-        for index, q in enumerate(sorted_questions):
+        for index, q in enumerate(self.object.question_list_in_order()):
             forms.append(AnswerModelForm(question=q))
         return forms
 
@@ -286,7 +273,7 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
         if sid:
             cf = ChooseForm(self.request.GET, exercise=self.object, user=self.request.user)
             if not cf.is_valid():
-                raise PermissionDenied
+                raise PermissionDenied('Dot\'t do that. Just don\'t.')
             ctx['reviewable'] = OriginalSubmission.objects.get(id=sid)
 
             previous_reviews = self.object.submissions_by_submitter(self.request.user)
@@ -298,18 +285,14 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 
     def get_context_data(self, *args, **kwargs):
         self.object = self.get_object()
-        exercise = self.object
         ctx = super().get_context_data(**kwargs)
         ctx['template_base'] = "base.html"
 
-        if not ctx['teacher'] and not exercise.visible_to_students:
-            raise PermissionDenied
-
-        ctx['forms'] = self._get_answer_modelforms(exercise)
-        ctx['my_submission'] = exercise.original_submissions_by(self.request.user).first()
+        ctx['forms'] = self._get_answer_forms()
+        ctx['my_submission'] = self.object.original_submissions_by(self.request.user).first()
         ctx['disable_form'] = True
 
-        can_submit, errormsg = exercise.can_submit(self.request.user)
+        can_submit, errormsg = self.object.can_submit(self.request.user)
 
         if self.request.GET.get('submission_url'):
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
@@ -321,12 +304,12 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
             ctx['errormsg'] = errormsg
             return ctx
 
-        if exercise.type == ReviewExercise.RANDOM:
+        if self.object.type == ReviewExercise.RANDOM:
             ctx = self._get_random_ctx(ctx)
-        elif exercise.type == ReviewExercise.CHOOSE:
+        elif self.object.type == ReviewExercise.CHOOSE:
             ctx = self._get_choose_ctx(ctx)
-        elif exercise.type == ReviewExercise.GROUP:
-            utils.prepare_group_review_exercise_for(exercise, self.request.user)
+        elif self.object.type == ReviewExercise.GROUP:
+            utils.prepare_group_review_exercise_for(self.object, self.request.user)
             ctx = self._get_choose_ctx(ctx)
 
         ctx['show_content_to_review'] = True
@@ -423,7 +406,7 @@ class ReviewExerciseDetailView(GroupMixin, CourseContextMixin, DetailView):
 #
 
 
-class SubmissionExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
+class SubmissionExerciseDeleteView(IsTeacherMixin, ExerciseContextMixin, DeleteView):
     # TODO: check for submissions -> handle before deletion of the exercise
     model = SubmissionExercise
 
@@ -434,7 +417,7 @@ class SubmissionExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteVie
             })
 
 
-class ReviewExerciseDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
+class ReviewExerciseDeleteView(IsTeacherMixin, ExerciseContextMixin, DeleteView):
     # TODO: check for submissions -> handle before deletion of the exercise
     model = ReviewExercise
 
