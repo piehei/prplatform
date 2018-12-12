@@ -34,19 +34,11 @@ class SubmissionExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateVie
             'closing_time': timezone.now(),
             }
 
-    def post(self, *args, **kwargs):
-        """ TODO: error checking """
-        form = SubmissionExerciseForm(self.request.POST)
-        course = self.get_context_data()['course']
-
-        if form.is_valid():
-            exer = form.save(commit=False)
-            exer.course = course
-            exer.save()
-            return HttpResponseRedirect(reverse('courses:detail', kwargs=kwargs))
-
-        else:
-            return self.form_invalid(form)
+    def form_valid(self, form):
+        exercise = form.save(commit=False)
+        exercise.course = self.get_context_data()['course']
+        exercise.save()
+        return super().form_valid(form)
 
 
 class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
@@ -64,25 +56,13 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
                 url_slug=self.kwargs['url_slug'])
         return kwargs
 
-    def post(self, *args, **kwargs):
-        """ TODO: error checking """
-        self.object = None
-        course = self.get_context_data()['course']
+    def form_valid(self, form):
 
-        form = ReviewExerciseForm(self.request.POST, course=course)
-
-        if form.is_valid():  # and formset.is_valid():
-            exer = form.save(commit=False)
-            exer.course = course
-            exer.question_order = []
-            exer.save()
-
-            return HttpResponseRedirect(reverse('courses:detail', kwargs=kwargs))
-
-        else:
-            ctx = self.get_context_data(**kwargs)
-            ctx['form'] = form
-            return self.render_to_response(ctx)
+        exercise = form.save(commit=False)
+        exercise.course = self.get_context_data()['course']
+        exercise.question_order = []
+        exercise.save()
+        return super().form_valid(form)
 
 ###
 #
