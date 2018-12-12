@@ -49,6 +49,14 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
        'closing_time': timezone.now(),
     }
 
+    def get_initial(self):
+        initial = self.initial.copy()
+        # this pre-selects the SubmissionExercise for this new ReviewExercise
+        reviewable_exercise_id = self.request.GET.get('subid', None)
+        if reviewable_exercise_id:
+            initial['reviewable_exercise'] = reviewable_exercise_id
+        return initial
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['course'] = Course.objects.get(
@@ -57,7 +65,6 @@ class ReviewExerciseCreateView(IsTeacherMixin, CourseContextMixin, CreateView):
         return kwargs
 
     def form_valid(self, form):
-
         exercise = form.save(commit=False)
         exercise.course = self.get_context_data()['course']
         exercise.question_order = []

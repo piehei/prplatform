@@ -87,9 +87,9 @@
           {% else %}
             {% if teacher %}
             <span style="font-weight: normal;">No peer-review exercise.</span>
-                <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}">
-                  Create?
-                </a>
+            <a href="{% url 'courses:create-review-exercise' object.base_course.url_slug object.url_slug %}?subid={{ex.pk}}">
+              Create?
+            </a>
             {% endif %}
           {% endif %}
           {% endwith %}

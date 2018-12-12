@@ -1,8 +1,7 @@
-from django.forms import (BooleanField, Form, ModelForm, Textarea, inlineformset_factory, modelformset_factory,
-                         ValidationError, ModelChoiceField,)
+from django.forms import (BooleanField, Form, ModelForm, Textarea,
+                          ValidationError, ModelChoiceField,)
 
 from .models import SubmissionExercise, ReviewExercise
-from .question_models import Question
 
 
 class SubmissionExerciseForm(ModelForm):
