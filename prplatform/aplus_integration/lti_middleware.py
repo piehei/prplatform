@@ -1,13 +1,15 @@
 from django.contrib.auth import authenticate, login
+from django.urls import resolve
 from oauthlib.oauth1 import SignatureOnlyEndpoint
 from oauthlib.common import urlencode
 from urllib.parse import urlparse
 from django_lti_login.validators import LTIRequestValidator
 from django_lti_login.backends import LTIAuthBackend
 
+from prplatform.courses.models import Course
+
 
 def LtiLoginMiddleware(get_response):
-    # One-time configuration and initialization.
 
     def middleware(request):
 
@@ -38,15 +40,17 @@ def LtiLoginMiddleware(get_response):
             is_valid, oauth_request = endpoint.validate_request(uri, method, '', headers)
 
             if is_valid:
-
                 user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
-                print(user)
+
+                resolved_view = resolve(request.path)
+                course = Course.objects.get(
+                        base_course__url_slug=resolved_view.kwargs['base_url_slug'],
+                        url_slug=resolved_view.kwargs['url_slug'])
+
+                course.enroll(user)
                 request.user = user
 
         response = get_response(request)
-
-        # Code to be executed for each request/response after
-        # the view is called.
 
         return response
 
