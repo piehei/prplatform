@@ -27,8 +27,6 @@ def change_original_submission_submitters(sender, **kwargs):
     user = kwargs.get('user', None)
     temp_user = User.objects.filter(email=user.email, temporary=True).first()
 
-    print("USER LOGGED IN")
-
     if request and user and temp_user:
 
         enrolled_courses = []
@@ -43,7 +41,6 @@ def change_original_submission_submitters(sender, **kwargs):
                 Enrollment.objects.create(course=sub.course, student=user)
                 logger.info(f"enrolled to {sub.course}")
 
-
         # TODO: if this implementation holds, check there's no concurrency bugs
         logger.info(f"Original submissions by {temp_user} have been modified to be"
                     f"submitted by {user}")
@@ -53,6 +50,7 @@ def change_original_submission_submitters(sender, **kwargs):
         logger.info(ret)
     else:
         logger.info(f"No temp_user existed for {user}")
+
 
 @receiver(lti_login_authenticated)
 def store_last_login(sender, **kwargs):
