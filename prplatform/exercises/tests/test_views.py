@@ -36,7 +36,10 @@ class ExerciseTest(TestCase):
         self.s2 = User.objects.get(username="student2")
         self.s3 = User.objects.get(username="student3")
         self.s4 = User.objects.get(username="student4")
+        self.s5 = User.objects.get(username="student5")
+        self.s6 = User.objects.get(username="student6")
 
+        # dont add s5 and s6 here since tests were written before they existed
         self.students = [self.s1, self.s2, self.s3, self.s4]
 
         self.t1 = User.objects.get(username="teacher1")
@@ -166,6 +169,20 @@ class ExerciseTest(TestCase):
             self.assertContains(response, "You have reached the maximum number of submissions")
             self.assertEqual(response.context_data['disable_form'], True)
 
+            # this will try to post (the form is disabled but the user could use devtools) -> should not succeed
+            request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': 'Submitted text'})
+            request.user = s
+            self.kwargs['pk'] = 1
+
+            request = add_middleware(request, SessionMiddleware)
+            request = add_middleware(request, MessageMiddleware)
+
+            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, "You cannot submit")
+            self.assertEqual(response.context_data['disable_form'], True)
+
+        self.assertEqual(OriginalSubmission.objects.count(), 2)
+
         # this will create two reviewlocks since both loaded the page
         re = ReviewExercise.objects.get(reviewable_exercise=se)
         for s in [self.s1, self.s2]:
@@ -291,6 +308,96 @@ class ExerciseTest(TestCase):
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, f"text by {self.s1}")
         self.assertEqual(ReviewLock.objects.all().count(), 6)
+
+    def test_reviewlocks_created_correctly_for_groups(self):
+
+        groups = [
+            StudentGroup.objects.create(course=self.course,
+                                        name="g1",
+                                        student_usernames=[self.s1.email, self.s2.email]),
+            StudentGroup.objects.create(course=self.course,
+                                        name="g2",
+                                        student_usernames=[self.s3.email, self.s4.email]),
+            StudentGroup.objects.create(course=self.course,
+                                        name="g3",
+                                        student_usernames=[self.s5.email, self.s6.email]),
+                ]
+
+        se = SubmissionExercise.objects.get(pk=1)
+        se.use_groups = True
+        se.save()
+
+        # OS for all groups
+        for s, g in [(self.s1, groups[0]), (self.s3, groups[1]), (self.s5, groups[2])]:
+            request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': f'text by {g.name}'})
+            request.user = s
+            self.kwargs['pk'] = 1
+            request = add_middleware(request, SessionMiddleware)
+            request = add_middleware(request, MessageMiddleware)
+            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+
+        self.assertEqual(OriginalSubmission.objects.count(), 3)
+
+        re = se.review_exercise
+        re.use_groups = True
+        re.save()
+
+        # g1 -> g2, g2 -> g1
+        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        self.kwargs['pk'] = re.pk
+        for s, target_name in [(self.s1, 'g2'), (self.s2, 'g2'), (self.s3, 'g1'), (self.s4, 'g1')]:
+            request.user = s
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {target_name}")
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # g1 -> review for g2
+        rlock = re.reviewlocks_for(self.s1).first()
+        rsub = ReviewSubmission(course=self.course,
+                                exercise=re,
+                                submitter_user=self.s1,
+                                submitter_group=groups[0],
+                                reviewed_submission=rlock.original_submission)
+        rsub.save()
+        rlock.review_submission = rsub
+        rlock.save()
+
+        for s in [self.s1, self.s2]:
+            request.user = s
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'You have already submitted your peer-reviews')
+            self.assertEqual(response.context_data['disable_form'], True)
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # increase sub count that groups can do. g1 -> g3
+        re.max_submission_count = 2
+        re.save()
+
+        for s, target_name in [(self.s1, 'g3'), (self.s2, 'g3')]:
+            request.user = s
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {target_name}")
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
+
+        # nothing left for g3 to review
+        for s in [self.s5, self.s6]:
+            request.user = s
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'Not a thing was found')
+            self.assertEqual(response.context_data['disable_form'], True)
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
+
+        # increase how many reviews can receive. g3 -> g1 since g1 oldest and 1 review
+        re.max_reviews_per_submission = 2
+        re.save()
+
+        for s, target_name in [(self.s5, 'g1'), (self.s6, 'g1')]:
+            request.user = s
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {target_name}")
+        self.assertEqual(ReviewLock.objects.all().count(), 4)
 
     def test_teacherCanSubmitMultipleTimes(self):
 
