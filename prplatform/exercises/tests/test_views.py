@@ -7,14 +7,27 @@ from django.test import RequestFactory, TestCase
 import datetime
 import pytz
 
-from prplatform.users.models import User, StudentGroup
+from prplatform.users.models import (
+        StudentGroup,
+        User,
+    )
 from prplatform.courses.models import Course
 
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, ReviewLock
+from prplatform.submissions.models import (
+        OriginalSubmission,
+        ReviewSubmission,
+    )
+from prplatform.submissions.reviewlock_models import ReviewLock
 from prplatform.submissions.views import ReviewSubmissionListView
-from prplatform.exercises.views import SubmissionExerciseCreateView, SubmissionExerciseDetailView, \
-                                       ReviewExerciseDetailView
-from prplatform.exercises.models import SubmissionExercise, ReviewExercise
+from prplatform.exercises.views import (
+        SubmissionExerciseCreateView,
+        SubmissionExerciseDetailView,
+        ReviewExerciseDetailView,
+    )
+from prplatform.exercises.models import (
+        ReviewExercise,
+        SubmissionExercise,
+    )
 from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
 
 

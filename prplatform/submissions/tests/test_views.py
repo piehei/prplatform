@@ -1,5 +1,4 @@
 from django.test import RequestFactory, TestCase
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -11,10 +10,21 @@ from prplatform.courses.models import Course
 from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
-from prplatform.submissions.models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
-from prplatform.submissions.views import OriginalSubmissionListView, DownloadSubmissionView, \
-                                         ReviewSubmissionListView, ReviewSubmissionDetailView, \
-                                         OriginalSubmissionDeleteView, ReviewSubmissionDeleteView
+from prplatform.submissions.models import (
+        Answer,
+        OriginalSubmission,
+        ReviewSubmission,
+    )
+
+from prplatform.submissions.reviewlock_models import ReviewLock
+from prplatform.submissions.views import (
+        DownloadSubmissionView,
+        OriginalSubmissionDeleteView,
+        OriginalSubmissionListView,
+        ReviewSubmissionListView,
+        ReviewSubmissionDetailView,
+        ReviewSubmissionDeleteView,
+    )
 
 
 class SubmissionsTest(TestCase):

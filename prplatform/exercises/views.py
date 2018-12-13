@@ -22,9 +22,9 @@ from prplatform.submissions.forms import (
     )
 from prplatform.submissions.models import (
         OriginalSubmission,
-        ReviewLock,
         ReviewSubmission,
     )
+from prplatform.submissions.reviewlock_models import ReviewLock
 
 from .models import (
         ReviewExercise,

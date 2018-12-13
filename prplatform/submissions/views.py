@@ -7,13 +7,24 @@ from django.views.generic import DetailView, ListView, UpdateView, DeleteView
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-import os
+from prplatform.courses.views import (
+        CourseContextMixin,
+        IsTeacherMixin,
+        IsSubmitterOrTeacherMixin,
+        IsEnrolledMixin,
+    )
+from prplatform.exercises.models import (
+        SubmissionExercise,
+        ReviewExercise,
+    )
 
-from .models import OriginalSubmission, ReviewSubmission, Answer, ReviewLock
+from .models import (
+        Answer,
+        OriginalSubmission,
+        ReviewSubmission,
+    )
 from .forms import OriginalSubmissionStateForm
 
-from prplatform.courses.views import CourseContextMixin, IsTeacherMixin, IsSubmitterOrTeacherMixin, IsEnrolledMixin
-from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 
 ###
 #
