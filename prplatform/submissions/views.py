@@ -253,3 +253,44 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
 
         return response
 
+
+class ReviewSubmissionEmbeddedFeedbackList(LoginRequiredMixin, CourseContextMixin, ListView):
+    model = ReviewSubmission
+    template_name = "submissions/reviewsubmission_list_embed.html"
+
+    def get_queryset(self):
+        re = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+        return re.last_reviews_for(self.request.user)
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
+
+        if ctx['exercise'].reviews_available_date_in_future():
+            ctx['reviews_available_date_in_future'] = True
+            ctx['object_list'] = ReviewSubmission.objects.none()
+
+        if not ctx['exercise'].review_showing_requirements_ok(self.request.user):
+            ctx['needs_to_complete_more_reviews'] = True
+            ctx['object_list'] = ReviewSubmission.objects.none()
+
+        ctx['reviews'] = []
+        for review in self.object_list:
+            data = []
+
+            for ans in review.answers_in_ordered_list():
+                if ans.question.hide_from_receiver:
+                    continue
+
+                if ans.value_text:
+                    data.append({'q': ans.question.question_text, 'a': ans.value_text})
+                elif ans.value_choice:
+                    # TODO : braindead ???
+                    choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
+                    data.append({'q': ans.question.question_text, 'a': choice})
+                else:
+                    data.append({'q': ans.question.question_text, 'f': ans.get_download_url()})
+            ctx['reviews'].append({'qa_list': data})
+
+        return ctx
+

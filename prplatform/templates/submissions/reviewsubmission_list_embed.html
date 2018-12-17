@@ -1,0 +1,58 @@
+
+{% extends "base_embedded.html" %}
+{% load static %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-sm-12">
+
+      <div class="shadow p-3 mb-5 bg-white rounded">
+
+        {% if teacher %}
+          OPETTAJALLE ERITYISTEKSTI TODO
+        {% endif %}
+
+      {% if reviews_available_date_in_future %}
+      Peer-reviews will be available after {{ exercise.show_reviews_after_date }}<br>
+      {% endif %}
+
+      {% if needs_to_complete_more_reviews %}
+      Peer-reviews for you will be available after completing {{ exercise.min_submission_count }}
+      peer-reviews yourself.<br>
+      {% endif %}
+
+      </div>
+
+
+      {% for review in reviews %}
+
+        <div class="shadow p-3 mb-5 bg-white rounded">
+          <h3>Peer-review content:</h3>
+          <ul>
+            {% for item in review.qa_list %}
+              <li class="mt-4">
+                Question:<br>
+                <div class="ml-4">
+                  <b>{{ item.q }}</b>
+                </div>
+                <br>
+                Answer:<br>
+                <div class="ml-4">
+                  {% if 'a' in item %}
+                    {{ item.a | linebreaks }}
+                  {% else %}
+                  <a href="{{ item.f }}">Click here to download submitted file</a>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+      {% endfor %}
+
+    </div>
+  </div>
+{% endblock content %}
+
