@@ -112,7 +112,7 @@ class ReviewLock(TimeStampedModel):
     def owner(self):
         if self.group:
             return f"{self.group}"
-        return f"self.user"
+        return f"{self.user}"
 
     def __str__(self):
         return f"{self.user} {self.group} -- {self.original_submission}"

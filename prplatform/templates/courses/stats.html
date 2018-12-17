@@ -63,12 +63,11 @@
       {% if re.type == 'RANDOM' %}
 
       <h3 class="mt-4">Review locks</h3>
-      <p>This is a list of "review locks" the system has created. Whenever a student loads the review page,
+      <p>
+         This is a list of "review locks" the system has created. Whenever a student loads the review page,
          a lock is automatically created. This prevents future page loads changing the thing that is being
-         reviewed by the student. If the exercise has been configured so that one student can make multiple
-         peer-reviews, more review locks are created after previous ones have been fulfilled (review is done).
-         <strong>This list can be</strong> longer than the one above since students might not complete the
-         reviews.
+         reviewed by the student, instead the student always gets the same thing for review until the review
+         is complete. After completing the review the system deletes the review lock.<br>
       </p>
       {% include "./_reviewlock_stats.html" %}
       {% endif %}
