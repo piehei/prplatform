@@ -7,8 +7,8 @@
   <div class="row">
     <div class="col-sm-12">
 
-      <div class="shadow p-3 mb-5 bg-white rounded">
-
+      <div class="p-3 mb-5">
+        <h2>Peer-reviews from other students to you</h2>
         {% if teacher %}
           OPETTAJALLE ERITYISTEKSTI TODO
         {% endif %}
@@ -24,11 +24,11 @@
 
       </div>
 
-
+      {% if not reviews_available_date_in_future and not needs_to_complete_more_reviews %}
       {% for review in reviews %}
 
         <div class="shadow p-3 mb-5 bg-white rounded">
-          <h3>Peer-review content:</h3>
+          <h3>Peer-review {{ forloop.counter }}:</h3>
           <ul>
             {% for item in review.qa_list %}
               <li class="mt-4">
@@ -49,8 +49,10 @@
             {% endfor %}
           </ul>
         </div>
-
+      {% empty %}
+        No peer-reviews available yet :-S
       {% endfor %}
+      {% endif %}
 
     </div>
   </div>
