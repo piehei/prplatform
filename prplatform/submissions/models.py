@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, OperationalError
 from django.urls import reverse
 
 import os
@@ -143,6 +143,20 @@ class ReviewSubmission(BaseSubmission):
 
     def __str__(self):
         return f"{self.submitter} -> {self.reviewed_submission.submitter} | {self.exercise}"
+
+    def save_and_destroy_lock(self, *args, **kwargs):
+
+        if self.pk is not None:
+
+            raise OperationalError('This cannot be used to update the instance!')
+
+        else:
+
+            locks = self.exercise.reviewlocks_for(self.submitter_user)
+            if locks.count() != 1:
+                raise OperationalError(f'There should be exactly 1 reviewlock! Found: {locks.count()}')
+            locks.first().delete()
+            super().save(*args, **kwargs)
 
 
 def answer_upload_fp(instance, filename):
