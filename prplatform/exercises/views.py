@@ -292,7 +292,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
             ctx['embedded'] = True
             ctx['enrolled'] = True
-            ctx['template_base'] = "base_embedded.html"
+            self.template_name = "exercises/reviewexercise_detail_embed.html"
 
         if not can_submit:
             ctx['errormsg'] = errormsg

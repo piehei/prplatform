@@ -1,0 +1,58 @@
+
+{% extends "base_embedded.html" %}
+{% load static %}
+
+{% block content %}
+
+  <div class="row">
+    <div class="col-md-12">
+
+      <h2>{{ object.name }}</h2>
+
+      <div style="float:none;" class="col-md-12 mb-4">
+        <p class="font-italic">
+
+      {% include "./_open_times.html" %}
+
+
+        <h5>Description</h5>
+        {% if not object.description %}
+          No description available
+        {% endif %}
+        {{ object.description | linebreaks }}
+      </div>
+
+      {% if errormsg and errormsg != 'not_open' %}
+
+        <div class="alert alert-warning ml-3 mr-3">
+        {% if errormsg == 'own_submission_missing' %}
+          You cannot make peer-reviews before making your own original submission.
+        {% elif errormsg == 'reviews_done' %}
+          You have already submitted your peer-reviews to this exercise.
+        {% endif %}
+        </div>
+
+      {% endif %}
+
+      {% if show_content_to_review %}
+
+        {% include "./_choose_form.html" %}
+
+        {% if not reviewable %}
+          <div class="alert alert-warning ml-3 mr-3">
+            Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
+          </div>
+          <br>
+        {% else %}
+
+          {% include "./_reviewable.html" with chooseMode=chooseForm %}
+
+        {% endif %}
+
+      {% endif %}
+
+      {% include "./_review_form.html" %}
+    </div>
+  </div>
+{% endblock content %}
+
