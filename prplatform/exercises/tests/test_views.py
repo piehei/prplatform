@@ -7,8 +7,6 @@ from django.test import RequestFactory, TestCase
 import datetime
 import pytz
 
-
-from prplatform.aplus_integration.lti_middleware import LtiLoginMiddleware
 from prplatform.users.models import (
         StudentGroup,
         User,
@@ -42,7 +40,9 @@ def add_middleware(request, middleware_class):
 def add_required_middlewares(request):
     request = add_middleware(request, SessionMiddleware)
     request = add_middleware(request, MessageMiddleware)
-    request = add_middleware(request, LtiLoginMiddleware)
+    # this is for LtiLoginMiddleware
+    # TODO: should this be refactored somehow?
+    request.LTI_MODE = False
     return request
 
 

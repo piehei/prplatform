@@ -5,13 +5,18 @@ from oauthlib.common import urlencode
 from urllib.parse import urlparse
 from django_lti_login.validators import LTIRequestValidator
 from django_lti_login.backends import LTIAuthBackend
+from django.utils.deprecation import MiddlewareMixin
 
 from prplatform.courses.models import Course
 
 
-def LtiLoginMiddleware(get_response):
+class LtiLoginMiddleware(MiddlewareMixin):
 
-    def middleware(request):
+    def __init__(self, get_response=None):
+        # One-time configuration and initialization.
+        self.get_response = get_response
+
+    def __call__(self, request):
 
         request.LTI_MODE = False
 
@@ -53,8 +58,6 @@ def LtiLoginMiddleware(get_response):
                 request.user = user
                 request.LTI_MODE = True
 
-        response = get_response(request)
+        response = self.get_response(request)
 
         return response
-
-    return middleware
