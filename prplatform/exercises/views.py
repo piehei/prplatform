@@ -154,9 +154,8 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
         ctx['template_base'] = "base.html"
         exercise = self.object
         user = self.request.user
-        LTI_MODE = 'oauth_consumer_key' in self.request.POST
 
-        if not LTI_MODE and not exercise.can_submit(user):
+        if not self.request.LTI_MODE and not exercise.can_submit(user):
             messages.error(self.request, 'You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
@@ -182,30 +181,31 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
                 sub.state = OriginalSubmission.SUBMITTED
             sub.save()
 
-            if LTI_MODE:
-                return self._construct_aplus_response()
+            if self.request.LTI_MODE:
+                return _construct_aplus_response()
             else:
                 messages.success(self.request, 'Submission successful! You may see it below.')
                 return redirect(sub)
 
-        if LTI_MODE:
+        if self.request.LTI_MODE:
             return HttpResponse('An error occurred.')
 
         ctx['form'] = form
         return self.render_to_response(ctx)
 
-    def _construct_aplus_response(self):
-        # TODO: teacher should be able to configure this
-        response = HttpResponse(('<html>'
-                                 '<head>'
-                                 '<meta name="max-points" value="1" />'
-                                 '<meta name="points" value="1" />'
-                                 '</head>'
-                                 '<body>'
-                                 'Submission received!'
-                                 '</body>'
-                                 '</html>'))
-        return response
+
+def _construct_aplus_response():
+    # TODO: teacher should be able to configure this
+    response = HttpResponse(('<html>'
+                             '<head>'
+                             '<meta name="max-points" value="1" />'
+                             '<meta name="points" value="1" />'
+                             '</head>'
+                             '<body>'
+                             'Submission received!'
+                             '</body>'
+                             '</html>'))
+    return response
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -327,6 +327,9 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         new_review_submission.save_and_destroy_lock()
 
         self._save_modelform_answers(new_review_submission)
+
+        if self.request.LTI_MODE:
+            return _construct_aplus_response()
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
     def _post_choose(self, ctx):

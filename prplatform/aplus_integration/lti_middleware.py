@@ -13,6 +13,8 @@ def LtiLoginMiddleware(get_response):
 
     def middleware(request):
 
+        request.LTI_MODE = False
+
         uri = urlparse(request.build_absolute_uri())
         method = request.method
 
@@ -49,6 +51,7 @@ def LtiLoginMiddleware(get_response):
 
                 course.enroll(user)
                 request.user = user
+                request.LTI_MODE = True
 
         response = get_response(request)
 

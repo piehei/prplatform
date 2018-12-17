@@ -7,6 +7,8 @@ from django.test import RequestFactory, TestCase
 import datetime
 import pytz
 
+
+from prplatform.aplus_integration.lti_middleware import LtiLoginMiddleware
 from prplatform.users.models import (
         StudentGroup,
         User,
@@ -34,6 +36,13 @@ from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
 def add_middleware(request, middleware_class):
     middleware = middleware_class()
     middleware.process_request(request)
+    return request
+
+
+def add_required_middlewares(request):
+    request = add_middleware(request, SessionMiddleware)
+    request = add_middleware(request, MessageMiddleware)
+    request = add_middleware(request, LtiLoginMiddleware)
     return request
 
 
@@ -157,9 +166,7 @@ class ExerciseTest(TestCase):
         request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': 'Submitted text'})
         request.user = self.s1
         self.kwargs['pk'] = 1
-
-        request = add_middleware(request, SessionMiddleware)
-        request = add_middleware(request, MessageMiddleware)
+        request = add_required_middlewares(request)
 
         response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertEqual(response.status_code, 302)
@@ -187,8 +194,7 @@ class ExerciseTest(TestCase):
             request.user = s
             self.kwargs['pk'] = 1
 
-            request = add_middleware(request, SessionMiddleware)
-            request = add_middleware(request, MessageMiddleware)
+            request = add_required_middlewares(request)
 
             response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
             self.assertContains(response, "You cannot submit")
@@ -339,8 +345,7 @@ class ExerciseTest(TestCase):
             request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': f'text by {g.name}'})
             request.user = s
             self.kwargs['pk'] = 1
-            request = add_middleware(request, SessionMiddleware)
-            request = add_middleware(request, MessageMiddleware)
+            request = add_required_middlewares(request)
             response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
 
         self.assertEqual(OriginalSubmission.objects.count(), 3)
