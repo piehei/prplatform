@@ -216,10 +216,7 @@ class ExerciseTest(TestCase):
                                     exercise=re,
                                     submitter_user=s,
                                     reviewed_submission=rlock.original_submission)
-            rsub.save()
-
-            rlock.review_submission = rsub
-            rlock.save()
+            rsub.save_and_destroy_lock()
 
             request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
             request.user = s
@@ -267,10 +264,7 @@ class ExerciseTest(TestCase):
                                     exercise=re,
                                     submitter_user=s,
                                     reviewed_submission=rlock.original_submission)
-            rsub.save()
-
-            rlock.review_submission = rsub
-            rlock.save()
+            rsub.save_and_destroy_lock()
 
             request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
             request.user = s
@@ -278,7 +272,8 @@ class ExerciseTest(TestCase):
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
             self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
 
-        # now in the system: 4 OS, 2 RL, 2 RS
+        self.assertEqual(ReviewLock.objects.all().count(), 0)
+        # now in the system: 4 OS, 0 RL, 2 RS
 
         # s4 loads the page -> RL should be for s3
         request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
@@ -286,7 +281,7 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = re.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, f"text by {self.s3}")
-        self.assertEqual(ReviewLock.objects.all().count(), 3)
+        self.assertEqual(ReviewLock.objects.all().count(), 1)
 
         re.max_submission_count = 2
         re.save()
@@ -295,14 +290,13 @@ class ExerciseTest(TestCase):
         request.user = self.s1
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, f"text by {self.s4}")
-        self.assertEqual(ReviewLock.objects.all().count(), 4)
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # s2 loads the page -> nothing to review since all can recieve only one
         request.user = self.s2
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-        print(ReviewLock.objects.all())
-        self.assertEqual(ReviewLock.objects.all().count(), 4)
         self.assertContains(response, f"Not a thing was found to be")
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # increase the number of reviews an OS can get
         re.max_reviews_per_submission = 2
@@ -313,14 +307,14 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = re.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, f"text by {self.s3}")
-        self.assertEqual(ReviewLock.objects.all().count(), 5)
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
 
         # s3 has not yet loaded the page -> should get s1
         request.user = self.s3
         self.kwargs['pk'] = re.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, f"text by {self.s1}")
-        self.assertEqual(ReviewLock.objects.all().count(), 6)
+        self.assertEqual(ReviewLock.objects.all().count(), 4)
 
     def test_reviewlocks_created_correctly_for_groups(self):
 
@@ -372,9 +366,7 @@ class ExerciseTest(TestCase):
                                 submitter_user=self.s1,
                                 submitter_group=groups[0],
                                 reviewed_submission=rlock.original_submission)
-        rsub.save()
-        rlock.review_submission = rsub
-        rlock.save()
+        rsub.save_and_destroy_lock()
 
         for s in [self.s1, self.s2]:
             request.user = s
@@ -382,7 +374,7 @@ class ExerciseTest(TestCase):
             self.assertContains(response, 'You have already submitted your peer-reviews')
             self.assertEqual(response.context_data['disable_form'], True)
 
-        self.assertEqual(ReviewLock.objects.all().count(), 2)
+        self.assertEqual(ReviewLock.objects.all().count(), 1)
 
         # increase sub count that groups can do. g1 -> g3
         re.max_submission_count = 2
@@ -392,7 +384,7 @@ class ExerciseTest(TestCase):
             request.user = s
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
             self.assertContains(response, f"text by {target_name}")
-        self.assertEqual(ReviewLock.objects.all().count(), 3)
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # nothing left for g3 to review
         for s in [self.s5, self.s6]:
@@ -400,7 +392,7 @@ class ExerciseTest(TestCase):
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
             self.assertContains(response, 'Not a thing was found')
             self.assertEqual(response.context_data['disable_form'], True)
-        self.assertEqual(ReviewLock.objects.all().count(), 3)
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # increase how many reviews can receive. g3 -> g1 since g1 oldest and 1 review
         re.max_reviews_per_submission = 2
@@ -409,8 +401,10 @@ class ExerciseTest(TestCase):
         for s, target_name in [(self.s5, 'g1'), (self.s6, 'g1')]:
             request.user = s
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            print("REVIEW LOCKS ARE")
+            print(re.reviewlocks_for(s))
             self.assertContains(response, f"text by {target_name}")
-        self.assertEqual(ReviewLock.objects.all().count(), 4)
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
 
     def test_teacherCanSubmitMultipleTimes(self):
 

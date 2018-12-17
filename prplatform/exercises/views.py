@@ -324,10 +324,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         if self.object.use_groups:
             new_review_submission.submitter_group = ctx['my_group']
 
-        new_review_submission.save()
-
-        rlock.review_submission = new_review_submission
-        rlock.save()
+        new_review_submission.save_and_destroy_lock()
 
         self._save_modelform_answers(new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
