@@ -125,20 +125,24 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
 
     model = SubmissionExercise
 
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(self.request, 'LTI_MODE'):
+            self.request.LTI_MODE = False
+        return super().dispatch(request, *args, **kwargs)
+
     def get(self, *args, **kwargs):
         self.object = self.get_object()
-        user = self.request.user
         ctx = self.get_context_data(**kwargs)
         ctx['template_base'] = "base.html"
         ctx['disable_form'] = False
 
-        if not self.object.can_submit(user) or ctx['teacher']:
+        if not self.object.can_submit(self.request.user) or ctx['teacher']:
             ctx['disable_form'] = True
 
-        ctx['my_submissions'] = self.object.submissions_by_submitter(user)
+        ctx['my_submissions'] = self.object.submissions_by_submitter(self.request.user)
         ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
 
-        if self.request.GET.get('submission_url'):
+        if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
             ctx['embedded'] = True
             ctx['enrolled'] = True
@@ -211,6 +215,11 @@ def _construct_aplus_response():
 @method_decorator(csrf_exempt, name='dispatch')
 class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
     model = ReviewExercise
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(self.request, 'LTI_MODE'):
+            self.request.LTI_MODE = False
+        return super().dispatch(request, *args, **kwargs)
 
     def _get_answer_forms(self):
         forms = []
@@ -288,9 +297,8 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         can_submit, errormsg = self.object.can_submit(self.request.user)
 
-        if self.request.GET.get('submission_url'):
+        if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
-            ctx['embedded'] = True
             ctx['enrolled'] = True
             self.template_name = "exercises/reviewexercise_detail_embed.html"
 
@@ -373,11 +381,10 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
-        LTI_MODE = 'oauth_consumer_key' in self.request.POST
 
         can_submit, errormsg = self.object.can_submit(self.request.user)
 
-        if not LTI_MODE and not can_submit:
+        if not self.request.LTI_MODE and not can_submit:
             messages.error(self.request, 'You cannot submit.')
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
