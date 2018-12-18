@@ -55,12 +55,8 @@
           </div>
           <br>
         {% else %}
-
-            {% include "./_submission_toggle_buttons.html" %}
-            {% include "./_my_submission.html" %}
-            {% include "./_reviewable.html" with chooseMode=chooseForm %}
-            {% include "./_model_answer.html" %}
-
+          {# TODO: own submisssion & model answer here? #}
+          {% include "./_reviewable.html" with chooseMode=chooseForm %}
         {% endif %}
 
       {% endif %}
