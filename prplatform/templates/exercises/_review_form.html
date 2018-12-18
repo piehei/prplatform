@@ -9,6 +9,7 @@
   {% else %}
 
   <form enctype="multipart/form-data"
+        id="review-form"
         class="form-horizontal needs-validation"
         method="post"
         action="{% if APLUS_POST_URL %}
@@ -48,11 +49,21 @@
 
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn btn-success" {% if disable_form %}disabled{% endif %}>Save answer</button>
+        <button type="button" id="review-submit" class="btn btn-success" {% if disable_form %}disabled{% endif %}>Submit answer</button>
+      </div>
+      <div class="controls mt-4" id="review-submit-real-controls" style="display:none;">
+        Are you really sure?<br>
+        You cannot make changes to your peer-review after submitting.<br>
+        <button type="submit" class="btn btn-success mt-4">Submit</button>
       </div>
     </div>
   </form>
 
   {% endif %}
 </div>
+
+  {% load static %}
+  {% block extra_js %}
+    <script src="{% static 'js/reviewexercise_detail.js' %}"></script>
+  {% endblock extra_js %}
 
