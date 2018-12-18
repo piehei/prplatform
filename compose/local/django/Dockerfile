@@ -17,6 +17,9 @@ RUN apk update \
   # for git+ pip installations
   && apk add git
 
+
+RUN pip install --upgrade pip
+
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
 RUN pip install -r /requirements/local.txt
