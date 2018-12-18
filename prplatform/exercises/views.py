@@ -5,7 +5,6 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 
@@ -120,7 +119,6 @@ class ReviewExerciseUpdateView(IsTeacherMixin, ExerciseContextMixin, UpdateView)
 
 # TODO FIX ME
 # needed for LTI posting, could it be done in some other way??????? this is not secure
-@method_decorator(csrf_exempt, name='dispatch')
 class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
     model = SubmissionExercise
@@ -212,7 +210,6 @@ def _construct_aplus_response():
     return response
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
     model = ReviewExercise
 

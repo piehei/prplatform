@@ -56,6 +56,13 @@ class LtiLoginMiddleware(MiddlewareMixin):
 
                 course.enroll(user)
                 request.user = user
+
+                # since the HTTP POSTs are coming through a proxy(ish) server that drops
+                # cookies but keeps CSRF tokens, the CSRF check always fails
+                # in this case we can disable the checks alltogether
+                setattr(request, '_dont_enforce_csrf_checks', True)
+
+                # this tells the view classes they should provide the LTI version of the page
                 request.LTI_MODE = True
 
         response = self.get_response(request)
