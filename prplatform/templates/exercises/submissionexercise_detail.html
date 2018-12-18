@@ -59,5 +59,12 @@
 
     </div>
   </div>
+{% if embedded %}
+  {% block extra_js %}
+    <script src="{% static 'js/embedded_view_bootstrap_fix.js' %}"></script>
+  {% endblock extra_js %}
+{% endif %}
+
 {% endblock content %}
+
 

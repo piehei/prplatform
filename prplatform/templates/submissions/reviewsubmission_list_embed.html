@@ -56,5 +56,10 @@
 
     </div>
   </div>
+
+  {% block extra_js %}
+    <script src="{% static 'js/embedded_view_bootstrap_fix.js' %}"></script>
+  {% endblock extra_js %}
+
 {% endblock content %}
 
