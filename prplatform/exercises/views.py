@@ -117,8 +117,6 @@ class ReviewExerciseUpdateView(IsTeacherMixin, ExerciseContextMixin, UpdateView)
 # DETAIL VIEWS
 #
 
-# TODO FIX ME
-# needed for LTI posting, could it be done in some other way??????? this is not secure
 class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
     model = SubmissionExercise
@@ -313,6 +311,8 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         if ctx['reviewable'] and not ctx['teacher']:
             ctx['disable_form'] = False
 
+        if self.request.LTI_MODE:
+            ctx['LTI_DL_TOKEN'] = ctx['reviewable'].get_download_token_for(self.request.user, self.request)
         return ctx
 
     def _post_random(self, ctx):

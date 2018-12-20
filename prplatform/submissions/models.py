@@ -2,6 +2,7 @@ from django.db import models, OperationalError
 from django.urls import reverse
 
 import os
+from hashlib import sha256
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User, StudentGroup
@@ -52,6 +53,15 @@ class BaseSubmission(TimeStampedModel):
             'pk': self.exercise.pk,
             'sub_pk': self.pk
             })
+
+    def get_download_token_for(self, user, request):
+        previous_token = user.download_tokens.filter(submission_id=self.pk).first()
+        if previous_token:
+            return previous_token.token
+        query_bytes = request.META['QUERY_STRING'].encode()
+        hash_digest = sha256(query_bytes).hexdigest()
+        DownloadToken(submission_id=self.pk, user=user, token=hash_digest).save()
+        return hash_digest
 
 
 def upload_fp(instance, filename):
@@ -194,3 +204,8 @@ class Answer(models.Model):
             'pk': self.pk
             }) + "?type=answer"
 
+
+class DownloadToken(models.Model):
+    submission_id = models.PositiveIntegerField()
+    user = models.ForeignKey(User, related_name='download_tokens', on_delete=models.CASCADE)
+    token = models.CharField(max_length=64)

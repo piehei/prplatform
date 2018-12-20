@@ -20,6 +20,7 @@ from prplatform.exercises.models import (
 
 from .models import (
         Answer,
+        DownloadToken,
         OriginalSubmission,
         ReviewSubmission,
     )
@@ -200,13 +201,16 @@ class ReviewSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView)
             })
 
 
-class DownloadSubmissionView(IsEnrolledMixin, View):
+class DownloadSubmissionView(View):
 
     # TODO: rewrite this whole mess
     def get(self, *args, **kwargs):
         user = self.request.user
-        dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
+        dl_token = self.request.GET.get('dl_token', None)
+        if not user.is_authenticated and not dl_token:
+            raise PermissionDenied
 
+        dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
 
         if dtype == 'answer':
             obj = get_object_or_404(Answer, pk=kwargs['pk'])
@@ -226,31 +230,39 @@ class DownloadSubmissionView(IsEnrolledMixin, View):
                 re = None
             file_itself = obj.file
 
-        enrolled_can_access = False
-        if re and re.type == ReviewExercise.CHOOSE and dtype == 'osub':
-            # anyone on the course can download anything
-            enrolled_can_access = True
+        if dl_token:
+            if dtype == 'answer':
+                subid = obj.submission.pk
+            else:
+                subid = obj.pk
+            if not DownloadToken.objects.filter(submission_id=subid, token=dl_token).exists():
+                raise PermissionDenied('There\'s a problem with the download token.')
 
-        reviewer = False
-        receiver = False
-        if dtype == 'osub':
-            pks_of_users_reviewables = []
-            if re:
-                pks_of_users_reviewables = re.reviewlocks_for(self.request.user) \
-                                             .values_list('original_submission', flat=True)
-            reviewer = kwargs['pk'] in pks_of_users_reviewables
         else:
-            receiver = obj.submission.reviewed_submission.is_owner(user)
 
-        if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
-            raise PermissionDenied
+            enrolled_can_access = False
+            if re and re.type == ReviewExercise.CHOOSE and dtype == 'osub':
+                # anyone on the course can download anything
+                enrolled_can_access = True
+
+            reviewer = False
+            receiver = False
+            if dtype == 'osub':
+                pks_of_users_reviewables = []
+                if re:
+                    pks_of_users_reviewables = re.reviewlocks_for(self.request.user) \
+                                                 .values_list('original_submission', flat=True)
+                reviewer = kwargs['pk'] in pks_of_users_reviewables
+            else:
+                receiver = obj.submission.reviewed_submission.is_owner(user)
+
+            if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
+                raise PermissionDenied
 
         filename = file_itself.name.split('/')[-1]
         response = HttpResponse(file_itself, content_type='text/plain')
-
         # TODO: enough headers? meta type etc.?
         response['Content-Disposition'] = 'attachment; filename=%s' % filename
-
         return response
 
 
@@ -289,7 +301,9 @@ class ReviewSubmissionEmbeddedFeedbackList(LoginRequiredMixin, CourseContextMixi
                     choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
                     data.append({'q': ans.question.question_text, 'a': choice})
                 else:
-                    data.append({'q': ans.question.question_text, 'f': ans.get_download_url()})
+                    token = review.get_download_token_for(self.request.user, self.request)
+                    data.append({'q': ans.question.question_text,
+                                 'f': ans.get_download_url() + "&dl_token=" + token})
             ctx['reviews'].append({'qa_list': data})
 
         return ctx

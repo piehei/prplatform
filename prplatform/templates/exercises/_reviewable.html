@@ -31,7 +31,7 @@
         {% endpygment %}
 
       {% else %}
-        <a href="{{ reviewable.get_file_download_url }}">
+      <a href="{{ reviewable.get_file_download_url }}{% if LTI_DL_TOKEN %}?dl_token={{ LTI_DL_TOKEN }}{% endif %}">
           Click here to download the file to peer-review
         </a>
       {% endif %}
