@@ -4,7 +4,6 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.views.generic import DetailView, CreateView, UpdateView
 from django.views.generic.edit import DeleteView
 
@@ -18,6 +17,7 @@ from prplatform.courses.views import (
 from prplatform.submissions.forms import (
         AnswerModelForm,
         OriginalSubmissionForm,
+        ChooseStudentForm,
     )
 from prplatform.submissions.models import (
         OriginalSubmission,
@@ -422,3 +422,56 @@ class ReviewExerciseDeleteView(IsTeacherMixin, ExerciseContextMixin, DeleteView)
             'base_url_slug': self.kwargs['base_url_slug'],
             'url_slug': self.kwargs['url_slug']
             })
+
+###
+#
+# AS STUDENT VIEWS
+#
+
+class SubmissionExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailView):
+
+    model = SubmissionExercise
+    template_name = "exercises/submissionexercise_as_student.html"
+
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        ctx = self.get_context_data(**kwargs)
+        ctx['template_base'] = "base.html"
+        ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
+        ctx['choose_student_form'] = ChooseStudentForm(exercise=self.object)
+        return self.render_to_response(ctx)
+
+    def post(self, *args, **kwargs):
+        """ TODO: error checking """
+        self.object = self.get_object()
+        ctx = self.get_context_data()
+        ctx['template_base'] = "base.html"
+        exercise = self.object
+
+        form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=exercise.type)
+        as_student_form = ChooseStudentForm(self.request.POST, exercise=exercise)
+
+        form.accepted_filetypes = None
+        if exercise.type == SubmissionExercise.FILE_UPLOAD:
+            form.accepted_filetypes = exercise.accepted_filetypes
+
+        if form.is_valid() and as_student_form.is_valid():
+            sub = form.save(commit=False)
+            sub.course = ctx['course']
+            sub.exercise = exercise
+            sub.submitter_user = as_student_form.cleaned_data['submitter_user']
+            if exercise.use_groups:
+                sub.submitter_group = as_student_form.cleaned_data['submitter_group']
+            if exercise.use_states:
+                sub.state = OriginalSubmission.SUBMITTED
+            sub.save()
+            messages.success(self.request, 'Submission successful! You may see it below.')
+            return redirect(sub)
+
+        ctx['form'] = form
+        ctx['choose_student_form'] = as_student_form
+        return self.render_to_response(ctx)
+
+
+class ReviewExerciseAsStudent(IsTeacherMixin, DetailView):
+    pass

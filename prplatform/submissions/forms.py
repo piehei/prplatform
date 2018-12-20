@@ -169,3 +169,26 @@ class AnswerModelForm(ModelForm):
                                       'Accepted filetypes are: ' + filetypes)
         return file_itself
 
+
+class ChooseStudentForm(forms.Form):
+    """
+        This form is used on the "Create submission as a student" pages.
+        Using this form the teacher can choose whoever student will be set as the
+        submitter of the newly created submission.
+    """
+    submitter_user = forms.ModelChoiceField(label="Choose the student", queryset=None)
+    submitter_group = forms.ModelChoiceField(label="Choose the group", queryset=None)
+
+    def __init__(self, *args, **kwargs):
+        exercise = kwargs.pop('exercise')
+        super().__init__(*args, **kwargs)
+
+        self.fields['submitter_user'].queryset = exercise.course.students.all()
+        if not exercise.use_groups:
+            self.fields['submitter_group'].required = False
+            self.fields['submitter_group'].widget = HiddenInput()
+        else:
+            self.fields['submitter_group'].queryset = exercise.course.student_groups.all()
+
+
+

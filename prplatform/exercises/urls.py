@@ -20,6 +20,7 @@ urlpatterns = [
 
     # SUBMISSION EXERCISES
     path('s/<int:pk>/', view=views.SubmissionExerciseDetailView.as_view(), name="submission-detail"),
+    path('s/<int:pk>/as_student/', view=views.SubmissionExerciseAsStudent.as_view(), name="submission-as-student"),
 
     path('s/<int:pk>/deviations',
          DeviationListView.as_view(), {'deviation_type': 's'}, name="submission-deviation-list"),
@@ -30,6 +31,7 @@ urlpatterns = [
 
     # REVIEW EXERCISES
     path('r/<int:pk>/', view=views.ReviewExerciseDetailView.as_view(), name="review-detail"),
+    path('r/<int:pk>/as_student/', view=views.ReviewExerciseAsStudent.as_view(), name="review-as-student"),
 
     path('r/<int:pk>/deviations',
          DeviationListView.as_view(), {'deviation_type': 'r'}, name="review-deviation-list"),

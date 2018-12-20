@@ -115,6 +115,16 @@ class BaseExercise(TimeStampedModel):
             'pk': self.pk
             })
 
+    def get_submit_as_student_url(self):
+        urls = {'SubmissionExercise': 'courses:exercises:submission-as-student',
+                'ReviewExercise': 'courses:exercises:review-as-student'}
+        base_course = self.course.base_course
+        return reverse(urls[self.__class__.__name__], kwargs={
+            'base_url_slug': base_course.url_slug,
+            'url_slug': self.course.url_slug,
+            'pk': self.pk
+            })
+
     class Meta:
         abstract = True
         ordering = ['-closing_time']

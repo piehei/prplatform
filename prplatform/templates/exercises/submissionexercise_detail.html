@@ -51,9 +51,16 @@
 
               {% include "./_group_enroll_info_box.html" %}
               {% include "./_submission_count_info.html" with exercise=object %}
-              <input type="submit" class="btn btn-primary" value="Submit"
+              <input type="submit" class="btn btn-primary" value="Submit {% if teacher %}[teacher can't]{% endif %}"
                      {% if disable_form %}disabled{% endif %}>
-          </form>
+        </form>
+
+        {% if teacher %}
+          <br>
+          <a class="btn btn-primary btn-sm" href="{{ object.get_submit_as_student_url }}">
+            Teacher: create a submission for a student/group
+          </a>
+        {% endif %}
 
       {% endif %}
 

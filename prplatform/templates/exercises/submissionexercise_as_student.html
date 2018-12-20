@@ -1,0 +1,50 @@
+
+{% extends template_base %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb object.course.code object.course.get_absolute_url %}
+    {% breadcrumb "Exercise" ""%}
+    {% breadcrumb object.name "" %}
+{% endblock %}
+
+{% block content %}
+
+  {% if not embedded %}
+  {% include "../tabs.html" with tab="exercise" type="original" %}
+  {% endif %}
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2>{{ object.name }}</h2>
+
+      <div class="alert alert-danger">
+        <strong>Teacher! Heads up!</strong><br>
+        You're creating a submission
+        in a student's name. Choose the student (and group if needed) below carefully.
+      </div>
+
+      <form enctype="multipart/form-data"
+            action="{{ object.get_submit_as_student_url }}"
+            method="post">
+            {% csrf_token %}
+            {{ choose_student_form | crispy }}
+            {{ form | crispy }}
+            <input type="submit" class="btn btn-primary" value="Submit"
+                   {% if disable_form %}disabled{% endif %}>
+      </form>
+
+    </div>
+  </div>
+{% if embedded %}
+  {% block extra_js %}
+    <script src="{% static 'js/embedded_view_bootstrap_fix.js' %}"></script>
+  {% endblock extra_js %}
+{% endif %}
+
+{% endblock content %}
+
+
