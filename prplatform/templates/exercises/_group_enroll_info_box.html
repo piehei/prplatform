@@ -1,32 +1,24 @@
-{% if teacher %}
+{% if not teacher %}
+  {% if object.use_groups and enrolled %}
 
-  <div class="alert alert-warning d-md-inline-block">
-    You're a teacher of the course. Currently you cannot make any submissions.<br>
-    If you were a student, this box would tell you to enroll to the course (if not enrolled) or
-    show group information (if groups were in use).
-  </div>
-  <br>
+    <div class="alert alert-{% if my_group %}secondary{% else %}danger{% endif %} d-md-inline-block">
+        In this exercise you're submitting as a group.
+        <br>
+        {% if my_group %}
+          Members in your group: {{ my_group.student_usernames }}
+        {% else %}
+          You have not been assigned to any group! Contact course personnel to make a submission.
+        {% endif %}
+    </div>
+    <br>
 
-{% elif object.use_groups and enrolled %}
+  {% elif not enrolled %}
 
-  <div class="alert alert-{% if my_group %}secondary{% else %}danger{% endif %} d-md-inline-block">
-      In this exercise you're submitting as a group.
-      <br>
-      {% if my_group %}
-        Members in your group: {{ my_group.student_usernames }}
-      {% else %}
-        You have not been assigned to any group! Contact course personnel to make a submission.
-      {% endif %}
-  </div>
-  <br>
+    <div class="alert alert-warning d-md-inline-block">
+      You have to enroll to the course in order to submit.<br>
+      You can enroll from the <a href="{{ course.get_absolute_url }}">course page</a>.
+    </div>
+    <br>
 
-{% elif not enrolled %}
-
-  <div class="alert alert-warning d-md-inline-block">
-    You have to enroll to the course in order to submit.<br>
-    You can enroll from the <a href="{{ course.get_absolute_url }}">course page</a>.
-  </div>
-  <br>
-
+  {% endif %}
 {% endif %}
-
