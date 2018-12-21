@@ -20,6 +20,10 @@ class User(AbstractUser):
     temporary = models.BooleanField(default=False)
 
     def __str__(self):
+        if self.email.strip() == "":
+            return "(no email)"
+        if "@" not in self.email:
+            return self.email
         return f"{self.email[:self.email.index('@')]}"
 
     def get_absolute_url(self):
