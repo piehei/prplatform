@@ -197,7 +197,7 @@ class Answer(models.Model):
 
         super().save(*args, **kwargs)
 
-    def get_download_url(self):
+    def get_file_download_url(self):
         return reverse('courses:submissions:download', kwargs={
             'base_url_slug': self.submission.course.base_course.url_slug,
             'url_slug': self.submission.course.url_slug,

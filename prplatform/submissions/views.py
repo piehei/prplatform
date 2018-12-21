@@ -150,7 +150,7 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
                 choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
                 data.append({'q': ans.question.question_text, 'a': choice})
             else:
-                data.append({'q': ans.question.question_text, 'f': ans.get_download_url()})
+                data.append({'q': ans.question.question_text, 'f': ans.get_file_download_url()})
 
         ctx['qa_list'] = data
         return self.render_to_response(ctx)
@@ -303,7 +303,7 @@ class ReviewSubmissionEmbeddedFeedbackList(LoginRequiredMixin, CourseContextMixi
                 else:
                     token = review.get_download_token_for(self.request.user, self.request)
                     data.append({'q': ans.question.question_text,
-                                 'f': ans.get_download_url() + "&dl_token=" + token})
+                                 'f': ans.get_file_download_url() + "&dl_token=" + token})
             ctx['reviews'].append({'qa_list': data})
 
         return ctx

@@ -257,12 +257,15 @@ class SubmissionsTest(TestCase):
 
         sub_exercise = SubmissionExercise.objects.get(name='T1 TEXT')
         rev_exercise = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
+        rev_exercise.question_order += [3]
+        rev_exercise.save()
 
         for user in self.students[:2]:
             OriginalSubmission(course=self.course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
 
         rs_objects = []
 
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
         for user in self.students[:2]:
             reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
                                                             .exclude(submitter_user=user).first()
@@ -271,6 +274,7 @@ class SubmissionsTest(TestCase):
             rs_objects.append(rs)
             Answer(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1)).save()
             Answer(submission=rs, value_choice="1", question=Question.objects.get(pk=2)).save()
+            Answer(submission=rs, uploaded_file=tmpFile, question=Question.objects.get(pk=3)).save()
 
         # teacher sees all reviews
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
