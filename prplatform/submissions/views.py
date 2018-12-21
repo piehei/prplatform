@@ -207,7 +207,7 @@ class DownloadSubmissionView(View):
     def get(self, *args, **kwargs):
         user = self.request.user
         dl_token = self.request.GET.get('dl_token', None)
-        if not user.is_authenticated and not dl_token:
+        if user.is_anonymous and not dl_token:
             raise PermissionDenied
 
         dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'

@@ -1,4 +1,5 @@
 from django.test import RequestFactory, TestCase
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
@@ -14,6 +15,7 @@ from prplatform.submissions.models import (
         Answer,
         OriginalSubmission,
         ReviewSubmission,
+        DownloadToken,
     )
 
 from prplatform.submissions.reviewlock_models import ReviewLock
@@ -424,6 +426,68 @@ class SubmissionsTest(TestCase):
             else:
                 response = DownloadSubmissionView.as_view()(request, **self.kwargs)
                 self.assertEqual(response.status_code, code)
+
+    def test_download_tokens_allow_downloading(self):
+
+        exercise = SubmissionExercise.objects.get(pk=1)
+        exercise.type = 'FILE_UPLOAD'
+        exercise.accepted_filetypes = '.txt'
+        exercise.save()
+
+        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=self.course, file=tmpFile, submitter_user=self.s1,
+                                 exercise=exercise)
+        sub.save()
+
+        rev = ReviewSubmission(course=self.course,
+                               submitter_user=self.s1,
+                               exercise=exercise.review_exercise,
+                               reviewed_submission=sub)
+        rev.save()
+
+        answer_with_file = Answer(
+                question=Question.objects.get(pk=3),
+                submission=rev,
+                uploaded_file=tmpFile,
+                )
+        answer_with_file.save()
+
+        view_request = self.factory.get(exercise.get_absolute_url() + "?some=queryparams")
+        osub_token = sub.get_download_token_for(self.s1, view_request)
+        view_request = self.factory.get(exercise.review_exercise.get_absolute_url() + "?some=queryparams")
+        rsub_token = rev.get_download_token_for(self.s1, view_request)
+
+        cases = [
+            (AnonymousUser, 403, sub, ""),
+            (AnonymousUser, 200, sub, f"?dl_token={osub_token}"),
+            (AnonymousUser, 403, sub, f"?dl_token={osub_token}_THIS_SHOULD_CAUSE_PROBLEMS"),
+            (AnonymousUser, 403, answer_with_file, ""),
+            (AnonymousUser, 200, answer_with_file, f"&dl_token={rsub_token}"),
+            (AnonymousUser, 403, answer_with_file, f"&dl_token={rsub_token}_THIS_SHOULD_CAUSE_PROBLEMS"),
+        ]
+
+        for user, code, sub, query in cases:
+            url = f"{sub.get_file_download_url()}{query}"
+            request = self.factory.get(url)
+            request.user = user
+            self.kwargs['pk'] = sub.pk
+
+            if code == 403:
+                self.assertRaises(PermissionDenied,
+                                  DownloadSubmissionView.as_view(), request, **self.kwargs)
+            else:
+                response = DownloadSubmissionView.as_view()(request, **self.kwargs)
+                self.assertEqual(response.status_code, code)
+
+        DownloadToken.objects.all().delete()
+
+        for user, _, sub, query in cases:
+            url = f"{sub.get_file_download_url()}{query}"
+            request = self.factory.get(url)
+            request.user = user
+            self.kwargs['pk'] = sub.pk
+            self.assertRaises(PermissionDenied,
+                              DownloadSubmissionView.as_view(), request, **self.kwargs)
 
     def test_student_can_download_via_reviewlock(self):
         exercise = SubmissionExercise.objects.get(pk=1)
