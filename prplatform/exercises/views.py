@@ -329,7 +329,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         new_review_submission.save_and_destroy_lock()
 
-        self._save_modelform_answers(new_review_submission)
+        self._save_modelform_answers(self.answer_forms, new_review_submission)
 
         if self.request.LTI_MODE:
             return _construct_aplus_response()
@@ -351,11 +351,11 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             new_review_submission.submitter_group = ctx['my_group']
 
         new_review_submission.save()
-        self._save_modelform_answers(new_review_submission)
+        self._save_modelform_answers(self.answer_forms, new_review_submission)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
-    def _save_modelform_answers(self, review_submission):
-        for form in self.forms:
+    def _save_modelform_answers(self, forms, review_submission):
+        for form in forms:
             answer = form.save(commit=False)
             answer.submission = review_submission
             answer.save()
@@ -384,9 +384,9 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             ctx['disable_form'] = True
             return self.render_to_response(ctx)
 
-        valid, self.forms = self._validate_forms()
+        valid, self.answer_forms = self._validate_forms()
         if not valid:
-            ctx['forms'] = self.forms
+            ctx['forms'] = self.answer_forms
             return self.render_to_response(ctx)
 
         if self.object.type == ReviewExercise.RANDOM:
@@ -428,10 +428,11 @@ class ReviewExerciseDeleteView(IsTeacherMixin, ExerciseContextMixin, DeleteView)
 # AS STUDENT VIEWS
 #
 
+
 class SubmissionExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailView):
 
     model = SubmissionExercise
-    template_name = "exercises/submissionexercise_as_student.html"
+    template_name = "exercises/submit_as_student.html"
 
     def get(self, *args, **kwargs):
         self.object = self.get_object()
@@ -473,5 +474,46 @@ class SubmissionExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailVi
         return self.render_to_response(ctx)
 
 
-class ReviewExerciseAsStudent(IsTeacherMixin, DetailView):
-    pass
+class ReviewExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailView):
+
+    model = ReviewExercise
+    template_name = "exercises/submit_as_student.html"
+
+    def get(self, *args, **kwargs):
+        self.object = self.get_object()
+        ctx = self.get_context_data(**kwargs)
+        ctx['template_base'] = "base.html"
+        ctx['forms'] = []
+        for index, q in enumerate(self.object.question_list_in_order()):
+            ctx['forms'].append(AnswerModelForm(question=q))
+        ctx['choose_student_form'] = ChooseStudentForm(exercise=self.object)
+        return self.render_to_response(ctx)
+
+    def post(self, *args, **kwargs):
+        """ TODO: error checking """
+        self.object = self.get_object()
+        ctx = self.get_context_data()
+        ctx['template_base'] = "base.html"
+        exercise = self.object
+
+        as_student_form = ChooseStudentForm(self.request.POST, exercise=exercise)
+        answers_valid, answer_forms = ReviewExerciseDetailView._validate_forms(self)
+
+        if answers_valid and as_student_form.is_valid():
+            rsub = ReviewSubmission(course=ctx['course'],
+                                    exercise=self.object,
+                                    reviewed_submission=as_student_form.cleaned_data['reviewed_submission'],
+                                    submitter_user=as_student_form.cleaned_data['submitter_user'])
+            if exercise.use_groups:
+                rsub.submitter_group = as_student_form.cleaned_data['submitter_group']
+
+            rsub.save()
+
+            ReviewExerciseDetailView._save_modelform_answers(self, answer_forms, rsub)
+
+            messages.success(self.request, 'Submission successful! You may see it below.')
+            return redirect(rsub)
+
+        ctx['forms'] = answer_forms
+        ctx['choose_student_form'] = as_student_form
+        return self.render_to_response(ctx)

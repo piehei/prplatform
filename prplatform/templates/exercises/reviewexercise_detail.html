@@ -60,6 +60,14 @@
       {% endif %}
 
       {% include "./_review_form.html" %}
+
+      {% if teacher %}
+        <br>
+        <a class="btn btn-primary btn-sm" href="{{ object.get_submit_as_student_url }}">
+          Teacher: create a submission for a student/group
+        </a>
+      {% endif %}
+
     </div>
   </div>
 {% endblock content %}

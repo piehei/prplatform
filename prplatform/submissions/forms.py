@@ -178,17 +178,29 @@ class ChooseStudentForm(forms.Form):
     """
     submitter_user = forms.ModelChoiceField(label="Choose the student", queryset=None)
     submitter_group = forms.ModelChoiceField(label="Choose the group", queryset=None)
+    reviewed_submission = forms.ModelChoiceField(label="Choose the target of this peer-review", queryset=None)
 
     def __init__(self, *args, **kwargs):
         exercise = kwargs.pop('exercise')
         super().__init__(*args, **kwargs)
 
         self.fields['submitter_user'].queryset = exercise.course.students.all()
+
         if not exercise.use_groups:
             self.fields['submitter_group'].required = False
             self.fields['submitter_group'].widget = HiddenInput()
         else:
             self.fields['submitter_group'].queryset = exercise.course.student_groups.all()
+
+        if exercise.__class__.__name__ == "SubmissionExercise":
+            self.fields['reviewed_submission'].required = False
+            self.fields['reviewed_submission'].widget = HiddenInput()
+
+        else:
+            self.fields['reviewed_submission'].queryset = exercise.reviewable_exercise.submissions.all()
+
+
+
 
 
 
