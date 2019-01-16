@@ -1,6 +1,5 @@
 
 (function () {
-  window.addEventListener('load', function() {
     var submit_button = document.getElementById('review-submit');
 
     // if no submission can be made, don't do anything at all
@@ -26,6 +25,4 @@
       // this will show a real submit button with a confirmation text
       submit_real.style.display = '';
     }
-
-  })
 }())
