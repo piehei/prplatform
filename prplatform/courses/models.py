@@ -25,7 +25,7 @@ class BaseCourse(TimeStampedModel):
     url_slug = models.CharField("Identifier that will be used in URL addressses", max_length=50, unique=True)
     school = models.CharField("Name abbreviation of the school, eg. TTY, UTA...", max_length=20)
 
-    teachers = models.ManyToManyField(User, related_name="base_courses")
+    teachers = models.ManyToManyField(User, related_name="base_courses", blank=True)
 
     class Meta:
         unique_together = (('code', 'school'))
