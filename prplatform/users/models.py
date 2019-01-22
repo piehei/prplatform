@@ -19,6 +19,10 @@ class User(AbstractUser):
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
     temporary = models.BooleanField(default=False)
 
+    # TODO: make email unique, handle login signals/user swapping etc.
+    # class Meta(object):
+    #     unique_together = ('email',)
+
     def __str__(self):
         if self.email.strip() == "":
             return "(no email)"

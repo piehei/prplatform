@@ -13,6 +13,10 @@ from .question_views import (
         QuestionUpdateView,
     )
 
+from prplatform.aplus_integration.hook_views import (
+        ExerciseIncomingHook,
+    )
+
 
 app_name = "exercises"
 
@@ -20,6 +24,7 @@ urlpatterns = [
 
     # SUBMISSION EXERCISES
     path('s/<int:pk>/', view=views.SubmissionExerciseDetailView.as_view(), name="submission-detail"),
+    path('s/hook/', view=ExerciseIncomingHook.as_view(), name='hook-view'),
     path('s/<int:pk>/as_student/', view=views.SubmissionExerciseAsStudent.as_view(), name="submission-as-student"),
 
     path('s/<int:pk>/deviations',
@@ -46,4 +51,5 @@ urlpatterns = [
     path('r/<int:rpk>/q/create/', view=QuestionCreateView.as_view(), name="question-create"),
     path('r/<int:rpk>/q/<int:pk>/', view=QuestionDetailView.as_view(), name="question-detail"),
     path('r/<int:rpk>/q/<int:pk>/update', view=QuestionUpdateView.as_view(), name="question-update"),
+
 ]

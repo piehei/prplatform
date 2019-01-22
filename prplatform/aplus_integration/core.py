@@ -24,6 +24,10 @@ if os.environ.get('REPLACE'):
 
 
 def get_submissions(submission_exercise):
+    # TODO: REFACTOR COMPLETELY
+    return
+
+
     """
         1. retrieve submissions to this exercise from aplus api
         2. if teacher has not set api key to the course, return err
@@ -93,7 +97,7 @@ def get_submissions(submission_exercise):
         if create_user(users_and_submissions[user]):
             created_users += 1
 
-        if create_submission(submission_exercise, users_and_submissions[user]):
+        if create_submission_for(submission_exercise, users_and_submissions[user]):
             created_submissions += 1
 
     logger.info(f"Created {created_users} new users")
@@ -102,25 +106,27 @@ def get_submissions(submission_exercise):
     return True
 
 
-def create_user(aplus_submission):
+def get_user(aplus_submission):
 
-    email = aplus_submission["submitters"][0]["email"]
+    submitter = aplus_submission["submitters"][0]
+    email = submitter["email"]
+    username = submitter["username"]
+
     try:
         user = User.objects.get(email=email)
-        return False
 
     except Exception as e:
         logger.info(e)
         logger.info(f"USER WAS NOT FOUND BY EMAIL {email} --> creating a new one")
 
-        user = User.objects.create_user(email, email, '')
+        user = User.objects.create_user(username=username, email=email)
         user.set_unusable_password()
         user.temporary = True
         user.save()
-        return True
 
+    return user
 
-def create_submission(submission_exercise, aplus_submission):
+def create_submission_for(submission_exercise, aplus_submission, user):
     """
        1. check if there's an user with the aplus submitter's email
        2. if not, crate one and set temporary = True
@@ -128,29 +134,21 @@ def create_submission(submission_exercise, aplus_submission):
        4. create a new original submission with the file and submitter
     """
 
-    user = User.objects.get(email=aplus_submission["submitters"][0]["email"])
-
-    if len(submission_exercise.submissions.filter(submitter=user)) > 0:
-        # TODO: submissions arent replaced if new ones found --> should they?
-        #       one option would be to save the aplus submission id along with the submitted
-        #       file so that later on it could be compared and possibly replaced if needed
-        # logger.info("skipping this submission from aplus api -> the user already has one origsub")
-        return False
-
     file_url = aplus_submission["files"][0]["url"]
-    file_blob = requests.get(file_url, headers=HEADERS)
+    filename = aplus_submission["files"][0]["filename"]
+    file_blob = requests.get(file_url, headers={ 'Authorization': f'Token {submission_exercise.course.aplus_apikey}' })
 
     temp_file = NamedTemporaryFile(delete=True)
+    temp_file.name = filename
     temp_file.write(file_blob.content)
     temp_file.flush()
 
     new_orig_sub = OriginalSubmission(
                         course=submission_exercise.course,
-                        submitter=user,
+                        submitter_user=user,
                         exercise=submission_exercise,
                         file=File(temp_file)
                         )
     new_orig_sub.save()
     logger.info(new_orig_sub)
 
-    return True
