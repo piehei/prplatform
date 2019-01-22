@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.contrib.auth import authenticate, login
 from django.urls import resolve
 from oauthlib.oauth1 import SignatureOnlyEndpoint
@@ -8,6 +9,7 @@ from django_lti_login.backends import LTIAuthBackend
 from django.utils.deprecation import MiddlewareMixin
 
 from prplatform.courses.models import Course
+from prplatform.users.models import User
 
 
 class LtiLoginMiddleware(MiddlewareMixin):
@@ -47,7 +49,17 @@ class LtiLoginMiddleware(MiddlewareMixin):
             is_valid, oauth_request = endpoint.validate_request(uri, method, '', headers)
 
             if is_valid:
-                user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
+
+                # if the same person has accessed the system via LTI/shibboleth previously
+                # then there already exists a user account for him/her
+                # in that case, login that user account, otherwise create a new one
+
+                try:
+                    user = User.objects.get(email=oauth_request.lis_person_contact_email_primary)
+                    print("previous user found! login")
+                except Exception:
+                    print("previous user NOT FOUND --> create a new one")
+                    user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
 
                 resolved_view = resolve(request.path)
                 course = Course.objects.get(
