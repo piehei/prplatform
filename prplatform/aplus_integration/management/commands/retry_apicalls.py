@@ -24,12 +24,12 @@ class Command(BaseCommand):
 
         pending_calls = AplusAPICallRequest.objects.all()
 
-        print(f"Found {pending_calls.count()} AplusAPICallRequests ---> fetch now")
+        logger.info(f"Found {pending_calls.count()} AplusAPICallRequests ---> fetch now")
 
         for call in pending_calls:
             can_delete, msg = handle_submission_by_hook(call)
             if can_delete:
-                print("handled --> deleting")
+                logger.info('hook request handled -> deleting')
                 call.delete()
 
 

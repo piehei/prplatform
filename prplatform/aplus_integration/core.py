@@ -32,8 +32,6 @@ def handle_submission_by_hook(apicall_request_object):
     aplus_hook_data = apicall_request_object.hook_data
 
     submission_json = get_real_submission_from_hook_data(submission_exercise, aplus_hook_data)
-    print("jsoni:")
-    print(submission_json)
 
     if submission_json['status'] == 'waiting':
         return (False, 'Not ready yet')
@@ -43,6 +41,7 @@ def handle_submission_by_hook(apicall_request_object):
     grading_data = submission_json['grading_data']
 
     if grading_data['points'] == grading_data['max_points']:
+        logger.info("enough points received -> creating a submission")
         user = get_user(submission_json)
         create_submission_for(submission_exercise, submission_json, user)
 
