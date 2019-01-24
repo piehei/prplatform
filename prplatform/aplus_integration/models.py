@@ -7,4 +7,4 @@ from prplatform.exercises.models import SubmissionExercise
 class AplusAPICallRequest(TimeStampedModel):
 
     submission_exercise = models.ForeignKey(SubmissionExercise, on_delete=models.CASCADE)
-    aplus_submission_data = JSONField()
+    hook_data = JSONField()

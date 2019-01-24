@@ -12,99 +12,41 @@ from prplatform.submissions.models import OriginalSubmission
 import logging
 logger = logging.getLogger(__name__)
 
-# will be replaced with api key set for the course
-HEADERS = {'Authorization': 'Token xxx'}
+def get_real_submission_from_hook_data(submission_exercise, query_dict):
+    # <QueryDict: {'exercise_id': ['6'], 'site': ['http://localhost:8000'], 'submission_id': ['8'], 'course_id': ['1']}>
 
-# TODO: dirty hack, replace with something like reading json conf or whatnot
-#       in early dev phase this is used to test against production aplus
-#       installation -> some student emails will be replaced with madeup ones
-REPLACE = {}
-if os.environ.get('REPLACE'):
-    REPLACE = json.loads(os.environ.get('REPLACE'))
+    site = query_dict.get('site')
+    if 'localhost:8000' in site:
+        site = 'http://172.17.0.1:9000'
 
+    exercise_id = query_dict.get('exercise_id')
+    submission_id = query_dict.get('submission_id')
+    submission_url = f"{site}/api/v2/submissions/{submission_id}"
+    AUTHENTICATION_HEADERS = {
+        'Authorization': f"Token {submission_exercise.course.aplus_apikey}"
+    }
+    return requests.get(submission_url, headers=AUTHENTICATION_HEADERS).json()
 
-def get_submissions(submission_exercise):
-    # TODO: REFACTOR COMPLETELY
-    return
+def handle_submission_by_hook(apicall_request_object):
+    submission_exercise = apicall_request_object.submission_exercise
+    aplus_hook_data = apicall_request_object.hook_data
 
+    submission_json = get_real_submission_from_hook_data(submission_exercise, aplus_hook_data)
+    print("jsoni:")
+    print(submission_json)
 
-    """
-        1. retrieve submissions to this exercise from aplus api
-        2. if teacher has not set api key to the course, return err
-        3. use only submissions whose submitter's emails are in REPLACE
-        4. create orig submissions for each of them by calling create_submission
-    """
-    exercise_id = submission_exercise.aplus_exercise_id
+    if submission_json['status'] == 'waiting':
+        return (False, 'Not ready yet')
 
-    HEADERS['Authorization'] = f"Token {submission_exercise.course.aplus_apikey}"
+    grade = submission_json['grade']
+    late_penalty = submission_json['late_penalty_applied']
+    grading_data = submission_json['grading_data']
 
-    results = cache.get(exercise_id)
-    if not results:
-        try:
-            results = []
+    if grading_data['points'] == grading_data['max_points']:
+        user = get_user(submission_json)
+        create_submission_for(submission_exercise, submission_json, user)
 
-            url_next = f"https://plus.cs.tut.fi/api/v2/exercises/{exercise_id}/submissions/"
-            while url_next:
-                logger.info(url_next)
-                resp = requests.get(url_next, headers=HEADERS)
-                data = resp.json()
-                results = results + data["results"]
-                # this will be None when there's no additional pages of 100 results
-                url_next = data["next"]
-
-        except Exception as e:
-            logger.error(e)
-            logger.error8(e.text)
-            return False
-
-        # cache.set(exercise_id, results, 60 * 5)
-
-    users_and_ids = {}
-    users_and_submissions = {}
-
-    logger.info(f"length of results is {len(results)} --> getting them one by one")
-    for result in results:
-
-        submission = cache.get(result['id'])
-        if not submission:
-            submission = requests.get(result["url"], headers=HEADERS).json()
-            cache.set(result['id'], submission, 60 * 5)
-
-        submitter_email = submission["submitters"][0]["email"]
-
-        # if submitter_email not in REPLACE:
-        #     continue
-
-        if submitter_email in REPLACE:
-            logger.info(f"replacing: {submitter_email} -> {REPLACE[submitter_email]}")
-            submitter_email = REPLACE[submitter_email]
-            submission["submitters"][0]["email"] = submitter_email
-
-        if submitter_email not in users_and_ids:
-            users_and_ids[submitter_email] = []
-        users_and_ids[submitter_email].append(result["id"])
-
-        if submitter_email not in users_and_submissions:
-            users_and_submissions[submitter_email] = submission
-
-    logger.info("These will be added:")
-    logger.info(users_and_ids)
-
-    created_users = 0
-    created_submissions = 0
-
-    for user in users_and_submissions:
-        if create_user(users_and_submissions[user]):
-            created_users += 1
-
-        if create_submission_for(submission_exercise, users_and_submissions[user]):
-            created_submissions += 1
-
-    logger.info(f"Created {created_users} new users")
-    logger.info(f"Created {created_submissions} new submissions")
-
-    return True
-
+    return (True, 'Handled, may be deleted')
 
 def get_user(aplus_submission):
 
