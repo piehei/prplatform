@@ -311,7 +311,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         if ctx['reviewable'] and not ctx['teacher']:
             ctx['disable_form'] = False
 
-        if self.request.LTI_MODE:
+        if self.request.LTI_MODE and ctx['reviewable']:
             ctx['LTI_DL_TOKEN'] = ctx['reviewable'].get_download_token_for(self.request.user, self.request)
         return ctx
 
