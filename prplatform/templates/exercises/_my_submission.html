@@ -1,6 +1,11 @@
-<div class="collapse" id="collapse-my-submission">
+<div id="collapse-my-submission">
 
-  <div style="background:pink;"
+  <button id="show-own-submission" class="btn btn-primary btn-sm mb-2">
+    Show own submission
+  </button>
+
+  <div id="own-submission-container"
+       style="background:pink; display: none;"
        class="card card-body mb-4">
 
       <h5>My submission:</h5>
@@ -23,4 +28,13 @@
       {% endif %}
 
   </div>
+
+  <script>
+    // this handcrafted thing is used instead of Bootstrap's nice collapse
+    // since javascript on the embedding page can cause errors
+    var but = document.getElementById('show-own-submission');
+    but.addEventListener('click', function() {
+      $('#own-submission-container').slideToggle();
+    })
+  </script>
 </div>
