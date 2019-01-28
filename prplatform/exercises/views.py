@@ -200,7 +200,7 @@ def _construct_aplus_response(exercise=None, user=None):
     if exercise and user:
         sub_count = exercise.submissions_by_submitter(user).count()
         min_count = exercise.min_submission_count
-        msg = f'Completed peer-review {points}/{min_count}.'
+        msg = f'Completed peer-review {sub_count}/{min_count}.'
         if sub_count < min_count:
             left = min_count - sub_count
             msg = f'{msg} You still have {left} peer-review{"s" if left > 1 else ""} to do.'
