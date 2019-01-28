@@ -192,18 +192,32 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
         return self.render_to_response(ctx)
 
 
-def _construct_aplus_response():
-    # TODO: teacher should be able to configure this
-    response = HttpResponse(('<html>'
-                             '<head>'
-                             '<meta name="max-points" value="1" />'
-                             '<meta name="points" value="1" />'
-                             '</head>'
-                             '<body>'
-                             'Submission received!'
-                             '</body>'
-                             '</html>'))
-    return response
+def _construct_aplus_response(exercise=None, user=None):
+
+    points = 1
+    msg = 'Submission received!'
+
+    if exercise and user:
+        sub_count = exercise.submissions_by_submitter(user).count()
+        min_count = exercise.min_submission_count
+        msg = f'Completed peer-review {points}/{min_count}.'
+        if sub_count < min_count:
+            msg = f'{msg} You still have {min_count-sub_count} peer-reviews to do.'
+            points = 0
+        elif sub_count == min_count:
+            msg = f'{msg} You may now see peer-reviews to you.'
+            if exercise.max_submission_count > sub_count:
+                msg = f'{msg} You can do more peer-reviews if you want!'
+
+    return HttpResponse((f'<html>'
+                          '<head>'
+                          '<meta name="max-points" value="1" />'
+                         f'<meta name="points" value="{points}" />'
+                          '</head>'
+                          '<body>'
+                         f'{msg}'
+                          '</body>'
+                          '</html>'))
 
 
 class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
@@ -332,7 +346,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         self._save_modelform_answers(self.answer_forms, new_review_submission)
 
         if self.request.LTI_MODE:
-            return _construct_aplus_response()
+            return _construct_aplus_response(exercise=self.object, user=self.request.user)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
     def _post_choose(self, ctx):
