@@ -4,6 +4,8 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory, TestCase
 
+from django.utils import timezone
+
 import datetime
 import pytz
 
@@ -410,6 +412,97 @@ class ExerciseTest(TestCase):
             print(re.reviewlocks_for(s))
             self.assertContains(response, f"text by {target_name}")
         self.assertEqual(ReviewLock.objects.all().count(), 3)
+
+    def test_expiry_hours(self):
+
+        # create original submissions for all 4 students
+        se = SubmissionExercise.objects.get(pk=1)
+        for s in self.students:
+            OriginalSubmission(course=self.course,
+                               submitter_user=s,
+                               exercise=se,
+                               text=f"text by {s}").save()
+
+        re = ReviewExercise.objects.get(reviewable_exercise=se)
+
+        # create two locks, for s2 and s3, by loading the page
+        for s in [self.s2, self.s3]:
+            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+            request.user = s
+            self.kwargs['pk'] = re.pk
+
+            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+            self.assertContains(response, f"text by {self.s1 if s == self.s2 else self.s2}")
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+
+        # make exercise expire locks in 10 hours
+        re.reviewlock_expiry_hours = 10
+        re.save()
+
+        # move locks 5 hours back in time
+        # these locks should NOT expire just yet
+        ReviewLock.objects.all().update(created=timezone.now()-timezone.timedelta(hours=5))
+
+        # load the page -> nothing should just yet expire, third lock should appear
+        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
+        request.user = self.s4
+        self.kwargs['pk'] = re.pk
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
+
+        # test that created time of a ReviewLock is refreshed on access
+        rl_s4 = ReviewLock.objects.get(user=self.s4)
+        created_before_refresh = rl_s4.created
+        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewLock.objects.all().count(), 3)
+        rl_s4.refresh_from_db()
+        self.assertNotEqual(created_before_refresh, rl_s4.created)
+
+        # change expiry to 1 hour -> all locks should be expirying now
+        re.reviewlock_expiry_hours = 1
+        re.save()
+
+        request.user = self.s1
+        # this should create a lock for s1 and expire locks of s2 and s3
+        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+        self.assertEqual(ReviewLock.objects.filter(user=self.s1).exists(), True)
+        self.assertEqual(ReviewLock.objects.filter(user=self.s4).exists(), True)
+
+        # make s1 rl expire -> still post the form
+        # this simulates how someone may have the browser open for a long time
+
+        rl_s1 = ReviewLock.objects.get(user=self.s1)
+        rl_s1.created = rl_s1.created.replace(hour=rl_s1.created.hour-5)
+        rl_s1.save()
+        rl_s1_reviewable_pk = rl_s1.original_submission.pk
+        # this will expire rl for s1
+        request.user = self.s3
+        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewLock.objects.filter(user=self.s1).exists(), False)
+
+        answers = {
+            'choice': [rl_s1_reviewable_pk],
+            'Q-PREFIX-2--question': ['2'],
+            'Q-PREFIX-2--value_choice': ['1'],
+            'Q-PREFIX-1--question': ['1'],
+            'Q-PREFIX-1--value_text': ['some text']
+        }
+
+        request = self.factory.post('/courses/prog1/F2018/exercises/r/1/', answers)
+        request.user = self.s1
+        self.kwargs['pk'] = 1
+        request = add_required_middlewares(request)
+
+        # there should be locks for s3 and s4
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+        self.assertEqual(re.submissions.filter(submitter_user=self.s1).exists(), False)
+        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertEqual(re.submissions.filter(submitter_user=self.s1).exists(), True)
+
 
     def test_teacherCanSubmitMultipleTimes(self):
 

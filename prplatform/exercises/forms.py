@@ -135,6 +135,7 @@ class ReviewExerciseForm(ModelForm):
                   'model_answer',
                   'reviewable_exercise',
                   'type',
+                  'reviewlock_expiry_hours',
                   'can_review_own_submission',
                   'max_submission_count',
                   'max_reviews_per_submission',
@@ -153,6 +154,19 @@ class ReviewExerciseForm(ModelForm):
                 'show_reviews_after_date': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'use_groups': 'If enabled, the students submit the answers as a group instead of individuals. The ' + \
                               'teacher has to configure groups from course edit view.',
+                'reviewlock_expiry_hours': """
+<strong>This value works *ONLY* with the type RANDOM above.</strong>
+<br>
+The system will lock a submission to be peer-reviewed for this many hours before giving it to another student.
+The default value, 0, means forever which can potentially lead to a situation where a student never completes
+the peer-review but the submission is still locked and no one else will peer-review it. Changing this number to eg. 10
+makes the system to expire the lock in 10 hours and thus re-locks the submission to be peer-reviewed by another student
+after the time has passed.
+<br>
+<strong>If the students on the course are required</strong> to do the peer-reviews, then the default value of 0 should be fine.
+In other cases chaning this value may make it easier to distribute the peer-reviews. This might be especially useful on
+mass courses where students are not required to complete the peer-reviews and they're just a small part of the course exercises.
+""",
                 'can_review_own_submission': ('Students can give peer-reviews to themselves. '
                                               'This cannot be used with the type "Random".'),
                 'show_reviews_only_to_teacher': ('This hides all peer-reviews from the person that is being '
@@ -179,6 +193,13 @@ class ReviewExerciseForm(ModelForm):
         exer_type = cd.get('type')
         can_review_own_submission = cd.get('can_review_own_submission', None)
         use_groups = cd.get('use_groups', None)
+
+        expiry_hours = cd.get('reviewlock_expiry_hours', None)
+
+        if exer_type != ReviewExercise.RANDOM and expiry_hours != 0:
+            raise ValidationError(
+                'Reviewlock expiry hours can ONLY be changed if type is RANDOM. Change it back to 0 (default value).'
+            )
 
         if can_review_own_submission and exer_type not in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
 

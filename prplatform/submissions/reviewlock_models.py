@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Count
 from django.core.exceptions import EmptyResultSet
+from django.utils import timezone
 
 from .models import (
         OriginalSubmission,
@@ -30,10 +31,11 @@ class ReviewLockManager(models.Manager):
 
         if exercise.type == ReviewExercise.RANDOM:
 
-            """
-                TODO: this algo does NOT take into account a situation where one updates their review
-                      which causes two reviews to be available for an original submission
-            """
+            if exercise.reviewlock_expiry_hours != 0:
+                # if expiry hours is something else than "no expiry" / -1,
+                # delete all reviewlocks older than the expiry time
+                not_expired_time = timezone.now() - timezone.timedelta(hours=exercise.reviewlock_expiry_hours)
+                ReviewLock.objects.filter(review_exercise=exercise, created__lt=not_expired_time).delete()
 
             # all original submissions that *could* be the target of the review
             # annotated with their existing review and reviewlock counts

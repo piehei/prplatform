@@ -274,6 +274,8 @@ class ReviewExercise(BaseExercise):
     min_submission_count = models.IntegerField(
             "How many peer-reviews one student *HAS TO* complete before seeing peer-reviews by others", default=1)
 
+    reviewlock_expiry_hours = models.PositiveIntegerField("How many hours a reviewlock is valid", default=0)
+
     model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
                                     blank=True,
                                     max_length=6000)

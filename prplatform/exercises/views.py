@@ -259,6 +259,10 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         rlock = exercise.reviewlocks_for(self.request.user).last()
 
+        if rlock:
+            rlock.created = timezone.now()
+            rlock.save()
+
         # if rlock doesn't exist or it exists and has a review attached
         if not rlock or \
            rlock and rlock.review_submission is not None:
@@ -331,18 +335,43 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         return ctx
 
     def _post_random(self, ctx):
-        # TODO: should it be possible to update the previous review submission?
         rlock_list = self.object.reviewlocks_for(self.request.user)
         rlock = rlock_list.last()
+
+        reviewed_submission = None
+        lock_was_expired = False
+
+        if rlock:
+            reviewed_submission = rlock.original_submission
+
+        elif not rlock and self.object.reviewlock_expiry_hours != 0:
+            # if the expiry time has been set and a user keeps the exercise page
+            # visible for a very long time without refreshing, it is possible that
+            # whenever the form is actually submitted the original reviewlock has
+            # already expired and deleted. in that situation, from the system's POV,
+            # the user is making a bogus form submission since no lock is held.
+            # if this "race condition" happens, grab the originally reviewed submission's
+            # PK from the submitted form.
+            #
+            # this is not beautiful, but serves the purpose. other implementation
+            # possibilities could be to just show an error page but that would waste
+            # the peer-reviewing efforts by the student. some sort of verification could
+            # also be implemented client-side in JavaScript to show the user a warning or
+            # something. this, however, is the easiest solution.
+            reviewed_submission = self.object.reviewable_exercise.submissions.get(pk=self.request.POST.get('choice'))
+            lock_was_expired = True
 
         new_review_submission = ReviewSubmission(course=ctx['course'],
                                                  submitter_user=self.request.user,
                                                  exercise=self.object,
-                                                 reviewed_submission=rlock.original_submission)
+                                                 reviewed_submission=reviewed_submission)
         if self.object.use_groups:
             new_review_submission.submitter_group = ctx['my_group']
 
-        new_review_submission.save_and_destroy_lock()
+        if lock_was_expired:
+            new_review_submission.save()
+        else:
+            new_review_submission.save_and_destroy_lock()
 
         self._save_modelform_answers(self.answer_forms, new_review_submission)
 
@@ -376,6 +405,8 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             answer.save()
 
     def _validate_forms(self):
+        print("validate_forms")
+        print(self.request.POST)
         qlist = self.object.question_list_in_order()
 
         forms = []
@@ -385,12 +416,15 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             forms.append(af)
             if not af.is_valid():
                 valid = False
+
+        print(valid)
+        print(forms)
         return valid, forms
 
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
-        ctx = self.get_context_data(**kwargs)
+        ctx = super().get_context_data(**kwargs)
 
         can_submit, errormsg = self.object.can_submit(self.request.user)
 
