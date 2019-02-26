@@ -23,19 +23,21 @@
 
       {% include "./_open_times.html" %}
 
-      <div class="col-md-12">
+      {% if my_submissions and disable_form %}
+
+        <div class="alert alert-danger font-italic ml-3 mr-3">
+          You have reached the maximum number of submissions
+        </div>
+
+      {% endif %}
+
+      <hr />
+
+      <div>
         {{ object.description | linebreaks }}
       </div>
 
 
-      {% if my_submissions and disable_form %}
-
-        <div class="alert alert-danger font-italic d-md-inline-block">
-          <b>You have reached the maximum number of submissions</b>
-        </div>
-        <br>
-
-      {% endif %}
 
       {% if object.type == 'APLUS' %}
 
