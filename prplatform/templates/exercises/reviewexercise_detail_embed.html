@@ -17,10 +17,6 @@
           {{ exercise|my_submission_count:user }} / {{ exercise.min_submission_count }} peer-reviews completed.
         </div>
 
-        <h5>Description</h5>
-        {% if not object.description %}
-          No description available
-        {% endif %}
         {{ object.description | linebreaks }}
       </div>
 
