@@ -10,10 +10,12 @@
       <h2>{{ object.name }}</h2>
 
       <div style="float:none;" class="col-md-12 mb-4">
-        <p class="font-italic">
 
-      {% include "./_open_times.html" %}
+        {% include "./_open_times.html" %}
 
+        <div class="alert alert-warning d-md-inline-block">
+          {{ exercise|my_submission_count:user }} / {{ exercise.min_submission_count }} peer-reviews completed.
+        </div>
 
         <h5>Description</h5>
         {% if not object.description %}
