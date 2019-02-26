@@ -50,7 +50,6 @@
               {{ form | crispy }}
 
               {% include "./_group_enroll_info_box.html" %}
-              {% include "./_submission_count_info.html" with exercise=object %}
               <input type="submit" class="btn btn-primary" value="Submit {% if teacher %}[teacher can't]{% endif %}"
                      {% if disable_form %}disabled{% endif %}>
         </form>
