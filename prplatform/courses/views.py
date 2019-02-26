@@ -1,5 +1,6 @@
 from django.http import HttpResponseRedirect
 from django import forms
+from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -210,6 +211,7 @@ class CourseGroupView(CourseContextMixin, IsTeacherMixin, TemplateView):
         ctx['groups'] = StudentGroup.objects.filter(course=ctx['course'])
         return self.render_to_response(ctx)
 
+    @transaction.atomic
     def post(self, args, **kwargs):
         ctx = self.get_context_data(**kwargs)
 

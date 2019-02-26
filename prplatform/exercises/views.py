@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import EmptyResultSet, PermissionDenied
+from django.db import transaction
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
@@ -126,6 +127,7 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
             self.request.LTI_MODE = False
         return super().dispatch(request, *args, **kwargs)
 
+    @transaction.atomic
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
@@ -145,6 +147,7 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
 
         return self.render_to_response(ctx)
 
+    @transaction.atomic
     def post(self, *args, **kwargs):
         """ TODO: error checking """
         self.object = self.get_object()
@@ -298,6 +301,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         ctx['chooseForm'] = cf if sid else ChooseForm(exercise=self.object, user=self.request.user)
         return ctx
 
+    @transaction.atomic
     def get_context_data(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = super().get_context_data(**kwargs)
@@ -421,6 +425,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         print(forms)
         return valid, forms
 
+    @transaction.atomic
     def post(self, *args, **kwargs):
         # TODO: error checking, validation(?)
         self.object = self.get_object()
