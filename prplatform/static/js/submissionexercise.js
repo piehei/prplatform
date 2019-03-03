@@ -11,26 +11,41 @@ window.onload = function() {
 
   var aplus_course_id = document.getElementById('div_id_aplus_course_id');
   var aplus_exercise_id = document.getElementById('div_id_aplus_exercise_id');
-  var accepted_file_types = document.getElementById('div_id_accepted_file_types');
-  var upload_instructions = document.getElementById('div_id_upload_instructions');
+  var accepted_filetypes = document.getElementById('div_id_accepted_filetypes');
+
+  function hide(items) {
+    if (items.constructor !== Array) {
+      items = [items];
+    }
+    items.forEach(function(item) {
+      item.style.display = "none";
+    })
+  }
+
+  function show(items) {
+    if (items.constructor !== Array) {
+      items = [items];
+    }
+    items.forEach(function(item) {
+      item.style.display = "block";
+    })
+  }
 
   function toggle(type) {
     if (type === 'TEXT') {
-      [aplus_course_id, aplus_exercise_id, accepted_file_types, upload_instructions].forEach(function(elem) {
-        elem.style.display = "none";
-      })
+      hide([aplus_course_id, aplus_exercise_id, accepted_filetypes]);
     } else if (type === 'FILE_UPLOAD') {
-      [aplus_course_id, aplus_exercise_id].forEach(function(elem) {
-        elem.style.display = "none";
-      })
-      accepted_file_types.style.display = "block";
-      upload_instructions.style.display = "block";
+      hide([aplus_course_id, aplus_exercise_id])
+      show(accepted_filetypes)
     } else if (type === 'APLUS') {
-      [aplus_course_id, aplus_exercise_id].forEach(function(elem) {
-        elem.style.display = "block";
-      })
-      accepted_file_types.style.display = "none";
-      upload_instructions.style.display = "none";
+      show([aplus_course_id, aplus_exercise_id]);
+      hide(accepted_filetypes)
+    } else if (type === 'GROUP_NO_SUBMISSION') {
+      hide([aplus_course_id, aplus_exercise_id, accepted_filetypes])
+    } else {
+      // this only happens when a new type is added and this JS file
+      // is not updated ...
+      show([aplus_course_id, aplus_exercise_id, accepted_filetypes]);
     }
   }
 
@@ -44,7 +59,7 @@ window.onload = function() {
   // --> show all invalid-feedback inputs even if not compatible with chosen type
   var invalids = document.querySelectorAll('.invalid-feedback');
   if (invalids) {
-    var parents = [aplus_course_id, aplus_exercise_id, accepted_file_types, upload_instructions];
+    var parents = [aplus_course_id, aplus_exercise_id, accepted_filetypes];
     invalids.forEach(function(invalid) {
       var index = parents.indexOf(invalid.parentElement.parentElement);
       if (index !== -1) {

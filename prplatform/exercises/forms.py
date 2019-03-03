@@ -31,7 +31,6 @@ class SubmissionExerciseForm(ModelForm):
                   ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
-                'upload_instructions': Textarea(attrs={'cols': 80, 'rows': 5})
                 }
         help_texts = {
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
