@@ -1,0 +1,29 @@
+
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb course.code course.get_absolute_url %}
+    {% breadcrumb "Exercise" ""%}
+    {% breadcrumb object.name object.get_absolute_url %}
+    {% breadcrumb "Delete" "" %}
+{% endblock %}
+
+{% block title %}Delete deviation{% endblock %}
+
+{% block content %}
+
+<form method="post">
+    {% csrf_token %}
+    <p>Are you sure you want to delete deviation <br>
+        "{{ object }}"?</p>
+
+    <div class="mt-4">
+    <a class="btn btn-primary mr-4"
+       onClick="javascript:history.go(-1)">Cancel</a>
+    <input class="btn btn-danger" type="submit" value="Confirm deletion" />
+    </div>
+</form>
+
+{% endblock %}

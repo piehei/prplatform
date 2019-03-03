@@ -41,7 +41,7 @@
           <td>{{ d.extra_submissions }}</td>
           <td>{{ d.new_deadline | date:"SHORT_DATETIME_FORMAT" }}</td>
           <td>
-            <form class="ml-auto" action="{{ d.get_delete_url }}" method="POST">
+            <form class="ml-auto" action="{{ d.get_delete_url }}" method="GET">
               {% csrf_token %}
               <input type="submit" class="btn btn-sm btn-danger" value="DELETE">
             </form>

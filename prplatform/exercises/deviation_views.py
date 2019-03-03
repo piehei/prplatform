@@ -65,13 +65,13 @@ class DeviationCreateView(IsTeacherMixin, CourseContextMixin, DeviationBaseView,
 
 class DeviationDeleteView(IsTeacherMixin, CourseContextMixin, DeviationBaseView, DeleteView):
 
+    template_name = 'exercises/deviation_confirm_delete.html'
+
     def get_success_url(self):
         if self.kwargs['deviation_type'] == 's':
             typestr = 'submission'
         else:
             typestr = 'review'
-
-        print(typestr)
 
         return reverse(f'courses:exercises:{typestr}-deviation-list', kwargs={
             'base_url_slug': self.kwargs['base_url_slug'],
