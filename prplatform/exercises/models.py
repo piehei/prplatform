@@ -253,7 +253,7 @@ class ReviewExercise(BaseExercise):
     CHOOSE = 'CHOOSE'
     GROUP = 'GROUP'
     REVIEW_EXERCISE_TYPE_CHOICES = (
-            (RANDOM, 'Random by other user (prefers oldest with least peer-reviews)'),
+            (RANDOM, 'Random submission by other student (prefers oldest with least peer-reviews)'),
             (CHOOSE, 'Student chooses from a dropdown list of all reviewables'),
             (GROUP, 'Students peer-review other students in their own group'),
         )

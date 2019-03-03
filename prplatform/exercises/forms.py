@@ -148,6 +148,9 @@ class ReviewExerciseForm(ModelForm):
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
                 'model_answer': Textarea(attrs={'cols': 80, 'rows': 5}),
                 }
+        labels = {
+                'type': 'Peer-review target type (who peer-reviews who)',
+                }
         help_texts = {
                 'opening_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
                 'closing_time': 'Date and time in format YYYY-MM-DD HH:MM, eg. 2018-09-12 23:59',
