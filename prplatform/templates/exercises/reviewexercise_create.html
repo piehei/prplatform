@@ -30,4 +30,9 @@
     </div>
   </form>
 
+  {% load static %}
+  {% block extra_js %}
+    <script src="{% static 'js/reviewexercise.js' %}"></script>
+  {% endblock extra_js %}
+
 {% endblock %}
