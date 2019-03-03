@@ -1,4 +1,11 @@
-# PRECAUTION: avoid production dependencies that aren't in development
+
+
+#
+# SOME OF THE PACKAGES LISTED HERE come from suggestions of Cookiecutter
+# Docker deployment. You might not need all of these if you deploy
+# in some different manner, ie. run the app directly with uwsgi or so.
+#
+
 
 -r base.txt
 
