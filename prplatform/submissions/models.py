@@ -30,7 +30,8 @@ class BaseSubmission(TimeStampedModel):
 
     def is_owner(self, user):
         if self.submitter_group:
-            return self.submitter_group.has_student(user)
+            # TODO: perf, make group an optional parameter
+            return self.submitter_group == self.course.find_studentgroup_by_user(user)
         return self.submitter_user == user
 
     def get_absolute_url(self):
