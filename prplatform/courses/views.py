@@ -133,7 +133,7 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
     slug_field = "url_slug"
     slug_url_kwarg = "url_slug"
-    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey', 'exercise_order_on_front_page']
+    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey', 'exercise_order_on_front_page', 'frontpage_info']
 
     def form_valid(self, form):
 

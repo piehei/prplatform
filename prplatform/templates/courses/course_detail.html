@@ -32,6 +32,7 @@
       {% endif %}
 
       {% if teacher %}
+      <div>
         <a class="btn btn-sm btn-primary mt-3"
            href="{% url 'courses:update' object.base_course.url_slug object.url_slug %}">
           Edit course details & exercise order
@@ -39,8 +40,17 @@
         <a href="{% url 'courses:groups' object.base_course.url_slug object.url_slug %}" class="btn btn-primary btn-sm mt-3">
           Edit groups
         </a>
+      </div>
       {% endif %}
+
+    {% if object.frontpage_info %}
+        <div class="shadow rounded mt-4 p-2">
+            {{ object.frontpage_info | safe }}
+        </div>
+    {% endif %}
+
     </div>
+
 
 
     {% if False %} <!-- TODO: MITEN TÄLLE TEHDÄÄN -->

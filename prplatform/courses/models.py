@@ -66,6 +66,10 @@ class Course(TimeStampedModel):
     # TODO: this should propably be put under the teacher ?
     aplus_apikey = models.CharField(max_length=50, blank=True)
 
+    frontpage_info = models.TextField("Course info, news, notifications etc. to show on frontpage",
+                                      help_text="HTML works here. You can add titles, breaks, text-formatting etc.",
+                                      null=True, blank=True)
+
     exercise_order_on_front_page = ArrayField(models.IntegerField(), blank=True, null=True)
 
     class Meta:
@@ -77,7 +81,7 @@ class Course(TimeStampedModel):
 
     def get_absolute_url(self):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
-                       'base_url_slug': self.base_course.url_slug})
+                                                 'base_url_slug': self.base_course.url_slug})
 
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"
