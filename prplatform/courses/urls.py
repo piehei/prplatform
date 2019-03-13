@@ -15,7 +15,6 @@ urlpatterns = [
     path('<slug:base_url_slug>/<slug:url_slug>/enroll', view=views.CourseEnroll.as_view(), name="enroll"),
     path('<slug:base_url_slug>/<slug:url_slug>/exercises/', include('prplatform.exercises.urls', namespace="exercises")),
     path('<slug:base_url_slug>/<slug:url_slug>/submissions/', include('prplatform.submissions.urls', namespace="submissions")),
-    path('<slug:base_url_slug>/<slug:url_slug>/teacher', view=views.CourseTeacherView.as_view(), name="teacher"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/stats/<int:pk>', view=views_stats.CourseStatsView.as_view(), name="stats"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/groups', view=views.CourseGroupView.as_view(), name="groups"),
     path('<slug:base_url_slug>/<slug:url_slug>/teacher/dealings', view=views.CourseReviewDealingView.as_view(), name="dealings"),

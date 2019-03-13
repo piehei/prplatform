@@ -117,16 +117,11 @@ class CourseDetailView(CourseContextMixin, DetailView):
 
         order = self.get_object().exercise_order_on_front_page
         if order:
-            print("order")
             # not optimal to sort in python land vs. SQL ***BUT*** the QS is small enough to be just fine
             ctx['submissionexercises'] = sorted(ctx['submissionexercises'],
                                                 key=lambda ex: order.index(ex.pk) if ex.pk in order else 100)
 
         return ctx
-
-
-class CourseTeacherView(IsTeacherMixin, CourseDetailView):
-    template_name = "courses/teacher.html"
 
 
 class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
