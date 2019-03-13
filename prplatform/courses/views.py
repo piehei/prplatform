@@ -128,7 +128,46 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
     model = Course
     slug_field = "url_slug"
     slug_url_kwarg = "url_slug"
-    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey', 'exercise_order_on_front_page', 'frontpage_info']
+    fields = ['start_date', 'end_date', 'hidden', 'aplus_apikey', 'frontpage_info']
+
+    def post(self, *args, **kwargs):
+        """ This is only used for changing exercise order on
+            course front page. Course details are changed in
+            the form_valid """
+
+        moved_exer = self.request.POST.get('question', None)
+        if not moved_exer:
+            return super().post(*args, **kwargs)
+
+        moved_exer = int(moved_exer)
+        course = self.get_object()
+        direction = self.request.POST.get('dir')
+
+        if not course.exercise_order_on_front_page:
+            course.exercise_order_on_front_page = list(
+                    course.submissionexercise_exercises.all().values_list('pk', flat=True)
+                )
+            course.save()
+
+        order = course.exercise_order_on_front_page
+        curr_indx = order.index(moved_exer)
+
+        if direction == 'up':
+            if curr_indx == 0:
+                new_order = order[1:] + [moved_exer]
+            else:
+                new_order = order.copy()
+                new_order.insert(curr_indx - 1, new_order.pop(curr_indx))
+        else:
+            if curr_indx == len(order) - 1:
+                new_order = [moved_exer] + order[:-1]
+            else:
+                new_order = order.copy()
+                new_order.insert(curr_indx + 1, new_order.pop(curr_indx))
+
+        course.exercise_order_on_front_page = new_order
+        course.save()
+        return HttpResponseRedirect(course.get_absolute_url())
 
     def form_valid(self, form):
 
@@ -136,24 +175,6 @@ class CourseUpdateView(CourseContextMixin, IsTeacherMixin, UpdateView):
             form.errors['end_date'] = ["Course cannot end before it starts"]
             return super().form_invalid(form)
 
-        order = form.cleaned_data['exercise_order_on_front_page']
-
-        if len(order) > 0:
-            exercise_pks = self.get_object().submissionexercise_exercises.all().values_list('pk', flat=True)
-            minus = set(exercise_pks) - set(order)
-            if len(minus) > 0:
-                form.errors['exercise_order_on_front_page'] = [(
-                        'You have to fill in *ALL* exercise IDs when you'
-                        f'define their order on the fron page. You left out: {list(minus)}'
-                    )]
-                return super().form_invalid(form)
-
-            minus_another_way = set(order) - set(exercise_pks)
-            if len(minus_another_way) > 0:
-                form.errors['exercise_order_on_front_page'] = [(
-                    f'You tried to use an ID that may *NOT* be found from the below list: {list(minus_another_way)}'
-                    )]
-                return super().form_invalid(form)
         return super().form_valid(form)
 
 

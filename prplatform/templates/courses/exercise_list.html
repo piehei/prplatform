@@ -34,6 +34,18 @@
           {% endif %}
           <br>
           {% if teacher %}
+          <form class="d-inline" method="POST" action="{{ ex.course.get_update_url }}">
+              {% csrf_token %}
+              <input type="hidden" name="dir" value="up">
+              <input type="hidden" name="question" value="{{ ex.pk }}">
+              <button type="submit" class="btn btn-sm btn-sm-pad btn-outline-secondary">&#8679;</button>
+            </form>
+            <form class="d-inline" method="POST" action="{{ ex.course.get_update_url }}">
+              {% csrf_token %}
+              <input type="hidden" name="dir" value="down">
+              <input type="hidden" name="question" value="{{ ex.pk }}">
+              <button class="btn btn-sm btn-sm-pad btn-outline-secondary">&#8681;</button>
+            </form>
             <a class="btn btn-sm btn-sm-pad btn-outline-secondary"
                href="{{ ex.get_edit_url }}">
               edit
@@ -42,6 +54,7 @@
                href="{{ ex.get_list_url }}">
               submissions
             </a>
+
           {% endif %}
         </div>
 
@@ -97,6 +110,8 @@
             {% endif %}
           {% endif %}
           {% endwith %}
+
+
         </div>
 
 
