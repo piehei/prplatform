@@ -83,6 +83,10 @@ class Course(TimeStampedModel):
         return reverse('courses:detail', kwargs={'url_slug': self.url_slug,
                                                  'base_url_slug': self.base_course.url_slug})
 
+    def get_update_url(self):
+        return reverse('courses:update', kwargs={'url_slug': self.url_slug,
+                       'base_url_slug': self.base_course.url_slug})
+
     def __str__(self):
         return f"{self.base_course.code} {self.year} {self.code}"
 
