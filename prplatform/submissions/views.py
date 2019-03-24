@@ -254,7 +254,8 @@ class DownloadSubmissionView(View):
                                                  .values_list('original_submission', flat=True)
                 reviewer = kwargs['pk'] in pks_of_users_reviewables
             else:
-                receiver = obj.submission.reviewed_submission.is_owner(user)
+                receiver = obj.submission.reviewed_submission.is_owner(user) and \
+                            not obj.question.hide_from_receiver
 
             if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
                 raise PermissionDenied

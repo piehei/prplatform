@@ -267,7 +267,7 @@ class SubmissionsTest(TestCase):
 
         rs_objects = []
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
         for user in self.students[:2]:
             reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
                                                             .exclude(submitter_user=user).first()
@@ -276,7 +276,7 @@ class SubmissionsTest(TestCase):
             rs_objects.append(rs)
             Answer(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1)).save()
             Answer(submission=rs, value_choice="1", question=Question.objects.get(pk=2)).save()
-            Answer(submission=rs, uploaded_file=tmpFile, question=Question.objects.get(pk=3)).save()
+            Answer(submission=rs, uploaded_file=temp_file, question=Question.objects.get(pk=3)).save()
 
         # teacher sees all reviews
         request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
@@ -389,8 +389,8 @@ class SubmissionsTest(TestCase):
         exercise.accepted_filetypes = '.txt'
         exercise.save()
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
-        sub = OriginalSubmission(course=self.course, file=tmpFile, submitter_user=self.s1, exercise=exercise)
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=self.course, file=temp_file, submitter_user=self.s1, exercise=exercise)
         sub.save()
 
         request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{sub.pk}/')
@@ -410,8 +410,8 @@ class SubmissionsTest(TestCase):
         exercise.accepted_filetypes = '.txt'
         exercise.save()
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
-        sub = OriginalSubmission(course=self.course, file=tmpFile, submitter_user=self.s1, submitter_group=group,
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=self.course, file=temp_file, submitter_user=self.s1, submitter_group=group,
                                  exercise=exercise)
         sub.save()
 
@@ -434,8 +434,8 @@ class SubmissionsTest(TestCase):
         exercise.accepted_filetypes = '.txt'
         exercise.save()
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
-        sub = OriginalSubmission(course=self.course, file=tmpFile, submitter_user=self.s1,
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=self.course, file=temp_file, submitter_user=self.s1,
                                  exercise=exercise)
         sub.save()
 
@@ -448,7 +448,7 @@ class SubmissionsTest(TestCase):
         answer_with_file = Answer(
                 question=Question.objects.get(pk=3),
                 submission=rev,
-                uploaded_file=tmpFile,
+                uploaded_file=temp_file,
                 )
         answer_with_file.save()
 
@@ -496,8 +496,8 @@ class SubmissionsTest(TestCase):
         exercise.accepted_filetypes = '.txt'
         exercise.save()
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
-        sub = OriginalSubmission(course=self.course, file=tmpFile, submitter_user=self.s1,
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        sub = OriginalSubmission(course=self.course, file=temp_file, submitter_user=self.s1,
                                  exercise=exercise)
         sub.save()
 
@@ -542,12 +542,12 @@ class SubmissionsTest(TestCase):
         rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub, submitter_user=self.s2, exercise=r_exercise)
         rev_sub.save()
 
-        tmpFile = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
 
         answer_with_file = Answer(
                 question=Question.objects.get(pk=3),
                 submission=rev_sub,
-                uploaded_file=tmpFile,
+                uploaded_file=temp_file,
                 )
         answer_with_file.save()
 
@@ -574,6 +574,39 @@ class SubmissionsTest(TestCase):
             else:
                 response = DownloadSubmissionView.as_view()(request, **self.kwargs)
                 self.assertEqual(response.status_code, 200)
+
+    def test_student_cannot_download_hide_from_receiver_answer_file(self):
+        s_exercise = SubmissionExercise.objects.get(name="T1 TEXT")
+        r_exercise = ReviewExercise.objects.get(name="T1 TEXT REVIEW")
+
+        sub = OriginalSubmission(course=self.course, text="juups", submitter_user=self.s1, exercise=s_exercise)
+        sub.save()
+
+        r_exercise.question_order = ['3']
+        r_exercise.save()
+
+        rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub, submitter_user=self.s2, exercise=r_exercise)
+        rev_sub.save()
+
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        question = Question.objects.get(pk=3)
+
+        answer_with_file = Answer(
+                question=question,
+                submission=rev_sub,
+                uploaded_file=temp_file,
+                )
+        answer_with_file.save()
+
+        request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
+        request.user = self.s1
+        self.kwargs['pk'] = answer_with_file.pk
+
+        self.assertEqual(DownloadSubmissionView.as_view()(request, **self.kwargs).status_code, 200)
+        question.hide_from_receiver = True
+        question.save()
+        self.assertRaises(PermissionDenied,
+                          DownloadSubmissionView.as_view(), request, **self.kwargs)
 
     def test_original_submission_delete_confirmation_page_shows_cascades(self):
 
