@@ -198,6 +198,12 @@ class Answer(models.Model):
 
         super().save(*args, **kwargs)
 
+    def get_choice_question_value(self):
+        """ This is the original string representation from the shown question """
+        if not self.value_choice:
+            return None
+        return [c[1] for c in self.question.choices if c[0] == self.value_choice][0]
+
     def get_file_download_url(self):
         return reverse('courses:submissions:download', kwargs={
             'base_url_slug': self.submission.course.base_course.url_slug,

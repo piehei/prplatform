@@ -137,22 +137,10 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
             if not self.object.exercise.review_showing_requirements_ok(self.request.user):
                 raise PermissionDenied('You have to complete more reviews to view this.')
 
-        data = []
-
-        for ans in self.object.answers_in_ordered_list():
-            if ans.question.hide_from_receiver and not owner and not ctx['teacher']:
-                continue
-
-            if ans.value_text:
-                data.append({'q': ans.question.question_text, 'a': ans.value_text})
-            elif ans.value_choice:
-                # TODO : braindead ???
-                choice = [c[1] for c in ans.question.choices if c[0] == ans.value_choice][0]
-                data.append({'q': ans.question.question_text, 'a': choice})
-            else:
-                data.append({'q': ans.question.question_text, 'f': ans.get_file_download_url()})
-
-        ctx['qa_list'] = data
+        ctx['qa_list'] = list(filter(
+                lambda a: not (a.question.hide_from_receiver and not owner and not ctx['teacher']),
+                self.object.answers_in_ordered_list()
+            ))
         return self.render_to_response(ctx)
 
 

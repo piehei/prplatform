@@ -64,25 +64,25 @@
 
       <div class="shadow p-3 mb-5 bg-white rounded">
         <h3>Peer-review content:</h3>
-        <ul>
-          {% for item in qa_list %}
-            <li class="mt-4">
-              Question:<br>
-              <div class="ml-4">
-                <b>{{ item.q }}</b>
-              </div>
+        {% if not qa_list %}
+        <b><i>All answers to the peer-review questions are only shown to the teacher. There's nothing here.</i></b>
+        {% endif %}
+          {% for answer in qa_list %}
+            <div class="mt-4 p-2" style="border: 1px dashed grey;">
+              Question: <b>{{ answer.question.question_text }}</b>
               <br>
               Answer:<br>
               <div class="ml-4">
-                {% if 'a' in item %}
-                  {{ item.a | linebreaks }}
+                {% if answer.value_text %}
+                    {{ answer.value_text | linebreaks }}
+                {% elif answer.value_choice %}
+                    {{ answer.get_choice_question_value }}
                 {% else %}
-                <a href="{{ item.f }}">Click here to download submitted file</a>
+                    <a href="{{ answer.get_file_download_url }}">Click here to download the answer file</a>
                 {% endif %}
               </div>
-            </li>
+            </div>
           {% endfor %}
-        </ul>
       </div>
 
       {% if teacher %}
