@@ -374,6 +374,28 @@ class ReviewExercise(BaseExercise):
         return self.reviewlock_set.filter(user=user,
                                           review_exercise=self)
 
+    def get_choose_type_queryset(self, user):
+        qs = self.reviewable_exercise.last_submission_by_submitters()
+
+        if not self.can_review_own_submission:
+            qs = qs.exclude(
+                    id__in=self.reviewable_exercise.submissions_by_submitter(user).values('id')
+                    )
+
+        if self.reviewable_exercise.use_groups:
+            qs = qs.order_by('submitter_group__name')
+        else:
+            qs = qs.order_by('submitter_user__name')
+
+        if self.type == ReviewExercise.GROUP:
+            group = self.course.find_studentgroup_by_user(user)
+            if group:
+                qs = qs.filter(
+                        submitter_user__email__in=group.student_usernames)
+            else:
+                qs = qs.none()
+        return qs
+
     def get_absolute_url(self):
         base_course = self.course.base_course
         return reverse('courses:exercises:review-detail', kwargs={

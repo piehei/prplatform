@@ -232,25 +232,8 @@ class ChooseForm(Form):
         exercise = kwargs.pop('exercise')
         user = kwargs.pop('user')
         super().__init__(*args, **kwargs)
-        qs = exercise.reviewable_exercise.last_submission_by_submitters()
 
-        if not exercise.can_review_own_submission:
-            qs = qs.exclude(
-                    id__in=exercise.reviewable_exercise.submissions_by_submitter(user).values('id')
-                    )
-
-        if exercise.reviewable_exercise.use_groups:
-            qs = qs.order_by('submitter_group__name')
-        else:
-            qs = qs.order_by('submitter_user__name')
-
-        if exercise.type == ReviewExercise.GROUP:
-            group = exercise.course.find_studentgroup_by_user(user)
-            if group:
-                qs = qs.filter(
-                        submitter_user__email__in=group.student_usernames)
-            else:
-                qs = qs.none()
+        qs = exercise.get_choose_type_queryset(user)
 
         self.fields['choice'].queryset = qs
         if qs.count() == 0:
