@@ -42,7 +42,7 @@
 
         {% include "./_choose_form.html" %}
 
-        {% if not reviewable %}
+        {% if not embed_dropdown_list_options_and_dl_tokens and not reviewable %}
           <div class="alert alert-warning ml-3 mr-3">
             Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
           </div>
@@ -53,7 +53,9 @@
             {% include "./_my_submission.html" %}
           {% endif %}
 
-          {% include "./_reviewable.html" with chooseMode=chooseForm %}
+          {% if not chooseForm %}
+            {% include "./_reviewable.html" with chooseMode=chooseForm %}
+          {% endif %}
 
         {% endif %}
 

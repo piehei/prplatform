@@ -4,10 +4,13 @@
 
 <div class="card card-body mb-4">
   Choose the subject of your peer-review here:
-  <form class="form-horizontal" method="get"
+  <form id="choose_form" class="form-horizontal" method="get"
                                 action="{{ object.get_absolute_url }}?mode=choose">
     {{ chooseForm | crispy }}
-    <button type="submit" class="btn btn-sm btn-primary">Choose</button>
+
+    {% if not embedded %}
+        <button id="choose_form_submit" type="submit" class="btn btn-sm btn-primary">Choose</button>
+    {% endif %}
   </form>
 
   {% if prev_review_exists %}
@@ -17,5 +20,9 @@
   </div>
   {% endif %}
 </div>
+
+    {% if embedded %}
+        {% include "./_choose_dropdown_embed.html" %}
+    {% endif %}
 
 {% endif %}

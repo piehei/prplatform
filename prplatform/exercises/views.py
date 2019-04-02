@@ -230,6 +230,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         if not hasattr(self.request, 'LTI_MODE'):
             self.request.LTI_MODE = False
+        print("LTI_MODE: ", self.request.LTI_MODE)
         return super().dispatch(request, *args, **kwargs)
 
     def _get_answer_forms(self):
@@ -287,6 +288,14 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
     def _get_choose_ctx(self, ctx, groups=False):
 
+        if self.request.LTI_MODE:
+            ctx['chooseForm'] = ChooseForm(exercise=self.object, user=self.request.user)
+            options = []
+            for opt in self.object.get_choose_type_queryset(self.request.user):
+                options.append((opt, opt.get_download_token_for(self.request.user, self.request)))
+            ctx['embed_dropdown_list_options_and_dl_tokens'] = options
+            return ctx
+
         sid = self.request.GET.get('choice')
         if sid:
             cf = ChooseForm(self.request.GET, exercise=self.object, user=self.request.user)
@@ -315,6 +324,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
+            ctx['embedded'] = True
             ctx['enrolled'] = True
             self.template_name = "exercises/reviewexercise_detail_embed.html"
 
@@ -400,6 +410,9 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         new_review_submission.save()
         self._save_modelform_answers(self.answer_forms, new_review_submission)
+
+        if self.request.LTI_MODE:
+            return _construct_aplus_response(exercise=self.object, user=self.request.user)
         return HttpResponseRedirect(new_review_submission.get_absolute_url())
 
     def _save_modelform_answers(self, forms, review_submission):
