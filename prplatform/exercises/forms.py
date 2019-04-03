@@ -131,7 +131,6 @@ class ReviewExerciseForm(ModelForm):
                   'closing_time',
                   'show_reviews_after_date',
                   'visible_to_students',
-                  'model_answer',
                   'reviewable_exercise',
                   'type',
                   'reviewlock_expiry_hours',
@@ -145,7 +144,6 @@ class ReviewExerciseForm(ModelForm):
                   ]
         widgets = {
                 'description': Textarea(attrs={'cols': 80, 'rows': 5}),
-                'model_answer': Textarea(attrs={'cols': 80, 'rows': 5}),
                 }
         labels = {
                 'type': 'Peer-review target type (who peer-reviews who)',

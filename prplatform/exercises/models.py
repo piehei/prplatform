@@ -276,9 +276,6 @@ class ReviewExercise(BaseExercise):
 
     reviewlock_expiry_hours = models.PositiveIntegerField("How many hours a reviewlock is valid", default=0)
 
-    model_answer = models.CharField("Model answer that the student may view in addition to peer-reviewable",
-                                    blank=True,
-                                    max_length=6000)
     questions = models.ManyToManyField('exercises.Question', related_name='exercises')
     question_order = ArrayField(models.IntegerField("PKs of questions"))
 
