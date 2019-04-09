@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory, TestCase
+from django.urls import resolve
 
 from django.utils import timezone
 
@@ -68,6 +69,20 @@ class ExerciseTest(TestCase):
 
         self.t1 = User.objects.get(username="teacher1")
         self.course = Course.objects.get(pk=1)
+
+    def post(self, exercise, user, payload):
+
+        request = self.factory.post(exercise.get_absolute_url(), payload)
+        request.user = user
+        self.kwargs['pk'] = exercise.pk
+        request = add_required_middlewares(request)
+        views = {
+            'SubmissionExercise': SubmissionExerciseDetailView,
+            'ReviewExercise': ReviewExerciseDetailView,
+        }
+        name = exercise.__class__.__name__
+        return views[name].as_view()(request, **self.kwargs)
+
 
     ###
     #   SubmissionExerciseCreateView
@@ -165,13 +180,8 @@ class ExerciseTest(TestCase):
 
     def test_studentCanSubmit(self):
 
-        request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': 'Submitted text'})
-        request.user = self.s1
-        self.kwargs['pk'] = 1
-        request = add_required_middlewares(request)
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertEqual(response.status_code, 302)
+        response = self.post(SubmissionExercise.objects.get(name='T1 TEXT'), self.s1, {'text': 'bla'})
+        self.assertEqual(response.status_code, 302)  # redirect to submission view
 
     def test_studentCannotSubmitMultipleTimes(self):
 
@@ -183,7 +193,7 @@ class ExerciseTest(TestCase):
                                exercise=se,
                                text=f"text by {s}").save()
 
-            request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
+            request = self.factory.get(se.get_absolute_url())
             request.user = s
             self.kwargs['pk'] = 1
 
@@ -192,13 +202,7 @@ class ExerciseTest(TestCase):
             self.assertEqual(response.context_data['disable_form'], True)
 
             # this will try to post (the form is disabled but the user could use devtools) -> should not succeed
-            request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': 'Submitted text'})
-            request.user = s
-            self.kwargs['pk'] = 1
-
-            request = add_required_middlewares(request)
-
-            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+            response = self.post(se, s, {'text': 'bla'})
             self.assertContains(response, "You cannot submit")
             self.assertEqual(response.context_data['disable_form'], True)
 
@@ -338,18 +342,13 @@ class ExerciseTest(TestCase):
                                         student_usernames=[self.s5.email, self.s6.email]),
                 ]
 
-        se = SubmissionExercise.objects.get(pk=1)
+        se = SubmissionExercise.objects.get(name='T1 TEXT')
         se.use_groups = True
         se.save()
 
         # OS for all groups
         for s, g in [(self.s1, groups[0]), (self.s3, groups[1]), (self.s5, groups[2])]:
-            request = self.factory.post('/courses/prog1/F2018/exercises/s/1/', {'text': f'text by {g.name}'})
-            request.user = s
-            self.kwargs['pk'] = 1
-            request = add_required_middlewares(request)
-            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-
+            self.post(se, s, {'text': f'text by {g.name}'})
         self.assertEqual(OriginalSubmission.objects.count(), 3)
 
         re = se.review_exercise
@@ -484,6 +483,10 @@ class ExerciseTest(TestCase):
         ReviewExerciseDetailView.as_view()(request, **self.kwargs)
         self.assertEqual(ReviewLock.objects.filter(user=self.s1).exists(), False)
 
+        # there should be locks for s3 and s4
+        self.assertEqual(ReviewLock.objects.all().count(), 2)
+        self.assertEqual(re.submissions.filter(submitter_user=self.s1).exists(), False)
+
         answers = {
             'choice': [rl_s1_reviewable_pk],
             'Q-PREFIX-2--question': ['2'],
@@ -491,18 +494,8 @@ class ExerciseTest(TestCase):
             'Q-PREFIX-1--question': ['1'],
             'Q-PREFIX-1--value_text': ['some text']
         }
-
-        request = self.factory.post('/courses/prog1/F2018/exercises/r/1/', answers)
-        request.user = self.s1
-        self.kwargs['pk'] = 1
-        request = add_required_middlewares(request)
-
-        # there should be locks for s3 and s4
-        self.assertEqual(ReviewLock.objects.all().count(), 2)
-        self.assertEqual(re.submissions.filter(submitter_user=self.s1).exists(), False)
-        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.post(re, self.s1, answers)
         self.assertEqual(re.submissions.filter(submitter_user=self.s1).exists(), True)
-
 
     def test_teacherCanSubmitMultipleTimes(self):
 
@@ -526,9 +519,9 @@ class ExerciseTest(TestCase):
 
         subs = []
         for s in self.students[:2]:
-            sub = OriginalSubmission(course=self.course, submitter_user=s, state='submitted', exercise=se,
-                                     text=f"answer by {s.username}")
-            sub.save()
+            response = self.post(se, s, {'text': f'answer by {s.username}'})
+            sub = OriginalSubmission.objects.get(pk=resolve(response.url).kwargs['sub_pk'])
+            self.assertEqual(sub.state, OriginalSubmission.SUBMITTED)
             subs.append(sub)
 
         # submissions used
@@ -602,7 +595,10 @@ class ExerciseTest(TestCase):
         request = self.factory.get(re.get_absolute_url())
         request.user = self.s1
         self.kwargs['pk'] = re.pk
-        ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        res = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+
+        # when students review each other, inlined options are not shown, only ChooseForm dropdown
+        self.assertEqual(len(res.context_data['chooseform_options_list']), 0)
 
         # should create temp user for temp-test@temp-test.com
         self.assertEqual(user_count_before + 1, User.objects.all().count())
