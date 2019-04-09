@@ -69,16 +69,22 @@ class ExerciseEmbeddedTest(TestCase):
 
     def test_embedded_templates_used(self):
 
-        request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-        request.user = self.s1
-        self.kwargs['pk'] = 1
+        views = [
+            (SubmissionExercise.objects.get(name='T1 TEXT'), SubmissionExerciseDetailView),
+            (ReviewExercise.objects.get(name='T1 TEXT REVIEW'), ReviewExerciseDetailView),
+        ]
+        for exercise, view in views:
+            request = self.factory.get(exercise.get_absolute_url())
+            request.user = self.s1
+            self.kwargs['pk'] = 1
+            response = view.as_view()(request, **self.kwargs)
+            # BASE_EMBEDDED is inlined in templates/base_embedded.html
+            self.assertNotContains(response, 'BASE_EMBEDDED')
 
-        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-
-        self.assertNotContains(response, 'BASE_EMBEDDED')
-
-        request.LTI_MODE = True
-        response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-
-        self.assertContains(response, 'BASE_EMBEDDED')
-
+            request = self.factory.get(exercise.get_absolute_url())
+            request.user = self.s1
+            self.kwargs['pk'] = 1
+            response = view.as_view()(request, **self.kwargs)
+            request.LTI_MODE = True
+            response = view.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'BASE_EMBEDDED')
