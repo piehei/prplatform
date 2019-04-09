@@ -21,7 +21,7 @@ from prplatform.exercises.models import (
 class ReviewLockManager(models.Manager):
 
     def create_rlock(self, exercise, user, group=None):
-        print(f"create_lock called for {exercise} {user} {group}")
+        #  print(f"create_lock called for {exercise} {user} {group}")
 
         if exercise.use_groups and not group:
             raise Exception("Group info doesn't match")

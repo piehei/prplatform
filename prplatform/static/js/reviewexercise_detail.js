@@ -1,20 +1,19 @@
 (function () {
   // this is shown on page initially -> click reveals confirmation box
-  var submit_button_fake = document.getElementById('review-submit');
+  var submit_button_fake = document.getElementById('review_submit_fake_button');
   // actual button that will submit
-  var submit_button_real = document.getElementById('review-submit-real-button');
+  var submit_button_real = document.getElementById('review_submit_real_button');
 
-  // if no submission can be made, don't do anything at all
-  if (submit_button_fake.hasAttribute('disabled') && !submit_button_fake.hasAttribute('embedded')) {
-    return;
-  }
 
   submit_button_fake.addEventListener('click', handleClick);
 
-  var form = document.getElementById('review-form');
-  var submit_confirmation_box = document.getElementById('review-submit-confirmation-container');
+  var form = document.getElementById('review_form');
+  var submit_confirmation_box = document.getElementById('review_submit_confirmation_container');
 
   function handleClick() {
+    if (submit_button_fake.hasAttribute('disabled')) {
+      return;
+    }
 
     // if required fields have not been filled
     for (var i=0; i < form.elements.length; i += 1){

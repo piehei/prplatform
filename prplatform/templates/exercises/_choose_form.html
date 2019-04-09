@@ -1,16 +1,28 @@
 {% if chooseForm %}
+{% load static %}
+
+<style>
+    .spinning_loader {
+      border: 10px solid #f3f3f3; /* Light grey */
+      border-top: 10px solid #3498db; /* Blue */
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+</style>
 
 {% load crispy_forms_tags %}
 
 <div class="card card-body mb-4">
-  Choose the subject of your peer-review here:
-  <form id="choose_form" class="form-horizontal" method="get"
-                                action="{{ object.get_absolute_url }}?mode=choose">
+  <strong>Choose the subject of your peer-review here:</strong>
+  <form id="choose_form" class="form-horizontal mt-2" style="max-width: 600px;">
     {{ chooseForm | crispy }}
-
-    {% if not embedded %}
-        <button id="choose_form_submit" type="submit" class="btn btn-sm btn-primary">Choose</button>
-    {% endif %}
   </form>
 
   {% if prev_review_exists %}
@@ -21,8 +33,37 @@
   {% endif %}
 </div>
 
-    {% if embedded %}
-        {% include "./_choose_dropdown_embed.html" %}
-    {% endif %}
 
+<div id="chooseform_list_loader" class="d-flex align-items-center p-2 m-2" style="display: none !important;">
+    <div class="mr-4">
+    Loading...
+    </div>
+    <div class="spinning_loader"></div>
+</div>
+
+{% comment %}
+  this renders a hidden list of peer-reviewables by other students.
+  javascript in choose_form.js will show/hide elements
+  when the chooseForm value changes. this way the page is not reloaded
+  with a query param every time the value changes.
+{% endcomment %}
+<script>
+  var EXERCISE_TYPE = "{{ object.type }}";
+</script>
+<div id="chooseform_list_container">
+    {% for option, token in chooseform_options_list %}
+        <div
+            id="chooseform_list_option_{{ option.pk }}"
+            class="card card-body mb-4 pl-4"
+            style="display:none; background: lightyellow; padding: 10px;">
+            <a href="{{ option.get_file_download_url }}{% if token %}?dl_token={{ token }}{% endif %}">
+              Click here to download the file to be peer-reviewed
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+{% block extra_js %}
+    <script src="{% static 'js/choose_form.js' %}"></script>
+{% endblock extra_js %}
 {% endif %}

@@ -224,7 +224,7 @@ class ChooseForm(Form):
     shows only those in the student's own group.
     """
 
-    choice = ModelChoiceField(queryset=None, label='', empty_label="(Nothing)")
+    choice = ModelChoiceField(queryset=None, label='', empty_label="(Nothing)", required=False)
 
     def __init__(self, *args, **kwargs):
         exercise = kwargs.pop('exercise')

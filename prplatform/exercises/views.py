@@ -230,7 +230,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         if not hasattr(self.request, 'LTI_MODE'):
             self.request.LTI_MODE = False
-        print("LTI_MODE: ", self.request.LTI_MODE)
+        #  print("LTI_MODE: ", self.request.LTI_MODE)
         return super().dispatch(request, *args, **kwargs)
 
     def _get_answer_forms(self):
@@ -286,28 +286,17 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             ctx['filecontents'] = rlock.original_submission.filecontents_or_none()
         return ctx
 
-    def _get_choose_ctx(self, ctx, groups=False):
+    def _get_choose_ctx(self, ctx):
 
-        if self.request.LTI_MODE:
-            ctx['chooseForm'] = ChooseForm(exercise=self.object, user=self.request.user)
-            options = []
+        ctx['chooseForm'] = ChooseForm(exercise=self.object, user=self.request.user)
+        options = []
+        if self.object.type == "CHOOSE":
             for opt in self.object.get_choose_type_queryset(self.request.user):
-                options.append((opt, opt.get_download_token_for(self.request.user, self.request)))
-            ctx['embed_dropdown_list_options_and_dl_tokens'] = options
-            return ctx
-
-        sid = self.request.GET.get('choice')
-        if sid:
-            cf = ChooseForm(self.request.GET, exercise=self.object, user=self.request.user)
-            if not cf.is_valid():
-                raise PermissionDenied('Dot\'t do that. Just don\'t.')
-            ctx['reviewable'] = OriginalSubmission.objects.get(id=sid)
-
-            previous_reviews = self.object.submissions_by_submitter(self.request.user)
-            if previous_reviews.filter(reviewed_submission__pk=ctx['reviewable'].pk):
-                ctx['prev_review_exists'] = True
-
-        ctx['chooseForm'] = cf if sid else ChooseForm(exercise=self.object, user=self.request.user)
+                token = None
+                if self.request.LTI_MODE:
+                    token = opt.get_download_token_for(self.request.user, self.request)
+                options.append((opt, token))
+        ctx['chooseform_options_list'] = options
         return ctx
 
     @transaction.atomic
@@ -397,7 +386,8 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
 
         cf = ChooseForm(self.request.POST, exercise=self.object, user=self.request.user)
         if not cf.is_valid():
-            raise PermissionDenied('You cannot do that. If you believe this is an error, contact pietari.heino@tut.fi')
+            # this prevents fiddling with html form fields in dev tools
+            raise PermissionDenied('You cannot do that. If you believe this is an error, contact admin.')
 
         # if ChooseForm is valid, construct a new ReviewSubmission
         reviewed_submission = OriginalSubmission.objects.get(pk=self.request.POST.get('choice'))
@@ -422,8 +412,6 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             answer.save()
 
     def _validate_forms(self):
-        print("validate_forms")
-        print(self.request.POST)
         qlist = self.object.question_list_in_order()
 
         forms = []
@@ -433,9 +421,6 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             forms.append(af)
             if not af.is_valid():
                 valid = False
-
-        print(valid)
-        print(forms)
         return valid, forms
 
     @transaction.atomic

@@ -1,19 +1,11 @@
+{% if not chooseMode %}
 <div class="collapse show" id="collapse-reviewable">
-  {% if False %}
-    <div class="alert alert-primary">
-      <strong>Teacher:</strong> reviewable submission points to
-      <a href="{{ reviewable.get_absolute_url }}">{{ reviewable }}</a>
-    </div>
-  {% endif %}
 
   <div style="background:lightyellow;"
        class="card card-body mb-4">
     <h5>To peer-review:</h5>
-      {% if chooseMode and not chooseMode.choice.value %}
 
-        Choose what to peer-review above.
-
-      {% elif not reviewable %}
+      {% if not reviewable %}
 
         Not available for some reason. Something went wrong??
 
@@ -37,4 +29,4 @@
       {% endif %}
   </div>
 </div>
-
+{% endif %}

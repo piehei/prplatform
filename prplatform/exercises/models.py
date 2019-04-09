@@ -372,6 +372,7 @@ class ReviewExercise(BaseExercise):
                                           review_exercise=self)
 
     def get_choose_type_queryset(self, user):
+        # TODO: make sure max_reviews_per_submission is honored
         qs = self.reviewable_exercise.last_submission_by_submitters()
 
         if not self.can_review_own_submission:
@@ -384,12 +385,13 @@ class ReviewExercise(BaseExercise):
         else:
             qs = qs.order_by('submitter_user__name')
 
+        # if GROUP, show members in the group -> students are supposed to review each other
         if self.type == ReviewExercise.GROUP:
             group = self.course.find_studentgroup_by_user(user)
             if group:
                 qs = qs.filter(
                         submitter_user__email__in=group.student_usernames)
-            else:
+            elif not self.course.is_teacher(user):
                 qs = qs.none()
         return qs
 
