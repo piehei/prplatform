@@ -67,6 +67,20 @@ class ExerciseEmbeddedTest(TestCase):
         self.t1 = User.objects.get(username="teacher1")
         self.course = Course.objects.get(pk=1)
 
+    def post(self, exercise, user, payload):
+
+        request = self.factory.post(exercise.get_absolute_url(), payload)
+        request.user = user
+        self.kwargs['pk'] = exercise.pk
+        request = add_required_middlewares(request)
+        request.LTI_MODE = True
+        views = {
+            'SubmissionExercise': SubmissionExerciseDetailView,
+            'ReviewExercise': ReviewExerciseDetailView,
+        }
+        name = exercise.__class__.__name__
+        return views[name].as_view()(request, **self.kwargs)
+
     def test_embedded_templates_used(self):
 
         views = [
@@ -88,3 +102,18 @@ class ExerciseEmbeddedTest(TestCase):
             request.LTI_MODE = True
             response = view.as_view()(request, **self.kwargs)
             self.assertContains(response, 'BASE_EMBEDDED')
+
+    def test_response_constructed_correctly(self):
+
+        se = SubmissionExercise.objects.get(name='T1 TEXT')
+
+        res = self.post(se, self.s1, {'broken': 'form'})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.content.decode('utf-8'), 'An error occurred.')
+
+        res = self.post(se, self.s1, {'text': 'text value'})
+        self.assertEqual(res.status_code, 200)
+        content = res.content.decode('utf-8')
+        self.assertEqual('name="max-points" value="1"' in content, True)
+        self.assertEqual('name="points" value="1"' in content, True)
+        self.assertEqual('Submission received!' in content, True)
