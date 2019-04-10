@@ -233,7 +233,7 @@ class ChooseForm(Form):
 
         qs = exercise.get_choose_type_queryset(user)
 
-        self.fields['choice'].queryset = qs
+        self.fields['choice'].queryset = qs.order_by('submitter_group__name', 'submitter_user__email')
         if qs.count() == 0:
             self.fields['choice'].help_text = "<b>Unfortunately no one has returned anything.</b> " + \
                                               "You cannot choose anything just yet."
