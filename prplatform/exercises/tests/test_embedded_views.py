@@ -66,6 +66,8 @@ class ExerciseEmbeddedTest(TestCase):
 
         self.t1 = User.objects.get(username="teacher1")
         self.course = Course.objects.get(pk=1)
+        self.se1 = SubmissionExercise.objects.get(name='T1 TEXT')
+        self.re1 = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
 
     def post(self, exercise, user, payload):
 
@@ -80,6 +82,32 @@ class ExerciseEmbeddedTest(TestCase):
         }
         name = exercise.__class__.__name__
         return views[name].as_view()(request, **self.kwargs)
+
+    def get(self, exercise, user):
+
+        request = self.factory.get(exercise.get_absolute_url())
+        request.user = user
+        request.LTI_MODE = True
+        self.kwargs['pk'] = exercise.pk
+
+        views = {
+            'SubmissionExercise': SubmissionExerciseDetailView,
+            'ReviewExercise': ReviewExerciseDetailView,
+        }
+        name = exercise.__class__.__name__
+        return views[name].as_view()(request, **self.kwargs)
+
+    def create_submission_for(self, exercise, users):
+
+        submissions = []
+        for user in users:
+            sub = OriginalSubmission(course=self.course,
+                                     submitter_user=user,
+                                     exercise=exercise,
+                                     text=f"text by {user}")
+            sub.save()
+            submissions.append(sub)
+        return submissions
 
     def test_embedded_templates_used(self):
 
@@ -103,7 +131,7 @@ class ExerciseEmbeddedTest(TestCase):
             response = view.as_view()(request, **self.kwargs)
             self.assertContains(response, 'BASE_EMBEDDED')
 
-    def test_response_constructed_correctly(self):
+    def test_submissionexercise_response_constructed_correctly(self):
 
         se = SubmissionExercise.objects.get(name='T1 TEXT')
 
@@ -117,3 +145,43 @@ class ExerciseEmbeddedTest(TestCase):
         self.assertEqual('name="max-points" value="1"' in content, True)
         self.assertEqual('name="points" value="1"' in content, True)
         self.assertEqual('Submission received!' in content, True)
+
+    def test_reviewexercise_response_constructed_correctly(self):
+
+        self.create_submission_for(self.se1, [self.s1, self.s2])
+
+        self.re1.require_original_submission = False
+        self.re1.max_submission_count = 3
+        self.re1.min_submission_count = 2
+        self.re1.save()
+
+        self.get(self.re1, self.s3)
+        self.assertEqual(ReviewLock.objects.count(), 1)
+        res = self.post(self.re1, self.s3, {'broken': 'form'})
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.content.decode('utf-8'), 'An error occurred.')
+
+        answers = {
+            'Q-PREFIX-2--question': ['2'],
+            'Q-PREFIX-2--value_choice': ['1'],
+            'Q-PREFIX-1--question': ['1'],
+            'Q-PREFIX-1--value_text': ['some text']
+        }
+
+        res = self.post(self.re1, self.s3, answers)
+        self.assertEqual(res.status_code, 200)
+        content = res.content.decode('utf-8')
+        self.assertEqual('name="max-points" value="1"' in content, True)
+        self.assertEqual('name="points" value="0"' in content, True)
+        self.assertEqual('Completed peer-review 1/2' in content, True)
+
+        self.get(self.re1, self.s3)
+        self.assertEqual(ReviewLock.objects.count(), 1)
+
+        res = self.post(self.re1, self.s3, answers)
+        self.assertEqual(res.status_code, 200)
+        content = res.content.decode('utf-8')
+        self.assertEqual('name="max-points" value="1"' in content, True)
+        self.assertEqual('name="points" value="1"' in content, True)
+        self.assertEqual('Completed peer-review 2/2' in content, True)
+        self.assertEqual('You can do more peer-reviews if you want!' in content, True)

@@ -70,8 +70,18 @@ class ExerciseTest(TestCase):
         self.t1 = User.objects.get(username="teacher1")
         self.course = Course.objects.get(pk=1)
 
-    def post(self, exercise, user, payload):
+    def get(self, exercise, user):
+        request = self.factory.get(exercise.get_absolute_url())
+        request.user = user
+        self.kwargs['pk'] = exercise.pk
+        views = {
+            'SubmissionExercise': SubmissionExerciseDetailView,
+            'ReviewExercise': ReviewExerciseDetailView,
+        }
+        name = exercise.__class__.__name__
+        return views[name].as_view()(request, **self.kwargs)
 
+    def post(self, exercise, user, payload):
         request = self.factory.post(exercise.get_absolute_url(), payload)
         request.user = user
         self.kwargs['pk'] = exercise.pk
@@ -83,6 +93,17 @@ class ExerciseTest(TestCase):
         name = exercise.__class__.__name__
         return views[name].as_view()(request, **self.kwargs)
 
+    def create_submission_for(self, exercise, users):
+
+        submissions = []
+        for user in users:
+            sub = OriginalSubmission(course=self.course,
+                                     submitter_user=user,
+                                     exercise=exercise,
+                                     text=f"text by {user}")
+            sub.save()
+            submissions.append(sub)
+        return submissions
 
     ###
     #   SubmissionExerciseCreateView
@@ -407,8 +428,6 @@ class ExerciseTest(TestCase):
         for s, target_name in [(self.s5, 'g1'), (self.s6, 'g1')]:
             request.user = s
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-            print("REVIEW LOCKS ARE")
-            print(re.reviewlocks_for(s))
             self.assertContains(response, f"text by {target_name}")
         self.assertEqual(ReviewLock.objects.all().count(), 3)
 
@@ -571,7 +590,58 @@ class ExerciseTest(TestCase):
         self.assertContains(response, "answer by student2")
         self.assertEqual(ReviewLock.objects.count(), 1)
 
-    def test_group_peer_review(self):
+    def test_reviewexercise_type_choose(self):
+
+        se = SubmissionExercise.objects.get(name="T1 TEXT")
+        re = ReviewExercise.objects.get(name="T1 TEXT REVIEW")
+
+        re.type = ReviewExercise.CHOOSE
+        re.require_original_submission = False
+        re.save()
+
+        res = self.get(re, self.s1)
+        self.assertEqual(len(res.context_data['chooseform_options_list']), 0)
+
+        subs = self.create_submission_for(se, [self.s1, self.s2, self.s3])
+
+        res = self.get(re, self.s1)
+        self.assertEqual(len(res.context_data['chooseform_options_list']), 2)
+
+        re.can_review_own_submission = True
+        re.save()
+
+        res = self.get(re, self.s1)
+        self.assertEqual(len(res.context_data['chooseform_options_list']), 3)
+
+        re.require_original_submission = True
+        re.save()
+
+        res = self.get(re, self.s4)
+        self.assertEqual('chooseform_options_list' in res.context_data, False)
+        answers = {
+            'choice': [subs[0].pk],
+            'Q-PREFIX-2--question': ['2'],
+            'Q-PREFIX-2--value_choice': ['1'],
+            'Q-PREFIX-1--question': ['1'],
+            'Q-PREFIX-1--value_text': ['some text']
+        }
+        res = self.post(re, self.s4, answers)
+        self.assertEqual('You cannot submit' in res.rendered_content, True)
+        self.assertEqual(ReviewSubmission.objects.count(), 0)
+
+        re.require_original_submission = False
+        re.save()
+
+        res = self.post(re, self.s4, answers)
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(ReviewSubmission.objects.count(), 1)
+
+        ReviewSubmission.objects.all().delete()
+        answers['choice'] = [666]
+        self.assertRaises(PermissionDenied, self.post, re, self.s4, answers)
+        self.assertEqual(ReviewSubmission.objects.count(), 0)
+
+    def test_reviewexercise_type_group(self):
 
         se = SubmissionExercise.objects.get(name="T1 TEXT")
         re = ReviewExercise.objects.get(name="T1 TEXT REVIEW")

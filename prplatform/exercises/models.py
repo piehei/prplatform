@@ -331,6 +331,9 @@ class ReviewExercise(BaseExercise):
         return all_reviews
 
     def can_submit(self, user):
+
+        # TODO: RL found / expiry hours ok
+
         if self.is_teacher(user):
             return True, None
 

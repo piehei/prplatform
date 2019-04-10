@@ -437,16 +437,16 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
             return self.render_to_response(ctx)
 
         valid, self.answer_forms = self._validate_forms()
-        if not valid:
+        if valid:
+            if self.object.type == ReviewExercise.RANDOM:
+                return self._post_random(ctx)
+            elif self.object.type in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
+                return self._post_choose(ctx)
+        else:
+            if self.request.LTI_MODE:
+                return HttpResponse('An error occurred.')
             ctx['forms'] = self.answer_forms
             return self.render_to_response(ctx)
-
-        if self.object.type == ReviewExercise.RANDOM:
-            return self._post_random(ctx)
-
-        elif self.object.type in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
-            return self._post_choose(ctx)
-
 
 ###
 #
