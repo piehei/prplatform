@@ -2,7 +2,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
-from .models import User
+from .models import User, StudentGroup
 
 
 class MyUserChangeForm(UserChangeForm):
@@ -37,3 +37,8 @@ class MyUserAdmin(AuthUserAdmin):
     fieldsets = (("User Profile", {"fields": ("name",)}),) + AuthUserAdmin.fieldsets
     list_display = ("username", "email", "name", "is_superuser")
     search_fields = ["email", "username", "name"]
+
+
+@admin.register(StudentGroup)
+class StudentGroupModelAdmin(admin.ModelAdmin):
+    fields = ('course', 'name', 'student_usernames')
