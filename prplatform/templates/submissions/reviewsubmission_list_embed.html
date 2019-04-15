@@ -8,10 +8,14 @@
     <div class="col-sm-12">
 
       <div class="p-3 mb-5">
-        <h2>Peer-reviews from other students to you</h2>
-        {% if teacher %}
-          OPETTAJALLE ERITYISTEKSTI TODO
-        {% endif %}
+        <h2>Peer-reviews for
+                {% if exercise.reviewable_exercise.use_groups %}
+                    your group
+                {% else %}
+                    you
+                {% endif %}
+        </h2>
+
 
       {% if reviews_available_date_in_future %}
       Peer-reviews will be available after {{ exercise.show_reviews_after_date }}<br>
