@@ -196,7 +196,7 @@ class DownloadSubmissionView(View):
         user = self.request.user
         dl_token = self.request.GET.get('dl_token', None)
         if user.is_anonymous and not dl_token:
-            raise PermissionDenied
+            raise PermissionDenied('Anonymous users cannot dl without a token.')
 
         dtype = 'answer' if self.request.GET.get('type') == 'answer' else 'osub'
 
@@ -246,7 +246,8 @@ class DownloadSubmissionView(View):
                             not obj.question.hide_from_receiver
 
             if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
-                raise PermissionDenied
+                print(f'teacher: {teacher}, owner: {owner}, reviewer: {reviewer}, receiver: {receiver}, enrolled_can_access: {enrolled_can_access}')  # noqa
+                raise PermissionDenied('Download access is not allowed. If you think this is an error, contact admin.')
 
         filename = file_itself.name.split('/')[-1]
         response = HttpResponse(file_itself, content_type='text/plain')
