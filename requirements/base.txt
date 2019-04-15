@@ -7,14 +7,14 @@ redis>=3.0.1  # https://github.com/antirez/redis
 
 # Django
 # ------------------------------------------------------------------------------
-django==2.1.7  # pyup: < 2.1  # https://www.djangoproject.com/
+django==2.1.8  # pyup: < 2.1  # https://www.djangoproject.com/
 django-environ==0.4.5  # https://github.com/joke2k/django-environ
 django-model-utils==3.1.2  # https://github.com/jazzband/django-model-utils
 django-allauth==0.39.1  # https://github.com/pennersr/django-allauth
 django-crispy-forms==1.7.2  # https://github.com/django-crispy-forms/django-crispy-forms
 django-redis==4.10.0  # https://github.com/niwinz/django-redis
 
-pyyaml==3.13
+pyyaml==5.1
 
 git+https://github.com/odeoncg/django-pygments.git
 
