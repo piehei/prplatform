@@ -300,3 +300,4 @@ config/production.wsgi
 production.wsgi
 config/production_wsgi.py
 prplatform/users/middleware
+local_settings.py

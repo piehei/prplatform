@@ -255,3 +255,10 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "sn": (True, "last_name"),
     "mail": (False, "email"),
 }
+
+try:
+    from local_settings import *
+    print("local_settings imported!")
+except ImportError:
+    print("local_settings not found ...")
+    pass
