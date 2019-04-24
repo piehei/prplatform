@@ -1,17 +1,13 @@
-
-
-#
 # SOME OF THE PACKAGES LISTED HERE come from suggestions of Cookiecutter
 # Docker deployment. You might not need all of these if you deploy
 # in some different manner, ie. run the app directly with uwsgi or so.
-#
 
 
 -r base.txt
 
 gevent==1.4.0
 gunicorn==19.9.0  # https://github.com/benoitc/gunicorn
-boto3==1.9.134  # pyup: update minor  # https://github.com/boto/boto3
+# boto3==1.9.134  # pyup: update minor  # https://github.com/boto/boto3
 psycopg2==2.8.2 --no-binary psycopg2  # https://github.com/psycopg/psycopg2
 raven==6.10.0  # https://github.com/getsentry/raven-python
 
