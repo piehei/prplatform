@@ -11,26 +11,26 @@ import datetime
 import pytz
 
 from prplatform.users.models import (
-        StudentGroup,
-        User,
-    )
+    StudentGroup,
+    User,
+)
 from prplatform.courses.models import Course
 
 from prplatform.submissions.models import (
-        OriginalSubmission,
-        ReviewSubmission,
-    )
+    OriginalSubmission,
+    ReviewSubmission,
+)
 from prplatform.submissions.reviewlock_models import ReviewLock
 from prplatform.submissions.views import ReviewSubmissionListView
 from prplatform.exercises.views import (
-        SubmissionExerciseCreateView,
-        SubmissionExerciseDetailView,
-        ReviewExerciseDetailView,
-    )
+    SubmissionExerciseCreateView,
+    SubmissionExerciseDetailView,
+    ReviewExerciseDetailView,
+)
 from prplatform.exercises.models import (
-        ReviewExercise,
-        SubmissionExercise,
-    )
+    ReviewExercise,
+    SubmissionExercise,
+)
 from prplatform.exercises.deviation_models import SubmissionExerciseDeviation
 
 
@@ -70,6 +70,9 @@ class ExerciseTest(TestCase):
         self.t1 = User.objects.get(username="teacher1")
         self.course = Course.objects.get(pk=1)
 
+        self.SE1 = SubmissionExercise.objects.get(name='T1 TEXT')
+        self.RE1 = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
+
     def get(self, exercise, user):
         request = self.factory.get(exercise.get_absolute_url())
         request.user = user
@@ -93,7 +96,9 @@ class ExerciseTest(TestCase):
         name = exercise.__class__.__name__
         return views[name].as_view()(request, **self.kwargs)
 
-    def create_submission_for(self, exercise, users):
+    def create_originalsubmission_for(self, exercise, users):
+        if type(users) is not list:
+            users = [users]
 
         submissions = []
         for user in users:
@@ -128,134 +133,98 @@ class ExerciseTest(TestCase):
         except Exception:
             self.fail("Teacher should be allowed to access")
 
-    def test_exerciseOpen(self):
+    def test_exercise_open(self):
+        res = self.get(self.SE1, self.s1)
+        self.assertNotContains(res, "This exercise is closed.")
+        self.assertContains(res, "Submit")
+        self.assertContains(res, "<form")
 
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/1/')
-        request.user = self.s1
-        self.kwargs['pk'] = 1
+    def test_exercise_will_open(self):
 
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
+        self.SE1.opening_time = timezone.now()+timezone.timedelta(hours=1)
+        self.SE1.closing_time = timezone.now()+timezone.timedelta(hours=2)
+        self.SE1.save()
+        res = self.get(self.SE1, self.s1)
+        self.assertContains(res, "This exercise will open on")
+        self.assertEqual(res.context_data['disable_form'], True)
 
-        self.assertNotContains(response, "This exercise is closed.")
-        self.assertContains(response, "Submit")
-        self.assertContains(response, "<form")
+    def test_exercise_closed(self):
+        self.SE1.opening_time = timezone.now()-timezone.timedelta(hours=2)
+        self.SE1.closing_time = timezone.now()-timezone.timedelta(hours=1)
+        self.SE1.save()
+        res = self.get(self.SE1, self.s1)
+        self.assertContains(res, "This exercise was closed on")
+        self.assertEqual(res.context_data['disable_form'], True)
 
-    def test_exerciseOpens(self):
+    def test_deadline_extension_allows_submitting(self):
 
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = self.s1
-        self.kwargs['pk'] = 4
+        self.SE1.opening_time = "2005-01-01 10:10+03:00"
+        self.SE1.closing_time = "2006-01-01 10:10+03:00"
+        self.SE1.save()
 
-        se = SubmissionExercise.objects.get(pk=4)
-        se.opening_time = "2020-01-01 10:10+03:00"
-        se.closing_time = "2021-01-01 10:10+03:00"
-        se.save()
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise will open on")
-        self.assertEqual(response.context_data['disable_form'], True)
-
-    def test_exerciseClosed(self):
-
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = self.s1
-        self.kwargs['pk'] = 4
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise was closed on")
-        self.assertEqual(response.context_data['disable_form'], True)
-
-    def test_deadlineExtensionAllowsSubmitting(self):
-
-        request = self.factory.get('/courses/prog1/F2018/exercises/s/4/')
-        request.user = self.s1
-        self.kwargs['pk'] = 4
-
-        se = SubmissionExercise.objects.get(pk=4)
-        se.opening_time = "2005-01-01 10:10+03:00"
-        se.closing_time = "2006-01-01 10:10+03:00"
-        se.save()
-
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise was closed on")
-        self.assertEqual(response.context_data['disable_form'], True)
+        res = self.get(self.SE1, self.s1)
+        self.assertContains(res, "This exercise was closed on")
+        self.assertEqual(res.context_data['disable_form'], True)
 
         # student *SHOULD* have an extension
-        extension = SubmissionExerciseDeviation(exercise=se, user=self.s1,
+        extension = SubmissionExerciseDeviation(exercise=self.SE1, user=self.s1,
                                                 new_deadline=datetime.datetime(2050, 1, 1, tzinfo=pytz.UTC))
         extension.save()
 
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise was closed on")
-        self.assertContains(response, "However, you have an extended deadline until")
-        self.assertEqual(response.context_data['disable_form'], False)
+        res = self.get(self.SE1, self.s1)
+        self.assertContains(res, "This exercise was closed on")
+        self.assertContains(res, "However, you have an extended deadline until")
+        self.assertEqual(res.context_data['disable_form'], False)
 
         # student *SHOULD NOT* have an extension
         extension.new_deadline = "2006-01-01 10:10+03:00"
         extension.save()
 
-        response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "This exercise was closed on")
-        self.assertNotContains(response, "However, you have an extended deadline until")
-        self.assertEqual(response.context_data['disable_form'], True)
+        res = self.get(self.SE1, self.s1)
+        self.assertContains(res, "This exercise was closed on")
+        self.assertNotContains(res, "However, you have an extended deadline until")
+        self.assertEqual(res.context_data['disable_form'], True)
 
-    def test_studentCanSubmit(self):
+    def test_student_can_submit(self):
 
-        response = self.post(SubmissionExercise.objects.get(name='T1 TEXT'), self.s1, {'text': 'bla'})
-        self.assertEqual(response.status_code, 302)  # redirect to submission view
+        res = self.post(self.SE1, self.s1, {'text': 'bla'})
+        self.assertEqual(res.status_code, 302)  # redirect to submission view
 
     def test_studentCannotSubmitMultipleTimes(self):
 
         # student cannot submit multiple times SubmissionExercises
-        se = SubmissionExercise.objects.get(pk=1)
         for s in [self.s1, self.s2]:
-            OriginalSubmission(course=self.course,
-                               submitter_user=s,
-                               exercise=se,
-                               text=f"text by {s}").save()
 
-            request = self.factory.get(se.get_absolute_url())
-            request.user = s
-            self.kwargs['pk'] = 1
+            self.create_originalsubmission_for(self.SE1, s)
 
-            response = SubmissionExerciseDetailView.as_view()(request, **self.kwargs)
-            self.assertContains(response, "You have reached the maximum number of submissions")
-            self.assertEqual(response.context_data['disable_form'], True)
+            res = self.get(self.SE1, s)
+            self.assertContains(res, "You have reached the maximum number of submissions")
+            self.assertEqual(res.context_data['disable_form'], True)
 
             # this will try to post (the form is disabled but the user could use devtools) -> should not succeed
-            response = self.post(se, s, {'text': 'bla'})
-            self.assertContains(response, "You cannot submit")
-            self.assertEqual(response.context_data['disable_form'], True)
+            res = self.post(self.SE1, s, {'text': 'bla'})
+            self.assertContains(res, "You cannot submit")
+            self.assertEqual(res.context_data['disable_form'], True)
 
         self.assertEqual(OriginalSubmission.objects.count(), 2)
 
         # this will create two reviewlocks since both loaded the page
-        re = ReviewExercise.objects.get(reviewable_exercise=se)
         for s in [self.s1, self.s2]:
-            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-            request.user = s
-            self.kwargs['pk'] = re.pk
-
-            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-            self.assertContains(response, f"text by {self.s1 if s == self.s2 else self.s2}")
+            res = self.get(self.RE1, s)
+            self.assertContains(res, f"text by {self.s1 if s == self.s2 else self.s2}")
 
         self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # after submissions are created, no more reviews can be made
         for s in [self.s1, self.s2]:
-            rlock = ReviewLock.objects.get(user=s)
 
             rsub = ReviewSubmission(course=self.course,
-                                    exercise=re,
+                                    exercise=self.RE1,
                                     submitter_user=s,
-                                    reviewed_submission=rlock.original_submission)
+                                    reviewed_submission=ReviewLock.objects.get(user=s).original_submission)
             rsub.save_and_destroy_lock()
-
-            request = self.factory.get('/courses/prog1/F2018/exercises/r/1/')
-            request.user = s
-            self.kwargs['pk'] = re.pk
-            response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-            self.assertContains(response, 'You have already submitted your peer-reviews to this exercise.')
+            res = self.get(self.RE1, s)
+            self.assertContains(res, 'You have already submitted your peer-reviews to this exercise.')
 
     def test_reviewlocks_created_correctly(self):
 
@@ -361,7 +330,7 @@ class ExerciseTest(TestCase):
             StudentGroup.objects.create(course=self.course,
                                         name="g3",
                                         student_usernames=[self.s5.email, self.s6.email]),
-                ]
+        ]
 
         se = SubmissionExercise.objects.get(name='T1 TEXT')
         se.use_groups = True
@@ -602,7 +571,7 @@ class ExerciseTest(TestCase):
         res = self.get(re, self.s1)
         self.assertEqual(len(res.context_data['chooseform_options_list']), 0)
 
-        subs = self.create_submission_for(se, [self.s1, self.s2, self.s3])
+        subs = self.create_originalsubmission_for(se, [self.s1, self.s2, self.s3])
 
         res = self.get(re, self.s1)
         self.assertEqual(len(res.context_data['chooseform_options_list']), 2)
@@ -690,11 +659,11 @@ class ExerciseTest(TestCase):
         self.assertEqual(1, orig_subs_for_temp_user.count())
 
         resub = ReviewSubmission(
-                    course=re.course,
-                    exercise=re,
-                    submitter_user=self.s1,
-                    reviewed_submission=orig_subs_for_temp_user.first(),
-                )
+            course=re.course,
+            exercise=re,
+            submitter_user=self.s1,
+            reviewed_submission=orig_subs_for_temp_user.first(),
+        )
         resub.save()
 
         # create actual user, this basically simulates sihbboleth login in a future time
