@@ -37,6 +37,10 @@ class Deviation(TimeStampedModel):
             'pk': self.pk
             })
 
+    def save(self, *args, **kwargs):
+        if self.new_deadline is None:
+            self.new_deadline = self.exercise.closing_time
+        super().save(*args, **kwargs)
 
 class SubmissionExerciseDeviation(Deviation):
 
