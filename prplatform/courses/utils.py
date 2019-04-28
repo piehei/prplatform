@@ -157,7 +157,7 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
                   'text_answer_lists': []
                   }
         d[key]['reviews_by'] = re.last_reviews_by(orig_sub.submitter_user)
-        d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user)
+        d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user, include_hidden=True)
         d[key]['reviews_for_pks'] = d[key]['reviews_for'].values_list('pk', flat=True)
 
     HEADERS.append('Submitter')

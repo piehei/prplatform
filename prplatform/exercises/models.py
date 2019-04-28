@@ -287,9 +287,9 @@ class ReviewExercise(BaseExercise):
             return True
         return False
 
-    def last_reviews_for(self, user):
+    def last_reviews_for(self, user, include_hidden=False):
 
-        if self.show_reviews_only_to_teacher:
+        if self.show_reviews_only_to_teacher and not include_hidden:
             return self.submissions.none()
 
         all_reviews = self.submissions.none()
