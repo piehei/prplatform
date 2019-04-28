@@ -1,7 +1,6 @@
 from django.urls import reverse
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-from django.conf import settings
 
 from prplatform.core.models import TimeStampedModel
 from prplatform.users.models import User
@@ -117,16 +116,8 @@ class Course(TimeStampedModel):
         if user.is_anonymous:
             return None
 
-        candidates = [user.email]
-
-        if len(settings.ADDITIONAL_GROUP_EMAIL_MATCHING_DOMAINS) > 0:
-            # if local_settings has configured more domains to be matched against,
-            # return a group if any combination of email-first-part@domain is found.
-            # this is useful if different systems in an organization return different
-            # emails for the same user.
-            name, domain = user.email.split("@")
-            candidates += [f"{name}@{domain}" for domain in settings.ADDITIONAL_GROUP_EMAIL_MATCHING_DOMAINS]
-
+        from .utils import get_email_candidates
+        candidates = get_email_candidates(user)
         return self.student_groups.filter(student_usernames__overlap=[candidates]).first()
 
 
