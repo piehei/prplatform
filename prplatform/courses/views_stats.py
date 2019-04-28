@@ -64,11 +64,8 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                 row = []
 
                 row += [osr['orig_sub'].submitter]
-
-                row += [",".join([x.reviewed_submission.submitter for x in osr['reviews_by'] if x])]
-
-                row += [",".join([x.submitter for x in osr['reviews_for'] if x])]
-
+                row += ["|".join([str(x.reviewed_submission.submitter) for x in osr['reviews_by'] if x])]
+                row += ["|".join([str(x.submitter) for x in osr['reviews_for'] if x])]
                 row += [round(avg, 2) if avg is not None else "" for avg in osr['numerical_avgs']]
 
                 # 'text_answer_lists' is a list of padded lists
