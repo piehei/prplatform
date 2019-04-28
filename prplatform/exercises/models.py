@@ -71,9 +71,6 @@ class BaseExercise(TimeStampedModel):
             return self.max_submission_count
         return self.max_submission_count + deviation.extra_submissions
 
-    def my_submissions(self, user):
-        return self.submissions.filter(submitter=user)
-
     def submissions_by_submitter(self, user):
 
         if user.is_anonymous or not self.course.is_enrolled(user):
