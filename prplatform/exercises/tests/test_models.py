@@ -34,7 +34,7 @@ class ExerciseTestCase(TestCase):
                                      text=f"text by {user}")
             sub.save()
             submissions.append(sub)
-        return submissions
+        return submissions if len(submissions) > 1 else submissions[0]
 
     def create_reviewsubmission_for(self, exercise, reviewer=None, reviewed=None, osubmission=None, create_original=False):
         if osubmission and reviewer:
@@ -46,7 +46,7 @@ class ExerciseTestCase(TestCase):
                     raise Exception("OriginalSubmission not found but create_original=False")
             else:
                 osub_reviewed = self.create_originalsubmission_for(
-                    exercise.reviewable_exercise, reviewed)[0]
+                    exercise.reviewable_exercise, reviewed)
             return osub_reviewed, ReviewSubmission.objects.create(course=self.course, exercise=exercise, reviewed_submission=osub_reviewed, submitter_user=reviewer)
 
     def test_last_submission_by_submitters(self):
@@ -120,6 +120,15 @@ class ExerciseTestCase(TestCase):
         self.se.use_groups = False
         self.se.save()
 
+        osub = self.create_originalsubmission_for(self.se, self.student2)
+        self.assertEqual(self.se.can_submit(self.student2), False)
+
+        deviation = SubmissionExerciseDeviation.objects.create(user=self.student2, exercise=self.se,
+                                                               extra_submissions=1)
+        self.assertEqual(self.se.can_submit(self.student2), True)
+        deviation.delete()
+        osub.delete()
+
         self.se.opening_time = timezone.now()+timezone.timedelta(hours=1)
         self.se.closing_time = timezone.now()+timezone.timedelta(hours=2)
         self.se.save()
@@ -148,7 +157,25 @@ class ExerciseTestCase(TestCase):
             self.re, reviewer=self.student2, reviewed=self.student1, create_original=True)
         self.assertEqual(self.re.can_submit(self.student2), (False, 'reviews_done'))
 
+        ReviewExerciseDeviation(exercise=self.re, user=self.student2, extra_submissions=1).save()
+        self.assertEqual(self.re.can_submit(self.student2), (True, None))
+        ReviewExerciseDeviation.objects.all().delete()
         rsub.delete()
+
+        self.re.opening_time = timezone.now()+timezone.timedelta(hours=1)
+        self.re.closing_time = timezone.now()+timezone.timedelta(hours=2)
+        self.re.save()
+        self.assertEqual(self.re.can_submit(self.student2), (False, 'not_open'))
+
+        self.re.opening_time = timezone.now()-timezone.timedelta(hours=2)
+        self.re.closing_time = timezone.now()-timezone.timedelta(hours=1)
+        self.re.save()
+        self.assertEqual(self.re.can_submit(self.student2), (False, 'not_open'))
+
+        ReviewExerciseDeviation(exercise=self.re, user=self.student2,
+                                new_deadline=timezone.now()+timezone.timedelta(hours=10)).save()
+        self.assertEqual(self.re.can_submit(self.student2), (True, None))
+        ReviewExerciseDeviation.objects.all().delete()
 
         self.re.use_groups = True
         self.re.save()
