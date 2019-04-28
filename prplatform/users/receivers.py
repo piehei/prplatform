@@ -15,6 +15,7 @@ from django.dispatch import receiver
 from django_lti_login.signals import lti_login_authenticated
 
 from prplatform.courses.models import Course, Enrollment
+from prplatform.courses.utils import get_email_candidates
 from prplatform.users.models import User
 
 logger = logging.getLogger('users.receivers')
@@ -22,10 +23,21 @@ logger = logging.getLogger('users.receivers')
 
 @receiver(user_logged_in)
 def change_original_submission_submitters(sender, **kwargs):
+    """
+        when reviewexervise of type GROUP where stundents review each other is used,
+        it might happen that someone has never logged in before another user wants
+        to create a review for that particular user. in that case, a temporary
+        user account it automatically created. if we can find a temp user for
+        newly logged in user, move all submissions in that user's name
+        to this logged in user and destroy the temp user.
+    """
 
     request = kwargs.get('request', None)
     user = kwargs.get('user', None)
-    temp_user = User.objects.filter(email=user.email, temporary=True).first()
+
+    # user's email + any valid email domains defined in local_settings.py
+    candidates = get_email_candidates(user)
+    temp_user = User.objects.filter(email__in=candidates, temporary=True).first()
 
     if request and user and temp_user:
 
@@ -42,9 +54,9 @@ def change_original_submission_submitters(sender, **kwargs):
                 logger.info(f"enrolled to {sub.course}")
 
         # TODO: if this implementation holds, check there's no concurrency bugs
-        logger.info(f"Original submissions by {temp_user} have been modified to be"
-                    f"submitted by {user}")
-        logger.info(f"Deleting user {temp_user}")
+        logger.info(f"Original submissions by {temp_user}({temp_user.username}/{temp_user.email}) have been modified to be "
+                    f"submitted by {user}({user.username}/{user.email}")
+        logger.info(f"Deleting temp_user {temp_user}")
 
         ret = temp_user.delete()
         logger.info(ret)
@@ -76,10 +88,10 @@ def store_course_info(sender, **kwargs):
     user = kwargs.get('user', None)
     oauth = getattr(request, 'oauth', None)
     if request and user and oauth:
-        course_lms = getattr(oauth, 'tool_consumer_instance_name', None) # Example LMS
-        course_id = getattr(oauth, 'context_id', None) # lms.example.com/it-101/
-        course_label = getattr(oauth, 'context_label', None) # IT-101
-        course_name = getattr(oauth, 'context_title', None) # Basics on IT
+        course_lms = getattr(oauth, 'tool_consumer_instance_name', None)  # Example LMS
+        course_id = getattr(oauth, 'context_id', None)  # lms.example.com/it-101/
+        course_label = getattr(oauth, 'context_label', None)  # IT-101
+        course_name = getattr(oauth, 'context_title', None)  # Basics on IT
 
         if course_id is None or course_label is None or course_name is None:
             # Invalid lti login due to missing information
