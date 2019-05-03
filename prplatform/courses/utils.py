@@ -6,18 +6,18 @@ from prplatform.users.models import StudentGroup
 from prplatform.submissions.models import Answer
 
 
-def get_email_candidates(user):
+def get_email_candidates(user_or_email):
     # if local_settings has configured more domains to be matched against,
     # return a group if any combination of email-first-part@domain is found.
     # this is useful if different systems in an organization return different
     # emails for the same user.
     # if domains are ["domain2.com", "domain3.com"] and the user's email is
     # "user@domain1.com", this returns a list of ["user@domain1.com", "user@domain2.com", "user@domain3.com"]
-
-    candidates = [user.email]
+    email = user_or_email if type(user_or_email) is str else user_or_email.email
+    candidates = [email]
 
     if len(settings.ADDITIONAL_GROUP_EMAIL_MATCHING_DOMAINS) > 0:
-        name, domain = user.email.split("@")
+        name, domain = email.split("@")
         candidates += [f"{name}@{domain}" for domain in settings.ADDITIONAL_GROUP_EMAIL_MATCHING_DOMAINS]
 
     return candidates

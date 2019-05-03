@@ -1,5 +1,10 @@
+import logging
+
 from prplatform.users.models import User
 from prplatform.submissions.models import OriginalSubmission
+from prplatform.courses.utils import get_email_candidates
+
+logger = logging.getLogger('exercise.utils')
 
 
 def prepare_group_review_exercise_for(exercise, user):
@@ -30,9 +35,11 @@ def prepare_group_review_exercise_for(exercise, user):
 
     for student_email in group.student_usernames:
 
-        student = User.objects.filter(email=student_email).first()
+        candidates = get_email_candidates(student_email)
+        student = User.objects.filter(email__in=candidates).first()
 
         if not student:
+            logger.info(f'ReviewExericse (pk={exercise.pk}): User not found for {candidates} -> creating temp user in perpare_group_review_exercise_for')
             student = User(username=f"temp-{student_email}",
                            email=student_email,
                            temporary=True)
