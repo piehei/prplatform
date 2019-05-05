@@ -12,21 +12,21 @@ from prplatform.exercises.models import SubmissionExercise, ReviewExercise
 from prplatform.exercises.question_models import Question
 
 from prplatform.submissions.models import (
-        Answer,
-        OriginalSubmission,
-        ReviewSubmission,
-        DownloadToken,
-    )
+    Answer,
+    OriginalSubmission,
+    ReviewSubmission,
+    DownloadToken,
+)
 
 from prplatform.submissions.reviewlock_models import ReviewLock
 from prplatform.submissions.views import (
-        DownloadSubmissionView,
-        OriginalSubmissionDeleteView,
-        OriginalSubmissionListView,
-        ReviewSubmissionListView,
-        ReviewSubmissionDetailView,
-        ReviewSubmissionDeleteView,
-    )
+    DownloadSubmissionView,
+    OriginalSubmissionDeleteView,
+    OriginalSubmissionListView,
+    ReviewSubmissionListView,
+    ReviewSubmissionDetailView,
+    ReviewSubmissionDeleteView,
+)
 
 
 class SubmissionsTest(TestCase):
@@ -73,7 +73,8 @@ class SubmissionsTest(TestCase):
 
         OriginalSubmission.objects.all().delete()
 
-        g1 = StudentGroup.objects.create(course=self.course, name='group1', student_usernames=['student1@prp.fi', 'student2@prp.fi'])
+        g1 = StudentGroup.objects.create(course=self.course, name='group1', student_usernames=[
+                                         'student1@prp.fi', 'student2@prp.fi'])
         g2 = StudentGroup.objects.create(course=self.course, name='group2', student_usernames=['student3@prp.fi'])
 
         exercise.use_groups = True
@@ -186,7 +187,7 @@ class SubmissionsTest(TestCase):
 
         for user in self.students[:2]:
             revsub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
-                                                            .exclude(submitter_user=user).first()
+                .exclude(submitter_user=user).first()
             ReviewSubmission(course=self.course, submitter_user=user,
                              exercise=rev_exercise, reviewed_submission=revsub).save()
 
@@ -255,7 +256,7 @@ class SubmissionsTest(TestCase):
         self.assertEqual(response.context_data['object_list'].count(), 0)
         self.assertContains(response, 'will be available after')
 
-    def test_ReviewSubPagePermissionsWork(self):
+    def test_reviewsubmission_detail_answers(self):
 
         sub_exercise = SubmissionExercise.objects.get(name='T1 TEXT')
         rev_exercise = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
@@ -270,7 +271,7 @@ class SubmissionsTest(TestCase):
         temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
         for user in self.students[:2]:
             reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
-                                                            .exclude(submitter_user=user).first()
+                .exclude(submitter_user=user).first()
             rs = ReviewSubmission.objects.create(course=self.course, submitter_user=user,
                                                  exercise=rev_exercise, reviewed_submission=reviewed_sub)
             rs_objects.append(rs)
@@ -304,6 +305,68 @@ class SubmissionsTest(TestCase):
         response = ReviewSubmissionDetailView.as_view()(request, **self.kwargs)
         self.assertContains(response, "juupase juu")
         self.assertNotContains(response, "Score the work")
+
+    def test_reviewsubmission_detail_permissions(self):
+
+        sub_exercise = SubmissionExercise.objects.get(name='T1 TEXT')
+        rev_exercise = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
+        rev_exercise.question_order += [3]
+        rev_exercise.save()
+
+        for user in self.students[:2]:
+            OriginalSubmission(course=self.course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
+
+        rs_objects = []
+
+        temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
+        for user in self.students[:2]:
+            reviewed_sub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
+                .exclude(submitter_user=user).first()
+            rs = ReviewSubmission.objects.create(course=self.course, submitter_user=user,
+                                                 exercise=rev_exercise, reviewed_submission=reviewed_sub)
+            rs_objects.append(rs)
+            Answer(submission=rs, value_text="juupase juu", question=Question.objects.get(pk=1)).save()
+            Answer(submission=rs, value_choice="1", question=Question.objects.get(pk=2)).save()
+            Answer(submission=rs, uploaded_file=temp_file, question=Question.objects.get(pk=3)).save()
+
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/1/')
+        request.user = self.s2
+        self.kwargs['pk'] = rev_exercise.pk
+        self.kwargs['sub_pk'] = rs_objects[0].pk
+
+        # student cannot view feedback if available date in the future
+        rev_exercise.show_reviews_after_date = timezone.now() + timezone.timedelta(hours=1)
+        rev_exercise.save()
+        self.assertRaises(PermissionDenied,
+                          ReviewSubmissionDetailView.as_view(), request, **self.kwargs)
+        rev_exercise.show_reviews_after_date = None
+        rev_exercise.save()
+        self.assertEqual(ReviewSubmissionDetailView.as_view()(request, **self.kwargs).status_code, 200)
+
+        # student cannot view feedback if requirements not met
+        rev_exercise.min_submission_count = 999
+        rev_exercise.save()
+        self.assertRaises(PermissionDenied,
+                          ReviewSubmissionDetailView.as_view(), request, **self.kwargs)
+        rev_exercise.min_submission_count = 0
+        rev_exercise.save()
+        self.assertEqual(ReviewSubmissionDetailView.as_view()(request, **self.kwargs).status_code, 200)
+
+        # receiver *and* owner (feedback to self) can access
+        rev_exercise.show_reviews_after_date = timezone.now() + timezone.timedelta(hours=1)
+        rev_exercise.save()
+        rs_objects[0].submitter_user = self.s2
+        rs_objects[0].save()
+        rs_objects[0].reviewed_submission.submitter_user = self.s2
+        rs_objects[0].reviewed_submission.save()
+        self.assertEqual(ReviewSubmissionDetailView.as_view()(request, **self.kwargs).status_code, 200)
+        rev_exercise.show_reviews_after_date = None
+        rev_exercise.save()
+
+        # third party cannot see anything
+        request.user = self.s3
+        self.assertRaises(PermissionDenied,
+                          ReviewSubmissionDetailView.as_view(), request, **self.kwargs)
 
     def test_ReviewSubmissionDetail_shows_correct_info(self):
 
@@ -446,10 +509,10 @@ class SubmissionsTest(TestCase):
         rev.save()
 
         answer_with_file = Answer(
-                question=Question.objects.get(pk=3),
-                submission=rev,
-                uploaded_file=temp_file,
-                )
+            question=Question.objects.get(pk=3),
+            submission=rev,
+            uploaded_file=temp_file,
+        )
         answer_with_file.save()
 
         view_request = self.factory.get(exercise.get_absolute_url() + "?some=queryparams")
@@ -539,16 +602,17 @@ class SubmissionsTest(TestCase):
         r_exercise.question_order = ['3']
         r_exercise.save()
 
-        rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub, submitter_user=self.s2, exercise=r_exercise)
+        rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub,
+                                   submitter_user=self.s2, exercise=r_exercise)
         rev_sub.save()
 
         temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
 
         answer_with_file = Answer(
-                question=Question.objects.get(pk=3),
-                submission=rev_sub,
-                uploaded_file=temp_file,
-                )
+            question=Question.objects.get(pk=3),
+            submission=rev_sub,
+            uploaded_file=temp_file,
+        )
         answer_with_file.save()
 
         request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
@@ -585,17 +649,18 @@ class SubmissionsTest(TestCase):
         r_exercise.question_order = ['3']
         r_exercise.save()
 
-        rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub, submitter_user=self.s2, exercise=r_exercise)
+        rev_sub = ReviewSubmission(course=self.course, reviewed_submission=sub,
+                                   submitter_user=self.s2, exercise=r_exercise)
         rev_sub.save()
 
         temp_file = SimpleUploadedFile(name='lorem_ipsum.txt', content=bytearray('jada jada', 'utf-8'))
         question = Question.objects.get(pk=3)
 
         answer_with_file = Answer(
-                question=question,
-                submission=rev_sub,
-                uploaded_file=temp_file,
-                )
+            question=question,
+            submission=rev_sub,
+            uploaded_file=temp_file,
+        )
         answer_with_file.save()
 
         request = self.factory.get(f'/courses/prog1/F2018/submissions/download/{answer_with_file.pk}/?type=answer')
@@ -611,11 +676,11 @@ class SubmissionsTest(TestCase):
     def test_original_submission_delete_confirmation_page_shows_cascades(self):
 
         os = OriginalSubmission(
-                course=self.course,
-                exercise=SubmissionExercise.objects.get(name="T1 TEXT"),
-                submitter_user=self.s1,
-                text="jada jada jada jada",
-                )
+            course=self.course,
+            exercise=SubmissionExercise.objects.get(name="T1 TEXT"),
+            submitter_user=self.s1,
+            text="jada jada jada jada",
+        )
         os.save()
 
         request = self.factory.get(os.get_delete_url())
@@ -634,11 +699,11 @@ class SubmissionsTest(TestCase):
         res = []
         for s in [self.s2, self.s3]:
             re = ReviewSubmission(
-                    course=self.course,
-                    exercise=ReviewExercise.objects.get(name="T1 TEXT REVIEW"),
-                    reviewed_submission=os,
-                    submitter_user=s,
-                    )
+                course=self.course,
+                exercise=ReviewExercise.objects.get(name="T1 TEXT REVIEW"),
+                reviewed_submission=os,
+                submitter_user=s,
+            )
             re.save()
             res.append(re)
 
