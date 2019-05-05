@@ -36,7 +36,8 @@ def prepare_group_review_exercise_for(exercise, user):
     for student_email in group.student_usernames:
 
         candidates = get_email_candidates(student_email)
-        student = User.objects.filter(email__in=candidates).first()
+        # first matching student who is preferably NOT temporary
+        student = User.objects.filter(email__in=candidates).order_by('temporary').first()
 
         if not student:
             logger.info(f'ReviewExericse (pk={exercise.pk}): User not found for {candidates} -> creating temp user in perpare_group_review_exercise_for')

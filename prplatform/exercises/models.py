@@ -389,8 +389,11 @@ class ReviewExercise(BaseExercise):
         if self.type == ReviewExercise.GROUP:
             group = self.course.find_studentgroup_by_user(user)
             if group:
+                from prplatform.courses.utils import get_email_candidates
+                candidates = [get_email_candidates(x) for x in group.student_usernames]
+                candidates = [val for sublist in candidates for val in sublist]
                 qs = qs.filter(
-                        submitter_user__email__in=group.student_usernames)
+                        submitter_user__email__in=candidates)
             elif not self.course.is_teacher(user):
                 qs = qs.none()
         return qs
