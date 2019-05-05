@@ -8,22 +8,22 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from prplatform.courses.views import (
-        CourseContextMixin,
-        IsTeacherMixin,
-        IsSubmitterOrTeacherMixin,
-        IsEnrolledMixin,
-    )
+    CourseContextMixin,
+    IsTeacherMixin,
+    IsSubmitterOrTeacherMixin,
+    IsEnrolledMixin,
+)
 from prplatform.exercises.models import (
-        SubmissionExercise,
-        ReviewExercise,
-    )
+    SubmissionExercise,
+    ReviewExercise,
+)
 
 from .models import (
-        Answer,
-        DownloadToken,
-        OriginalSubmission,
-        ReviewSubmission,
-    )
+    Answer,
+    DownloadToken,
+    OriginalSubmission,
+    ReviewSubmission,
+)
 from .forms import OriginalSubmissionStateForm
 
 
@@ -39,7 +39,8 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     def get_context_data(self):
         ctx = super().get_context_data(**self.kwargs)
         ctx['exercise'] = SubmissionExercise.objects.get(pk=self.kwargs['pk'])
-        ctx['object_list'] = ctx['exercise'].submissions.all()
+        ctx['object_list'] = ctx['exercise'].submissions.all() \
+            .select_related('course', 'course__base_course', 'submitter_user', 'submitter_group')
         if not ctx['teacher']:
             ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
         return ctx
@@ -52,7 +53,9 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     def get_context_data(self):
         ctx = super().get_context_data(**self.kwargs)
         ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
-        ctx['object_list'] = ctx['exercise'].submissions.all()
+        ctx['object_list'] = ctx['exercise'].submissions.all() \
+            .select_related('course', 'course__base_course', 'reviewed_submission', 'submitter_user', 'submitter_group',
+                            'reviewed_submission__submitter_user', 'reviewed_submission__submitter_group')
         ctx['my_mode'] = False
 
         if self.request.GET.get('mode') == "my":
@@ -141,9 +144,9 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
                 raise PermissionDenied('You have to complete more reviews to view this.')
 
         ctx['qa_list'] = list(filter(
-                lambda a: not (a.question.hide_from_receiver and not owner and not ctx['teacher']),
-                self.object.answers_in_ordered_list()
-            ))
+            lambda a: not (a.question.hide_from_receiver and not owner and not ctx['teacher']),
+            self.object.answers_in_ordered_list()
+        ))
         return self.render_to_response(ctx)
 
 
@@ -169,7 +172,7 @@ class OriginalSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteVie
             'base_url_slug': self.kwargs['base_url_slug'],
             'url_slug': self.kwargs['url_slug'],
             'pk': self.kwargs['pk']
-            })
+        })
 
 
 class ReviewSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView):
@@ -189,7 +192,7 @@ class ReviewSubmissionDeleteView(IsTeacherMixin, CourseContextMixin, DeleteView)
             'base_url_slug': self.kwargs['base_url_slug'],
             'url_slug': self.kwargs['url_slug'],
             'pk': self.kwargs['pk']
-            })
+        })
 
 
 class DownloadSubmissionView(View):
@@ -246,7 +249,7 @@ class DownloadSubmissionView(View):
                 reviewer = kwargs['pk'] in pks_of_users_reviewables
             else:
                 receiver = obj.submission.reviewed_submission.is_owner(user) and \
-                            not obj.question.hide_from_receiver
+                    not obj.question.hide_from_receiver
 
             if not teacher and not owner and not reviewer and not receiver and not enrolled_can_access:
                 print(f'teacher: {teacher}, owner: {owner}, reviewer: {reviewer}, receiver: {receiver}, enrolled_can_access: {enrolled_can_access}')  # noqa
@@ -300,4 +303,3 @@ class ReviewSubmissionEmbeddedFeedbackList(LoginRequiredMixin, CourseContextMixi
             ctx['reviews'].append({'qa_list': data})
 
         return ctx
-
