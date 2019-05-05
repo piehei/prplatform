@@ -47,11 +47,13 @@ class OriginalSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
 
 class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
     model = ReviewSubmission
+    # TODO: tests
 
     def get_context_data(self):
         ctx = super().get_context_data(**self.kwargs)
         ctx['exercise'] = ReviewExercise.objects.get(pk=self.kwargs['pk'])
         ctx['object_list'] = ctx['exercise'].submissions.all()
+        ctx['my_mode'] = False
 
         if self.request.GET.get('mode') == "my":
             ctx['my_mode'] = True
@@ -70,6 +72,7 @@ class ReviewSubmissionListView(IsEnrolledMixin, CourseContextMixin, ListView):
             if not ctx['teacher']:
                 ctx['object_list'] = ctx['exercise'].submissions_by_submitter(self.request.user)
 
+        ctx['show_parties'] = ctx['teacher'] or ctx['exercise'].type != ReviewExercise.RANDOM and not ctx['my_mode']
         return ctx
 
 
@@ -131,7 +134,7 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
         if not owner and not ctx['receiver'] and not ctx['teacher']:
             raise PermissionDenied
 
-        if ctx['receiver']:
+        if ctx['receiver'] and not owner:
             if self.object.exercise.reviews_available_date_in_future():
                 raise PermissionDenied(f'This is not available for your viewing just yet.')
             if not self.object.exercise.review_showing_requirements_ok(self.request.user):

@@ -46,10 +46,10 @@
         <thead>
           <tr>
             <th>View</th>
-            {% if teacher %}
+            {% if show_parties %}
             <th>Reviewer</th>
             {% endif %}
-            {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
+            {% if show_parties %}
             <th>Reviewed</th>
             {% endif %}
             <th>Date</th>
@@ -63,12 +63,12 @@
                     View
                   </a>
                 </td>
-                {% if teacher %}
+                {% if show_parties %}
                 <td>
                   {{ rev_sub.submitter }}
                 </td>
                 {% endif %}
-                {% if teacher or exercise.type == 'CHOOSE' and not my_mode %}
+                {% if show_parties %}
                 <td>
                     {{ rev_sub.reviewed_submission.submitter }}
                 </td>
