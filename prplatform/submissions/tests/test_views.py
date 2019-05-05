@@ -177,7 +177,7 @@ class SubmissionsTest(TestCase):
         self.assertContains(response, "student3")
         self.assertContains(response, "teacher1")
 
-    def test_ReviewSubmissionListPermissionsWork(self):
+    def test_reviewsubmissionlist_list_contents(self):
 
         sub_exercise = SubmissionExercise.objects.get(pk=1)
         rev_exercise = ReviewExercise.objects.get(pk=1)
@@ -255,6 +255,63 @@ class SubmissionsTest(TestCase):
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(response.context_data['object_list'].count(), 0)
         self.assertContains(response, 'will be available after')
+
+    def test_reviewsubmissionlist_parties(self):
+
+        sub_exercise = SubmissionExercise.objects.get(pk=1)
+        rev_exercise = ReviewExercise.objects.get(pk=1)
+
+        for user in self.students[:2]:
+            OriginalSubmission(course=self.course, submitter_user=user, exercise=sub_exercise, text="jadajada").save()
+
+        for user in self.students[:2]:
+            revsub = OriginalSubmission.objects.filter(exercise=sub_exercise) \
+                .exclude(submitter_user=user).first()
+            ReviewSubmission(course=self.course, submitter_user=user,
+                             exercise=rev_exercise, reviewed_submission=revsub).save()
+
+        # teacher sees all reviews
+        request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/')
+        request.user = User.objects.get(username="teacher1")
+        self.kwargs['pk'] = 1
+        response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+        self.assertEqual(ReviewSubmission.objects.all().count(), 2)
+        self.assertEqual(response.context_data['object_list'].count(), 2)
+        self.assertContains(response, "student1")  # hacky
+        self.assertContains(response, "student2")
+
+        rev_exercise.type = ReviewExercise.RANDOM
+        rev_exercise.save()
+        # list doesn't show who reviewed who
+        for url in ['/courses/prog1/F2018/submissions/r/1/list/', '/courses/prog1/F2018/submissions/r/1/list/?mode=my']:
+            request = self.factory.get(url)
+            request.user = self.s1
+            response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+            self.assertNotContains(response, 'Reviewer')
+            self.assertNotContains(response, 'Reviewed')
+            self.assertNotContains(response, '<td>student2', html=True)
+            self.assertNotContains(response, '<td>student1', html=True)
+
+        for typ in [ReviewExercise.CHOOSE, ReviewExercise.GROUP]:
+            rev_exercise.type = typ
+            rev_exercise.save()
+            # student can see who he reviewed
+            request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/')
+            request.user = self.s1
+            response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+            self.assertContains(response, 'Reviewer')
+            self.assertContains(response, 'Reviewed')
+            self.assertContains(response, '<td>student2', html=True)
+            self.assertContains(response, '<td>student1', html=True)
+
+            # student CANNOT see who reviewed him
+            request = self.factory.get('/courses/prog1/F2018/submissions/r/1/list/?mode=my')
+            request.user = self.s1
+            response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
+            self.assertNotContains(response, 'Reviewer')
+            self.assertNotContains(response, 'Reviewed')
+            self.assertNotContains(response, '<td>student2', html=True)
+            self.assertNotContains(response, '<td>student1', html=True)
 
     def test_reviewsubmission_detail_answers(self):
 
