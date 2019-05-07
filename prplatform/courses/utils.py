@@ -4,6 +4,7 @@ import re
 
 from prplatform.users.models import StudentGroup
 from prplatform.submissions.models import Answer
+from prplatform.exercises.models import ReviewExercise
 
 
 def get_email_candidates(user_or_email):
@@ -154,12 +155,18 @@ def create_stats(ctx, include_textual_answers=False, pad=False):
                   'numerical_avgs': [],
                   'reviews_for': [],
                   'reviews_by': [],
+                  'done': 'n/a',
                   'text_answer_lists': []
                   }
         d[key]['reviews_by'] = re.last_reviews_by(orig_sub.submitter_user)
         d[key]['reviews_for'] = re.last_reviews_for(orig_sub.submitter_user, include_hidden=True)
         d[key]['reviews_for_pks'] = d[key]['reviews_for'].values_list('pk', flat=True)
 
+        if re.type == ReviewExercise.GROUP:
+            group = re.course.find_studentgroup_by_user(orig_sub.submitter_user)
+            d[key]['done'] = len(group.student_usernames) == d[key]['reviews_by'].count() if group else False
+
+    HEADERS.append('Done')
     HEADERS.append('Submitter')
     HEADERS.append('Reviews by submitter')
     HEADERS.append('Reviews for submitter')

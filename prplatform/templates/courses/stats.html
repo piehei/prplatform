@@ -21,11 +21,17 @@
   <div class="row">
     <div class="col-md-12">
     {% include "../tabs.html" with tab="statistics" object=re %}
+      <a class="btn btn-sm btn-success mt-3 mb-4" href="?format=csv">Download summary CSV</a>
 
-      {# include "./_stats_form.html" #}
-      <a class="btn btn-sm btn-success mt-2" href="?format=csv">Download CSV</a>
+      <p>
+        <strong>How is "done" defined for different ReviewExercise types?</strong>
+        <ul>
+          <li>GROUP: when the student has peer-reviewed everyone in the group</li>
+          <li>CHOOSE: not available</li>
+          <li>RANDOM: not available</li>
+        </ul>
+      </p>
 
-      <h3>Reviews</h3>
       <table id="stats-table" class="table table-sm table-hover table-bordered">
         <thead>
           <tr>
@@ -36,8 +42,14 @@
         </thead>
         <tbody>
         {% for row in stats.values %}
-          <tr scope="row">
-            <td><a href="{{ row.orig_sub.get_absolute_url }}">{{ row.orig_sub.submitter }}</a></td>
+        <tr scope="row" {% if row.done == True %} style="background: #28a7451c;" {% endif %}>
+            <td>
+              {{ row.done }}
+            </td>
+
+            <td>
+              <a href="{{ row.orig_sub.get_absolute_url }}">{{ row.orig_sub.submitter }}</a>
+            </td>
 
             <td>
               {% for rev_sub in row.reviews_by %}
@@ -86,7 +98,8 @@
   <script>
     window.addEventListener('load', function() {
       var table = $('#stats-table').DataTable({
-        "paging": false
+        "paging": false,
+        "order": [[ 1, 'asc' ]]
       });
 
       $('a.toggle-vis').on( 'click', function (e) {

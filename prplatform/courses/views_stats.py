@@ -62,7 +62,7 @@ class CourseStatsView(CourseContextMixin, IsTeacherMixin, TemplateView):
                 osr = stats[submitter_pk]
 
                 row = []
-
+                row += [osr['done']]
                 row += [osr['orig_sub'].submitter]
                 row += ["|".join([str(x.reviewed_submission.submitter) for x in osr['reviews_by'] if x])]
                 row += ["|".join([str(x.submitter) for x in osr['reviews_for'] if x])]
