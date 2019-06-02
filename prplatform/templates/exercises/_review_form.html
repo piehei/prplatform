@@ -12,7 +12,7 @@
         id="review_form"
         class="form-horizontal needs-validation"
         method="post"
-        action="{{ object.get_absolute_url }}">
+        action="{% if APLUS_POST_URL %}{{ APLUS_POST_URL }}{% else %}{{ object.get_absolute_url }}{% endif %}">
 
     {% csrf_token %}
 

@@ -135,11 +135,11 @@ class ReviewSubmissionDetailView(LoginRequiredMixin, CourseContextMixin, DetailV
             not self.object.exercise.show_reviews_only_to_teacher
 
         if not owner and not ctx['receiver'] and not ctx['teacher']:
-            raise PermissionDenied
+            raise PermissionDenied('You don\'t have permission to view this.')
 
         if ctx['receiver'] and not owner:
             if self.object.exercise.reviews_available_date_in_future():
-                raise PermissionDenied(f'This is not available for your viewing just yet.')
+                raise PermissionDenied('This is not available for your viewing just yet.')
             if not self.object.exercise.review_showing_requirements_ok(self.request.user):
                 raise PermissionDenied('You have to complete more reviews to view this.')
 

@@ -143,6 +143,7 @@ class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView)
         if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
             ctx['embedded'] = True
+            ctx['enrolled'] = True
             ctx['template_base'] = "base_embedded.html"
 
         return self.render_to_response(ctx)
