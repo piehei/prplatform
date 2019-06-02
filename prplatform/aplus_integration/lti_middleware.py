@@ -1,4 +1,5 @@
 from django.db import IntegrityError
+from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from django.urls import resolve
 from oauthlib.oauth1 import SignatureOnlyEndpoint
@@ -80,3 +81,24 @@ class LtiLoginMiddleware(MiddlewareMixin):
         response = self.get_response(request)
 
         return response
+
+    def process_exception(self, request, exception):
+        """ This method is called as a part of the Django middleware chain whenever
+            an exception is thrown or raised from somewhere, ie. checking permissions
+            of the user and then denying access by using raise PermissionDenied("bla").
+
+            This will do nothing if the page was NOT loaded through LTI embed or if the
+            exception under investigation doesn't include an error message.
+
+            If the page WAS loaded with LTI_MODE on (through LTI embed), this will
+            return an HTTP response with status code 200 and the original exception's
+            error message. This is done in order to not return HTTP error status codes
+            since A+ just shows a general error message and hides the original error
+            message from the user which makes the use of embedding more complicated
+            (you're shown something went wrong but you don't know what that was).
+        """
+
+        if request.LTI_MODE and hasattr(exception, 'args') and len(exception.args) > 0:
+            return HttpResponse(f"An error occurred in the peer-review system:<br />{exception.args[0]}")
+
+        return None

@@ -44,7 +44,9 @@ class ExerciseContextMixin(CourseContextMixin):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         if not self.object.can_access(self.request.user):
-            raise PermissionDenied
+            # this leaks the fact that there exists an exercise but makes debugging
+            # easier for the teacher. no emails like "it doesn't work!!"
+            raise PermissionDenied("You cannot access this exercise. It is hidden.")
         return ctx
 
 
