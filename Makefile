@@ -21,5 +21,11 @@ deploy:
 	# SSH_DEPLOY_URL in your shell env
 	ssh ${SSH_DEPLOY_URL} $(SSH_DEPLOY_COMMAND)
 
-.PHONY: deploy
+test:
+	docker-compose run --rm django python manage.py test
 
+coverage:
+	docker-compose run --rm django coverage run manage.py test && docker-compose run --rm djagno coverage html && echo "COVERAGE UPDATED, INSPECT htmlcov"
+
+
+.PHONY: deploy test
