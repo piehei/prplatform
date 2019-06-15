@@ -1,21 +1,11 @@
-# XXX: for django-lti-login
-"""
-Example receiver hooks to use oauth data provided by django-lti-login.
-Remember to use this kind of functions to store what ever data you need from oauth.
-
-In addition, don't forget to load this file (so the hooks are connected).
-See how `apps.py` includes this file when django apps are loaded.
-"""
 import logging
 from django.urls import resolve
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in
 from django.core.exceptions import PermissionDenied
 from django.dispatch import receiver
-from django_lti_login.signals import lti_login_authenticated
 
 from prplatform.courses.models import Course, Enrollment
-from prplatform.courses.utils import get_email_candidates
 from prplatform.users.models import User
 
 logger = logging.getLogger('users.receivers')
@@ -34,16 +24,13 @@ def change_original_submission_submitters(sender, **kwargs):
 
     request = kwargs.get('request', None)
     user = kwargs.get('user', None)
-
-    # user's email + any valid email domains defined in local_settings.py
-    candidates = get_email_candidates(user)
-    temp_user = User.objects.filter(email__in=candidates, temporary=True).first()
+    temp_user = User.objects.filter(email=user.email, lti=request.LTI_MODE, temporary=True).first()
 
     if request and user and temp_user:
 
         enrolled_courses = []
 
-        logger.info(f"Changing the submitter of original submissions for")
+        logger.info(f"Changing the submitter of original submissions for {user}")
         for sub in temp_user.originalsubmission_submitters.all():
             logger.info(sub)
             sub.submitter_user = user
@@ -51,9 +38,8 @@ def change_original_submission_submitters(sender, **kwargs):
 
             if sub.course not in enrolled_courses:
                 Enrollment.objects.create(course=sub.course, student=user)
-                logger.info(f"enrolled to {sub.course}")
+                logger.info(f"Enrolled {user} to {sub.course}")
 
-        # TODO: if this implementation holds, check there's no concurrency bugs
         logger.info(f"Original submissions by {temp_user}({temp_user.username}/{temp_user.email}) have been modified to be "
                     f"submitted by {user}({user.username}/{user.email}")
         logger.info(f"Deleting temp_user {temp_user}")
@@ -64,24 +50,8 @@ def change_original_submission_submitters(sender, **kwargs):
         logger.info(f"No temp_user existed for {user}")
 
 
-@receiver(lti_login_authenticated)
-def store_last_login(sender, **kwargs):
-    """
-    Example thing to do before user is actually authenticated, but does exists.
-    Django sets user.last_login after this, so it's last time to use it.
-    """
-    request = kwargs.get('request', None)
-    user = kwargs.get('user', None)
-    if request and user:
-        request.session['last_login'] = str(user.last_login)
-
-
 @receiver(user_logged_in)
 def store_course_info(sender, **kwargs):
-    """
-    Example things to do after user is fully authenticated.
-    You can still raise PermissionDenied here.
-    """
 
     request = kwargs.get('request', None)
     session = request.session

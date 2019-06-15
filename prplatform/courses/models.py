@@ -115,10 +115,7 @@ class Course(TimeStampedModel):
     def find_studentgroup_by_user(self, user):
         if user.is_anonymous:
             return None
-
-        from .utils import get_email_candidates
-        candidates = get_email_candidates(user)
-        return self.student_groups.filter(student_usernames__overlap=[candidates]).first()
+        return self.student_groups.filter(student_usernames__contains=[user.email]).first()
 
 
 class Enrollment(TimeStampedModel):

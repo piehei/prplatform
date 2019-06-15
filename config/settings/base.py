@@ -256,8 +256,6 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "mail": (False, "email"),
 }
 
-ADDITIONAL_GROUP_EMAIL_MATCHING_DOMAINS = []
-
 try:
     from local_settings import *
     print("local_settings imported!")

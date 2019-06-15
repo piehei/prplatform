@@ -327,7 +327,7 @@ class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
         elif self.object.type == ReviewExercise.CHOOSE:
             ctx = self._get_choose_ctx(ctx)
         elif self.object.type == ReviewExercise.GROUP:
-            utils.prepare_group_review_exercise_for(self.object, self.request.user)
+            utils.prepare_group_review_exercise_for(self.object, self.request.user, self.request.LTI_MODE)
             ctx = self._get_choose_ctx(ctx)
 
         ctx['show_content_to_review'] = True

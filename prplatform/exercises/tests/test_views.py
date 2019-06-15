@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.contrib.messages.middleware import MessageMiddleware
 from django.test import RequestFactory, TestCase
+from django.http import HttpRequest
 from django.urls import resolve
 
 from django.utils import timezone
@@ -14,8 +15,8 @@ from prplatform.users.models import (
     StudentGroup,
     User,
 )
+from prplatform.users.receivers import change_original_submission_submitters
 from prplatform.courses.models import Course
-
 from prplatform.submissions.models import (
     OriginalSubmission,
     ReviewSubmission,
@@ -622,37 +623,37 @@ class ExerciseTest(TestCase):
         re.use_groups = True
         re.save()
 
+        temp_email = "temp-test@temp-test.com"
         g = StudentGroup(course=se.course,
                          name="g1",
-                         student_usernames=[self.s1.email, self.s2.email, "temp-test@temp-test.com"]
+                         student_usernames=[self.s1.email, self.s2.email, temp_email]
                          )
         g.save()
 
-        user_count_before = User.objects.all().count()
+        user_count_before = User.objects.count()
         self.assertEqual(0, se.submissions.count())
 
         request = self.factory.get(re.get_absolute_url())
         request.user = self.s1
         self.kwargs['pk'] = re.pk
-        res = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
 
+        # should create temp user for temp-test@temp-test.com
+        # should have three orig subs because three group members
+        res = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
+        self.assertEqual(user_count_before + 1, User.objects.count())
+        self.assertEqual(3, se.submissions.count())
         # when students review each other, inlined options are not shown, only ChooseForm dropdown
         self.assertEqual(len(res.context_data['chooseform_options_list']), 0)
 
-        # should create temp user for temp-test@temp-test.com
-        self.assertEqual(user_count_before + 1, User.objects.all().count())
-        # should have three orig subs because three group members
-        self.assertEqual(3, se.submissions.count())
-
-        temp_email = "temp-test@temp-test.com"
         temp_user = User.objects.get(email=temp_email)
         self.assertEqual(temp_user.temporary, True)
+        self.assertEqual(temp_user.lti, False)
 
         request.user = self.s2
         ReviewExerciseDetailView.as_view()(request, **self.kwargs)
 
-        # page load as another group member shouldn't affect these
-        self.assertEqual(user_count_before + 1, User.objects.all().count())
+        # page load as another user of the group shouldn't have any effect
+        self.assertEqual(user_count_before + 1, User.objects.count())
         self.assertEqual(3, se.submissions.count())
 
         orig_subs_for_temp_user = OriginalSubmission.objects.filter(submitter_user=temp_user)
@@ -666,22 +667,27 @@ class ExerciseTest(TestCase):
         )
         resub.save()
 
-        # create actual user, this basically simulates sihbboleth login in a future time
+        # create actual user. this will be used to simulate sihbboleth login in a future time
+        # when the system allready has a submission temporarily made for this user.
         actual_user = User.objects.create(username="actual_user",
-                                          email=temp_email,
-                                          password="actual_passwd")
+                                          email=temp_email)
+        actual_user.set_password("actual_password")
+        actual_user.save()
 
         self.assertEqual(2, User.objects.filter(email=temp_email).count())
 
         orig_submitter = OriginalSubmission.objects.get(submitter_user__email=temp_email).submitter_user.username
 
-        # login the actual user
-        # this triggers users/receivers.py which will:
+        # logging in a user would normally trigger users/receivers.py which will:
         #   - find all submissions done with a temp user using same email
         #   - transfer all submissions to this actual user
         #   - delete temp user
+        # here we'll just call the signal handler directly
 
-        self.client.force_login(actual_user)
+        fake_request = HttpRequest()
+        fake_request.LTI_MODE = False
+        fake_request.user = actual_user
+        change_original_submission_submitters(None, request=fake_request, user=actual_user)
 
         actual_submitter = OriginalSubmission.objects.get(submitter_user__email=temp_email).submitter_user.username
         self.assertNotEqual(orig_submitter, actual_submitter)
