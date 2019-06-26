@@ -3,7 +3,7 @@
 {% load django_bootstrap_breadcrumbs %}
 
 {% block breadcrumbs %}
-    {% breadcrumb course.code course.get_absolute_url %}
+    {{ block.super }}
     {% breadcrumb_for exercise.get_absolute_url %}
         Submission exercise: {{ exercise.name }}
     {% endbreadcrumb_for %}

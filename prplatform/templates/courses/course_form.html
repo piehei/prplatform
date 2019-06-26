@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
+{% load django_bootstrap_breadcrumbs %}
+
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Edit course" "" %}
+{% endblock %}
 
 {% block title %}Course details{% endblock %}
 

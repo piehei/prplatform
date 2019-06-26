@@ -4,6 +4,10 @@
 
 {% block title %}Groups{% endblock %}
 {% load django_bootstrap_breadcrumbs %}
+{% block breadcrumbs %}
+    {{ block.super }}
+    {% breadcrumb "Edit groups" "" %}
+{% endblock %}
 
 {% block content %}
 

@@ -34,6 +34,9 @@
         {% if not lti %}
             {% load django_bootstrap_breadcrumbs %}
             {% block breadcrumbs %}
+              {% if course %}
+                {% breadcrumb course.code course.get_absolute_url %}
+              {% endif %}
             {% endblock %}
             {% block breads %}
                 {% render_breadcrumbs %}
