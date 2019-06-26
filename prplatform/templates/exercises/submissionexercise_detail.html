@@ -1,5 +1,5 @@
 
-{% extends template_base %}
+{% extends 'base.html' %}
 {% load crispy_forms_tags %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
@@ -13,7 +13,7 @@
 
 {% block content %}
 
-  {% if not embedded %}
+  {% if not lti %}
   {% include "../tabs.html" with tab="exercise" type="original" %}
   {% endif %}
 
@@ -67,7 +67,7 @@
 
     </div>
   </div>
-{% if embedded %}
+{% if lti %}
   {% block extra_js %}
     <script src="{% static 'js/embedded_view_bootstrap_fix.js' %}"></script>
   {% endblock extra_js %}

@@ -1,0 +1,72 @@
+      <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark p-0">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand col-md-2 mr-0" href="{% url 'home' %}">PRP</a>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto ml-4">
+            {% if request.user.is_authenticated %}
+              <li class="nav-item">
+                {# URL provided by django-allauth/account/urls.py #}
+                <a class="nav-link" href="{% url 'users:detail' request.user.username %}">{{ request.user.username }} (My Profile)</a>
+              </li>
+              <li class="nav-item">
+                {# URL provided by django-allauth/account/urls.py #}
+                <a class="nav-link" href="{% url 'account_logout' %}">Sign Out</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                {# URL provided by django-allauth/account/urls.py #}
+                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">Sign In</a>
+              </li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
+
+    <div class="container-fluid">
+    <div class="row">
+      <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+        <div class="sidebar-sticky">
+
+          {% if not course and request.user.base_courses.all %}
+            <h5 class="m-4">Your courses:</h5>
+            <h6 class="ml-4">
+              {% for base_course in request.user.base_courses.all %}
+                {% for course in base_course.courses.all %}
+                  <a href="{{ course.get_absolute_url }}">{{ base_course.name }}</a>
+                {% endfor %}
+              {% endfor %}
+            </h6>
+          {% endif %}
+
+            <h5 class="d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
+              <a href="{{ course.get_absolute_url }}">
+                  {{ course.name }}<br>
+                  {{ course.code }}</a>
+            </h5>
+
+            <hr>
+
+            <ul class="nav flex-column ml-3">
+              {% if course %}
+                <li class="nav-item">
+                  <a class="font-weight-bold" href="{{ course.get_absolute_url }}">
+                    Course home
+                  </a>
+                </li>
+              {% endif %}
+
+              {% if teacher %}
+                <li class="nav-item">
+                </li>
+              {% endif %}
+
+            </ul>
+        </div>
+      </nav>
+

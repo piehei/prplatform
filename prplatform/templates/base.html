@@ -1,163 +1,59 @@
-{% load static i18n %}<!DOCTYPE html>
-<html lang="en">
+{% load static i18n %}
+<!DOCTYPE html>
+<html {% if request.LTI_MODE %}class="bs4" {% endif %}lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <title>{% block title %}prplatform{% endblock title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
 
     {% block css %}
-
-    <link href="{% static 'css/bootstrap-4.1.3.min.css' %}" rel="stylesheet">
-
-    <link href="{% static 'css/project.css' %}" rel="stylesheet">
-    <link href="{% static 'css/pygmentify.css' %}" rel="stylesheet">
-
-
+    {% if request.LTI_MODE %}
+        <!-- BASE_EMBEDDED -->
+        <link href="{% static 'css/bootstrap-ns.css' %}" rel="stylesheet" data-aplus="yes">
+    {% else %}
+        <link href="{% static 'css/bootstrap-4.1.3.min.css' %}" rel="stylesheet">
+        <link href="{% static 'css/project.css' %}" rel="stylesheet">
+        <link href="{% static 'css/pygmentify.css' %}" rel="stylesheet">
+    {% endif %}
     {% endblock %}
 
   </head>
 
   <body>
 
-      <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-dark p-0">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
+    {% if not request.LTI_MODE %}
+        {% include 'navbar.html' %}
+    {% endif %}
 
-        <a class="navbar-brand col-md-2 mr-0" href="{% url 'home' %}">PRP</a>
+    {% with lti=request.LTI_MODE %}
+    <div class="{% if lti %}bs4 bs4-body{% else %}col-md-9 ml-sm-auto col-lg-10 px-4{% endif %}">
+        <div {% if not lti %}id="main"{% endif %}class="container mt-4 {% if not lti %}ml-0{% endif %}">
+        {% include 'messages.html' %}
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav mr-auto ml-4">
-            {% if request.user.is_authenticated %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username %}">{{ request.user.username }} (My Profile)</a>
-              </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">Sign Out</a>
-              </li>
-            {% else %}
-              <!--
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-              </li>
-              -->
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">Sign In</a>
-              </li>
-            {% endif %}
-          </ul>
+        {% if not lti %}
+            {% load django_bootstrap_breadcrumbs %}
+            {% block breadcrumbs %}
+            {% endblock %}
+            {% block breads %}
+                {% render_breadcrumbs %}
+            {% endblock %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock content %}
         </div>
-      </nav>
+    </div>
 
-    <div class="container-fluid">
-    <div class="row">
-      <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-        <div class="sidebar-sticky">
-
-          {% if not course and request.user.base_courses.all %}
-            <h5 class="m-4">Your courses:</h5>
-            <h6 class="ml-4">
-              {% for base_course in request.user.base_courses.all %}
-                {% for course in base_course.courses.all %}
-                  <a href="{{ course.get_absolute_url }}">{{ base_course.name }}</a>
-                {% endfor %}
-              {% endfor %}
-            </h6>
-          {% endif %}
-
-            <h5 class="d-flex justify-content-between align-items-center px-3 mt-4 mb-1">
-              <a href="{{ course.get_absolute_url }}">
-                  {{ course.name }}<br>
-                  {{ course.code }}</a>
-            </h5>
-
-            <hr>
-
-            <ul class="nav flex-column ml-3">
-              {% if course %}
-                <li class="nav-item">
-                  <a class="font-weight-bold" href="{{ course.get_absolute_url }}">
-                    Course home
-                  </a>
-                </li>
-              {% endif %}
-
-              {% if teacher %}
-                <li class="nav-item">
-                </li>
-              {% endif %}
-
-            </ul>
-        </div>
-      </nav>
-
-      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-        <div class="container mt-4 ml-0">
-
-          {% if messages %}
-              {% for message in messages %}
-                  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}</div>
-              {% endfor %}
-          {% endif %}
-
-{% load django_bootstrap_breadcrumbs %}
-
-{% block breadcrumbs %}
-    {% clear_breadcrumbs %}
-{% endblock %}
-
-{% block breads %}
-    {% render_breadcrumbs %}
-{% endblock %}
-
-
-          {% block content %}
-          {% endblock content %}
-
-        </div>
-      </main>
-    </div> <!-- /container -->
-
-    {% block modal %}{% endblock modal %}
-
-    {% block javascript %}
-
-
-      <script src="{% static 'js/jquery-3.3.1.slim.min.js' %}"></script>
-      <script src="{% static 'js/popper-1.14.3.min.js' %}"></script>
-      <script src="{% static 'js/bootstrap-4.1.3.min.js' %}"></script>
-
-      <script src="{% static 'js/project.js' %}"></script>
-
-
-    {% endblock javascript %}
-
-<script type="text/javascript">
-    window.doorbellOptions = {
-        id: '9737',
-        appKey: 'QN2Bc7g2V65R1DqSQ7BgRALA7krL2WCKhTGy0UorJGEAVPioMPdCX3KBOhdQQxwP',
-        strings: {
-          'feedback-button-text': 'Feedback!?',
-          'title': 'Any feedback is super welcome!',
-          'feedback-textarea-placeholder': 'This feedback is completely anonymous. You may share any bug reports, improvement ideas, or whatnot here.',
-          'email-input-placeholder': 'Email: fill in *ONLY* if you want',
-        }
-    };
-    (function(w, d, t) {
-        var hasLoaded = false;
-        function l() { if (hasLoaded) { return; } hasLoaded = true; window.doorbellOptions.windowLoaded = true; var g = d.createElement(t);g.id = 'doorbellScript';g.type = 'text/javascript';g.async = true;g.src = 'https://embed.doorbell.io/button/'+window.doorbellOptions['id']+'?t='+(new Date().getTime());(d.getElementsByTagName('head')[0]||d.getElementsByTagName('body')[0]).appendChild(g); }
-        if (w.attachEvent) { w.attachEvent('onload', l); } else if (w.addEventListener) { w.addEventListener('load', l, false); } else { l(); }
-        if (d.readyState == 'complete') { l(); }
-    }(window, document, 'script'));
-</script>
-
+    {% if not lti %}
+      {% block javascript %}
+        <script src="{% static 'js/jquery-3.3.1.slim.min.js' %}"></script>
+        <script src="{% static 'js/popper-1.14.3.min.js' %}"></script>
+        <script src="{% static 'js/bootstrap-4.1.3.min.js' %}"></script>
+        <script src="{% static 'js/project.js' %}"></script>
+      {% endblock javascript %}
+      {% include 'doorbell-feedback.html' %}
+    {% endif %}
+    {% endwith %}
   </body>
 </html>
-
