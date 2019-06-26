@@ -5,7 +5,9 @@
 {% block breadcrumbs %}
     {{ block.super }}
     {% breadcrumb course.code course.get_absolute_url %}
-    {% breadcrumb exercise.name exercise.get_absolute_url %}
+    {% breadcrumb_for exercise.get_absolute_url %}
+        Submission exercise: {{ exercise.name }}
+    {% endbreadcrumb_for %}
     {% breadcrumb "List" "" %}
 {% endblock %}
 {% block title %}Submissions{% endblock %}
