@@ -57,6 +57,14 @@ class LtiLoginMiddleware(MiddlewareMixin):
             endpoint = SignatureOnlyEndpoint(LTIRequestValidator())
             is_valid, oauth_request = endpoint.validate_request(uri, method, '', headers)
 
+            if not is_valid:
+                # normally an exception would be raised in a case like this.
+                # here, instead of raising an exception and causing an HTTP 403 or 500,
+                # return a 200 OK with information what happened since the consuming
+                # end who sent the request swallows errors.
+                return HttpResponse(('LTI login/authentication failed. <br> \
+                                     Contact admin and ask to check LTI key and secret.'))
+
             if is_valid:
 
                 # if the same person has previously accessed the system through LTI interop,
