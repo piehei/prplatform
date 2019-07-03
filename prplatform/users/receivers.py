@@ -24,9 +24,17 @@ def change_original_submission_submitters(sender, **kwargs):
 
     request = kwargs.get('request', None)
     user = kwargs.get('user', None)
+    if not request or not user:
+        return
+
+    # because of the authentication middleware ordering, this might be executed when the
+    # user logs in via shibboleth or the regular username/pwd flow. in those cases
+    # the signal is triggered *before* LTI_MODE has been set in aplus_integration.lti_middleware.
+    if not hasattr(request, 'LTI_MODE'):
+        setattr(request, 'LTI_MODE', False)
     temp_user = User.objects.filter(email=user.email, lti=request.LTI_MODE, temporary=True).first()
 
-    if request and user and temp_user:
+    if temp_user:
 
         enrolled_courses = []
 
