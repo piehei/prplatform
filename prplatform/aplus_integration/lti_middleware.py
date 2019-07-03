@@ -38,14 +38,6 @@ class LtiLoginMiddleware(MiddlewareMixin):
            'lti_version' in query_dict and \
            'oauth_consumer_key' in query_dict:
 
-            # this tells the view classes they should provide the LTI version of the page
-            request.LTI_MODE = True
-
-            # since the HTTP POSTs are coming through a proxy(ish) server that drops
-            # cookies but keeps CSRF tokens, the CSRF check always fails
-            # in this case we can disable the checks alltogether
-            setattr(request, '_dont_enforce_csrf_checks', True)
-
             uri = uri._replace(query=urlencode(query_dict.items())).geturl()
             headers = {k: v for k, v in request.META.items() if not k.startswith('wsgi.')}
 
@@ -61,35 +53,42 @@ class LtiLoginMiddleware(MiddlewareMixin):
                 # normally an exception would be raised in a case like this.
                 # here, instead of raising an exception and causing an HTTP 403 or 500,
                 # return a 200 OK with information what happened since the consuming
-                # end who sent the request swallows errors.
+                # end (A+) who sent the request swallows errors.
                 return HttpResponse(('LTI login/authentication failed. <br> \
                                      Contact admin and ask to check LTI key and secret.'))
 
-            if is_valid:
+            # this tells the view classes they should provide the LTI version of the page
+            request.LTI_MODE = True
 
-                # if the same person has previously accessed the system through LTI interop,
-                # then there already exists a user account. in that case, login that user account,
-                # otherwise create a new one.
-                # it is CRITICAL to pay attention to UserModel.lti boolean since accounts of
-                # Shibboleth and LTI login protocols should not be mixed.
+            # since the HTTP POSTs are coming through a proxy(ish) server that drops
+            # cookies but keeps CSRF tokens, the CSRF check always fails
+            # in this case we can disable the checks altogether
+            setattr(request, '_dont_enforce_csrf_checks', True)
 
-                try:
-                    user = User.objects.get(email=oauth_request.lis_person_contact_email_primary, lti=True)
-                    logger.info(f"Previous user found! Logging {user} in")
-                except Exception:
-                    logger.info("Previous user NOT FOUND --> create a new one")
-                    user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
-                    user.lti = True
-                    user.save()
-                    logger.info(f"Created user {user}")
 
-                resolved_view = resolve(request.path)
-                course = Course.objects.get(
-                        base_course__url_slug=resolved_view.kwargs['base_url_slug'],
-                        url_slug=resolved_view.kwargs['url_slug'])
+            # if the same person has previously accessed the system through LTI interop,
+            # then there already exists a user account. in that case, login that user account,
+            # otherwise create a new one.
+            # it is CRITICAL to pay attention to UserModel.lti boolean since accounts of
+            # Shibboleth and LTI login protocols should not be mixed.
 
-                course.enroll(user)
-                request.user = user
+            try:
+                user = User.objects.get(email=oauth_request.lis_person_contact_email_primary, lti=True)
+                logger.info(f"Previous user found! Logging {user} in")
+            except Exception:
+                logger.info("Previous user NOT FOUND --> create a new one")
+                user = LTIAuthBackend().authenticate(oauth_request=oauth_request)
+                user.lti = True
+                user.save()
+                logger.info(f"Created user {user}")
+
+            resolved_view = resolve(request.path)
+            course = Course.objects.get(
+                    base_course__url_slug=resolved_view.kwargs['base_url_slug'],
+                    url_slug=resolved_view.kwargs['url_slug'])
+
+            course.enroll(user)
+            request.user = user
 
         response = self.get_response(request)
 
@@ -111,7 +110,8 @@ class LtiLoginMiddleware(MiddlewareMixin):
             (you're shown something went wrong but you don't know what that was).
         """
 
-        if request.LTI_MODE and hasattr(exception, 'args') and len(exception.args) > 0:
+        if hasattr(request, 'LTI_MODE') and request.LTI_MODE and \
+                hasattr(exception, 'args') and len(exception.args) > 0:
             return HttpResponse(f"An error occurred in the peer-review system:<br />{exception.args[0]}")
 
         return None
