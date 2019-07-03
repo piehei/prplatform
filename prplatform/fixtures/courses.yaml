@@ -217,7 +217,7 @@
     created: 2018-01-01 00:00+02:00
     modified: 2018-01-01 00:00+02:00
     opening_time: 2018-01-01 00:00+02:00
-    closing_time: 2019-06-30 00:00+02:00
+    closing_time: 2025-06-30 00:00+02:00
 
 
 - model: exercises.reviewexercise
