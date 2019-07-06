@@ -1,12 +1,17 @@
 from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import include, url, handler500
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.http import HttpResponseRedirect
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+from prplatform.core.views import handler_500
 from prplatform.users.views import ShibbolethRedirectView, ShibbolethLoginView
+
+
+handler500 = handler_500
+
 
 urlpatterns = [
     # url(r"^", TemplateView.as_view(template_name="pages/home.html"), name="home"),

@@ -247,6 +247,9 @@ SOCIALACCOUNT_ADAPTER = 'prplatform.users.adapters.SocialAccountAdapter'
 # Your stuff...
 # ------------------------------------------------------------------------------
 
+# this is shown on error pages
+ADMIN_CONTACT_EMAIL = env.str('ADMIN_CONTACT_EMAIL', default='')
+
 SHIBBOLETH_ATTRIBUTE_MAP = {
     "uid": (True, "username"),
     "givenName": (True, "first_name"),
@@ -254,6 +257,9 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "mail": (True, "email"),
 }
 
+
+# for instance logging is easier to configure in local_settings.py
+# versus environment variables. put local_settings.py in project root.
 try:
     from local_settings import *
     print("local_settings imported!")
