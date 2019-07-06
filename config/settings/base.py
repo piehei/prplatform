@@ -251,7 +251,7 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "uid": (True, "username"),
     "givenName": (True, "first_name"),
     "sn": (True, "last_name"),
-    "mail": (False, "email"),
+    "mail": (True, "email"),
 }
 
 try:
