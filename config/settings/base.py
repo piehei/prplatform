@@ -224,9 +224,7 @@ EMAIL_BACKEND = env('DJANGO_EMAIL_BACKEND', default='django.core.mail.backends.s
 # Django Admin URL regex.
 ADMIN_URL = r'^admin/'
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [
-    ("""Pietari Heino""", 'ph@extreg.com'),
-]
+ADMINS = []
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
