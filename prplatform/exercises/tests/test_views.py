@@ -74,9 +74,10 @@ class ExerciseTest(TestCase):
         self.SE1 = SubmissionExercise.objects.get(name='T1 TEXT')
         self.RE1 = ReviewExercise.objects.get(name='T1 TEXT REVIEW')
 
-    def get(self, exercise, user):
+    def get(self, exercise, user, lti=False):
         request = self.factory.get(exercise.get_absolute_url())
         request.user = user
+        request.LTI_MODE = lti
         self.kwargs['pk'] = exercise.pk
         views = {
             'SubmissionExercise': SubmissionExerciseDetailView,
@@ -133,6 +134,17 @@ class ExerciseTest(TestCase):
             SubmissionExerciseCreateView.as_view()(request, **self.kwargs)
         except Exception:
             self.fail("Teacher should be allowed to access")
+
+    def test_submit_as_student(self):
+        # only teacher should see
+        for ex in [self.SE1, self.RE1]:
+            self.assertNotContains(self.get(ex, self.s1), ex.get_submit_as_student_url())
+            self.assertContains(self.get(ex, self.t1), ex.get_submit_as_student_url())
+
+        # in lti mode no one should see
+        for ex in [self.SE1, self.RE1]:
+            self.assertNotContains(self.get(ex, self.s1, lti=True), ex.get_submit_as_student_url())
+            self.assertNotContains(self.get(ex, self.t1, lti=True), ex.get_submit_as_student_url())
 
     def test_exercise_open(self):
         res = self.get(self.SE1, self.s1)
