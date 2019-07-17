@@ -1,5 +1,5 @@
 
-{% extends template_base %}
+{% extends "base.html" %}
 {% load crispy_forms_tags %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
@@ -25,6 +25,8 @@
         <strong>Teacher! Heads up!</strong><br>
         You're creating a submission
         in a student's name. Choose the student (and group if needed) below carefully.
+        <strong>Please note</strong> that you can only make submissions for users that have enrolled
+        to the course.
       </div>
 
       <form enctype="multipart/form-data"

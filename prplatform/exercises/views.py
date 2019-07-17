@@ -488,7 +488,6 @@ class SubmissionExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailVi
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
-        ctx['template_base'] = "base.html"
         ctx['form'] = OriginalSubmissionForm(type=self.object.type, filetypes=self.object.accepted_filetypes)
         ctx['choose_student_form'] = ChooseStudentForm(exercise=self.object)
         return self.render_to_response(ctx)
@@ -497,7 +496,6 @@ class SubmissionExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailVi
         """ TODO: error checking """
         self.object = self.get_object()
         ctx = self.get_context_data()
-        ctx['template_base'] = "base.html"
         exercise = self.object
 
         form = OriginalSubmissionForm(self.request.POST, self.request.FILES, type=exercise.type)
@@ -533,7 +531,6 @@ class ReviewExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailView):
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
-        ctx['template_base'] = "base.html"
         ctx['forms'] = []
         for index, q in enumerate(self.object.question_list_in_order()):
             ctx['forms'].append(AnswerModelForm(question=q))
@@ -544,7 +541,6 @@ class ReviewExerciseAsStudent(IsTeacherMixin, ExerciseContextMixin, DetailView):
         """ TODO: error checking """
         self.object = self.get_object()
         ctx = self.get_context_data()
-        ctx['template_base'] = "base.html"
         exercise = self.object
 
         as_student_form = ChooseStudentForm(self.request.POST, exercise=exercise)

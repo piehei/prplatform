@@ -184,13 +184,13 @@ class ChooseStudentForm(forms.Form):
         exercise = kwargs.pop('exercise')
         super().__init__(*args, **kwargs)
 
-        self.fields['submitter_user'].queryset = exercise.course.students.all()
+        self.fields['submitter_user'].queryset = exercise.course.students.all().order_by('email')
 
         if not exercise.use_groups:
             self.fields['submitter_group'].required = False
             self.fields['submitter_group'].widget = HiddenInput()
         else:
-            self.fields['submitter_group'].queryset = exercise.course.student_groups.all()
+            self.fields['submitter_group'].queryset = exercise.course.student_groups.all().order_by('name')
 
         if exercise.__class__.__name__ == "SubmissionExercise":
             self.fields['reviewed_submission'].required = False
