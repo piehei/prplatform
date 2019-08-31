@@ -2,8 +2,12 @@
 
       <div class="alert alert-warning ml-3 mr-3">
       {% if errormsg == 'own_submission_missing' %}
-        You cannot make peer-reviews before making your own original submission.
-        Complete <a href="{{ object.reviewable_exercise.get_absolute_url }}">{{ object.reviewable_exercise.name }}</a> first, then come back.
+        You cannot make peer-reviews before making your own original submission to the
+        exercise this peer-review is about. Complete that exercise first.
+        {% if lti %}
+          <strong>(Please note: there might be a one minute delay after you finish the exercise.
+                       If you already finished it, wait a moment and refresh this page.)</strong>
+        {% endif %}
       {% elif errormsg == 'reviews_done' %}
         You have already submitted your peer-reviews to this exercise.
       {% endif %}
