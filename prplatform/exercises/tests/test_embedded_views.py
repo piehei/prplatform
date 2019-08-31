@@ -112,16 +112,18 @@ class ExerciseEmbeddedTest(TestCase):
     def test_embedded_templates_used(self):
 
         views = [
+            # TODO: add all views that are supposed to be embedded here, eg. feedback list
             (SubmissionExercise.objects.get(name='T1 TEXT'), SubmissionExerciseDetailView),
             (ReviewExercise.objects.get(name='T1 TEXT REVIEW'), ReviewExerciseDetailView),
         ]
+
         for exercise, view in views:
             request = self.factory.get(exercise.get_absolute_url())
             request.user = self.s1
             self.kwargs['pk'] = 1
             response = view.as_view()(request, **self.kwargs)
-            # BASE_EMBEDDED is inlined in templates/base_embedded.html
-            self.assertNotContains(response, 'BASE_EMBEDDED')
+            # tabs should only be included in non-lti views
+            self.assertContains(response, 'id="tab-container"')
 
             request = self.factory.get(exercise.get_absolute_url())
             request.user = self.s1
@@ -129,7 +131,7 @@ class ExerciseEmbeddedTest(TestCase):
             response = view.as_view()(request, **self.kwargs)
             request.LTI_MODE = True
             response = view.as_view()(request, **self.kwargs)
-            self.assertContains(response, 'BASE_EMBEDDED')
+            self.assertNotContains(response, 'id="tab-container"')
 
     def test_submissionexercise_response_constructed_correctly(self):
 
