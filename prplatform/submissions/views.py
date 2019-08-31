@@ -13,11 +13,11 @@ from prplatform.courses.views import (
     IsSubmitterOrTeacherMixin,
     IsEnrolledMixin,
 )
+from prplatform.exercises.views import LTIMixin
 from prplatform.exercises.models import (
     SubmissionExercise,
     ReviewExercise,
 )
-
 from .models import (
     Answer,
     DownloadToken,
@@ -262,7 +262,7 @@ class DownloadSubmissionView(View):
         return response
 
 
-class ReviewSubmissionEmbeddedFeedbackList(LoginRequiredMixin, CourseContextMixin, ListView):
+class ReviewSubmissionEmbeddedFeedbackList(LTIMixin, LoginRequiredMixin, CourseContextMixin, ListView):
     model = ReviewSubmission
     template_name = "submissions/reviewsubmission_list_embed.html"
 
