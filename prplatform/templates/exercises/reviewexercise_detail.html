@@ -45,13 +45,11 @@
 
         {% include "./_choose_form.html" %}
 
-        {% if not reviewable and not chooseForm %}
-          <div class="alert alert-warning ml-3 mr-3">
+        {% if not chooseForm and not reviewable %}
+          <div id="no-submissions-for-peer-review" class="alert alert-warning ml-3 mr-3">
             Not a thing was found to be reviewed :-| You cannot make this peer-review just yet.
           </div>
-          <br>
         {% else %}
-          {# TODO: own submisssion & model answer here? #}
           {% include "./_reviewable.html" with chooseMode=chooseForm %}
         {% endif %}
 

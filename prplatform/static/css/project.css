@@ -162,3 +162,11 @@ body {
 .table th {
   border-top: none;
 }
+
+/*
+ * Review exercise detail
+ */
+
+.choose-form-help {
+  font-size: 14px;
+}

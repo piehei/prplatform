@@ -235,7 +235,9 @@ class ChooseForm(Form):
 
         self.fields['choice'].queryset = qs.order_by('submitter_group__name', 'submitter_user__email')
         if qs.count() == 0:
-            self.fields['choice'].help_text = "<b>Unfortunately no one has returned anything.</b> " + \
-                                              "You cannot choose anything just yet."
+            self.fields['choice'].help_text = (
+                "<span id='no-submissions-for-peer-review' class='choose-form-help'><b>Unfortunately no "
+                "one has returned anything for peer-review.</b> You cannot choose anything just yet.</span>"
+            )
 
-        self.fields['choice'].label_from_instance = lambda choice: choice.submitter_group if choice.submitter_group else choice.submitter_user
+        self.fields['choice'].label_from_instance = lambda c: c.submitter_group or c.submitter_user

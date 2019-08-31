@@ -310,7 +310,7 @@ class ExerciseTest(TestCase):
         # s2 loads the page -> nothing to review since all can recieve only one
         request.user = self.s2
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, f"Not a thing was found to be")
+        self.assertContains(response, f"no-submissions-for-peer-review")
         self.assertEqual(ReviewLock.objects.all().count(), 2)
 
         # increase the number of reviews an OS can get
@@ -399,7 +399,7 @@ class ExerciseTest(TestCase):
         for s in [self.s5, self.s6]:
             request.user = s
             response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-            self.assertContains(response, 'Not a thing was found')
+            self.assertContains(response, 'no-submissions-for-peer-review')
             self.assertEqual(response.context_data['disable_form'], True)
         self.assertEqual(ReviewLock.objects.all().count(), 2)
 
@@ -559,7 +559,7 @@ class ExerciseTest(TestCase):
         request.user = self.s2
         self.kwargs['pk'] = r_exer.pk
         response = ReviewExerciseDetailView.as_view()(request, **self.kwargs)
-        self.assertContains(response, "Not a thing was found")
+        self.assertContains(response, "no-submissions-for-peer-review")
 
         subs[0].state = OriginalSubmission.READY_FOR_REVIEW
         subs[0].save()
@@ -731,3 +731,26 @@ class ExerciseTest(TestCase):
         self.kwargs['pk'] = re.pk
         response = ReviewSubmissionListView.as_view()(request, **self.kwargs)
         self.assertEqual(response.context_data['reviewsubmission_list'].count(), 1)
+
+    def test_nothing_was_found_for_peer_review(self):
+        # check that helper text no submissions was found to be peer-reviewed
+        # is shown to the user correctly. if RE.type is RANDOM, then the text is
+        # in an alert-div. if RE.type is CHOOSE, then the text is in form helper.
+        # the error msg should be displayed exactly once (thus count=1 below).
+
+        # no personal submission yet
+        self.assertNotContains(self.get(self.RE1, self.s1), 'no-submissions-for-peer-review')
+        self.create_originalsubmission_for(self.SE1, self.s1)
+        self.assertContains(self.get(self.RE1, self.s1), 'no-submissions-for-peer-review', count=1)
+        # now there's something that can be reviewed
+        self.create_originalsubmission_for(self.SE1, self.s2)
+        self.assertNotContains(self.get(self.RE1, self.s1), 'no-submissions-for-peer-review')
+
+        OriginalSubmission.objects.all().delete()
+        self.RE1.type = ReviewExercise.CHOOSE
+        self.RE1.save()
+
+        # no personal submission yet
+        self.assertNotContains(self.get(self.RE1, self.s1), 'no-submissions-for-peer-review')
+        self.create_originalsubmission_for(self.SE1, self.s1)
+        self.assertContains(self.get(self.RE1, self.s1), 'no-submissions-for-peer-review', count=1)
