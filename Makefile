@@ -22,7 +22,11 @@ deploy:
 	ssh ${SSH_DEPLOY_URL} $(SSH_DEPLOY_COMMAND)
 
 test:
-	docker-compose run --rm django python manage.py test
+	# this may be called just like "make test" but you can also pass
+	# arguments to manage.py test like so:
+	# make test arg=prplatform/exercises/
+	# etc. to run only some of the tests
+	docker-compose run --rm django python manage.py test $(arg)
 
 coverage:
 	docker-compose run --rm django coverage run manage.py test && docker-compose run --rm djagno coverage html && echo "COVERAGE UPDATED, INSPECT htmlcov"
