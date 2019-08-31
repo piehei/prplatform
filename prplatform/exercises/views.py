@@ -38,6 +38,22 @@ from .forms import (
 from . import utils
 
 
+class LTIMixin:
+    # this mixin MUST BE used on every page that may be provided through
+    # lti embedding.
+    # for convenience of the teacher, a query param lti=true may be used
+    # to inspect how the embedded view would like without actually embedding.
+
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(self.request, 'LTI_MODE'):
+            self.request.LTI_MODE = False
+        if request.GET.get('lti') and Course.objects.get(
+                    base_course__url_slug=kwargs['base_url_slug'], url_slug=kwargs['url_slug']
+                ).is_teacher(self.request.user):
+            self.request.LTI_MODE = True
+        return super().dispatch(request, *args, **kwargs)
+
+
 ###
 #
 # CREATE VIEWS
@@ -118,14 +134,9 @@ class ReviewExerciseUpdateView(IsTeacherMixin, ExerciseContextMixin, UpdateView)
 # DETAIL VIEWS
 #
 
-class SubmissionExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
+class SubmissionExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, DetailView):
 
     model = SubmissionExercise
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(self.request, 'LTI_MODE'):
-            self.request.LTI_MODE = False
-        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def get(self, *args, **kwargs):
@@ -223,14 +234,8 @@ def _construct_aplus_response(exercise=None, user=None):
                           '</html>'))
 
 
-class ReviewExerciseDetailView(GroupMixin, ExerciseContextMixin, DetailView):
+class ReviewExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, DetailView):
     model = ReviewExercise
-
-    def dispatch(self, request, *args, **kwargs):
-        if not hasattr(self.request, 'LTI_MODE'):
-            self.request.LTI_MODE = False
-        #  print("LTI_MODE: ", self.request.LTI_MODE)
-        return super().dispatch(request, *args, **kwargs)
 
     def _get_answer_forms(self):
         forms = []
