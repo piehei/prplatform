@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% load django_bootstrap_breadcrumbs %}
+{% load exercise_filters %}
 
 {% block breadcrumbs %}
     {{ block.super }}
@@ -12,7 +13,9 @@
 
 {% block content %}
 
+  {% if not lti %}
   {% include "../tabs.html" with tab="exercise" %}
+  {% endif %}
 
   <div class="row">
     <div class="col-md-12">
@@ -20,18 +23,21 @@
       <h2>{{ object.name }}</h2>
 
       <div style="float:none;" class="mb-4">
-        <p class="font-italic">
-
-          {% if object.type != 'GROUP' %}
-          In this exercise you're peer-reviewing other students' submissions to the exercise
-            <a href="{{ object.reviewable_exercise.get_absolute_url }}">
-              {{ object.reviewable_exercise.name }}
-            </a>
-          {% else %}
-          In this exercise you're peer-reviewing other members in your own group.
-          {% endif %}
-        </p>
-
+        <div class="alert alert-warning ml-3 mr-3">
+          {{ object|my_submission_count:user }} / {{ object.min_submission_count }} peer-reviews completed.
+        </div>
+        {% if not lti %}
+          <p class="font-italic">
+            {% if object.type != 'GROUP' %}
+            In this exercise you're peer-reviewing other students' submissions to the exercise
+              <a href="{{ object.reviewable_exercise.get_absolute_url }}">
+                {{ object.reviewable_exercise.name }}
+              </a>
+            {% else %}
+            In this exercise you're peer-reviewing other members in your own group.
+            {% endif %}
+          </p>
+        {% endif %}
         {% include "./_open_times.html" %}
         {% include "./_re_errormsgs.html" %}
 
@@ -59,5 +65,10 @@
       {% include "./_submit_as_student.html" %}
     </div>
   </div>
+  {% if lti %}
+    {% block extra_js %}
+      <script src="{% static 'js/embedded_view_bootstrap_fix.js' %}"></script>
+    {% endblock extra_js %}
+  {% endif %}
 {% endblock content %}
 

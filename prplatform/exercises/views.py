@@ -142,7 +142,6 @@ class SubmissionExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, D
     def get(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = self.get_context_data(**kwargs)
-        ctx['template_base'] = "base.html"
         ctx['disable_form'] = False
 
         if not self.object.can_submit(self.request.user) or ctx['teacher']:
@@ -154,7 +153,6 @@ class SubmissionExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, D
         if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
             ctx['enrolled'] = True
-            ctx['template_base'] = "base_embedded.html"
 
         return self.render_to_response(ctx)
 
@@ -307,7 +305,6 @@ class ReviewExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, Detai
     def get_context_data(self, *args, **kwargs):
         self.object = self.get_object()
         ctx = super().get_context_data(**kwargs)
-        ctx['template_base'] = "base.html"
 
         ctx['forms'] = self._get_answer_forms()
         ctx['my_submission'] = self.object.original_submissions_by(self.request.user).first()
@@ -317,9 +314,7 @@ class ReviewExerciseDetailView(LTIMixin, GroupMixin, ExerciseContextMixin, Detai
 
         if self.request.LTI_MODE:
             ctx['APLUS_POST_URL'] = self.request.GET.get('post_url')
-            ctx['embedded'] = True
             ctx['enrolled'] = True
-            self.template_name = "exercises/reviewexercise_detail_embed.html"
 
         if not can_submit:
             ctx['errormsg'] = errormsg
