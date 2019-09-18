@@ -54,15 +54,15 @@ def get_user(aplus_submission):
     username = submitter["username"]
 
     try:
-        user = User.objects.get(email=email)
+        user = User.objects.get(email=email, lti=True)
 
     except Exception as e:
         logger.info(e)
         logger.info(f"USER WAS NOT FOUND BY EMAIL {email} --> creating a new one")
 
-        user = User.objects.create_user(username=username, email=email)
+        # prefixed username to not clash with shibboleth-based accounts
+        user = User.objects.create_user(username=f"lti_{username}", email=email, lti=True)
         user.set_unusable_password()
-        user.temporary = True
         user.save()
 
     return user
